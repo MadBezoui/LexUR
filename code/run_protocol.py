@@ -136,32 +136,67 @@ def stage_bfinalize(cfg):
 def _benchmark_finalize_from_records(cfg, records):
     import pandas as pd
     from lur.records import validate_benchmark_frame
+    from lur.analysis import cluster_bootstrap_difference
     
     df = pd.DataFrame(records)
     
-    # Save the tidy raw records
     raw_dir = os.path.join(ROOT, "raw")
     os.makedirs(raw_dir, exist_ok=True)
     df.to_parquet(os.path.join(raw_dir, "benchmark.parquet"))
     
-    # Validate
     validate_benchmark_frame(df, cfg)
     
-    # Create Pt, Pm, Pw matrices for existing statistical code
-    # Rows: unique instance (N, m, geometry, replication)
-    # Columns: method
-    pivot_t = df.pivot(index=["N", "m", "geometry", "replication"], columns="method", values="tail_loss")
-    pivot_m = df.pivot(index=["N", "m", "geometry", "replication"], columns="method", values="mean_loss")
-    # Pw is worst_family, but string. Just to keep the matrices aligned
-    pivot_w = df.pivot(index=["N", "m", "geometry", "replication"], columns="method", values="worst_family")
-    
-    # Ensure columns match cfg["methods"]
     M = cfg["methods"]
-    Pt = pivot_t[M].values
-    Pm = pivot_m[M].values
-    Pw = pivot_w[M].values
     
-    _benchmark_finalize_from(cfg, Pt, Pm, Pw)
+    os.makedirs(TAB, exist_ok=True)
+    
+    # 1. Global benchmark stats table
+    df_global = []
+    for mtd in M:
+        df_global.append({
+            "method": mtd,
+            "mean_loss": df[df.method==mtd]["mean_loss"].mean(),
+            "tail_loss": df[df.method==mtd]["tail_loss"].mean()
+        })
+    pd.DataFrame(df_global).to_csv(f"{TAB}/benchmark.csv", index=False)
+
+    # 2. Stratified analysis
+    strat_cols = {"geometry": "geometry", "m": "dimension", "N": "size", "utility_scope": "utility_scope"}
+    for col, fname in strat_cols.items():
+        out = []
+        for val in df[col].unique():
+            sub = df[df[col] == val]
+            cells = sub[["N", "m", "geometry", "replication"]].drop_duplicates()
+            n_cells = len(cells)
+            for mtd in M:
+                if mtd == "LUR": continue
+                md, ci_l, ci_u, rev = cluster_bootstrap_difference(
+                    sub, control="LUR", treatment=mtd,
+                    cluster_columns=["N", "m", "geometry", "replication"],
+                    seed=42, n_boot=1000
+                )
+                out.append({
+                    "stratum_variable": col,
+                    "stratum_value": val,
+                    "method": mtd,
+                    "n_cells": n_cells,
+                    "mean_diff": md,
+                    "ci_lower": ci_l,
+                    "ci_upper": ci_u,
+                    "reversal_fraction": rev
+                })
+        pd.DataFrame(out).to_csv(f"{TAB}/benchmark_by_{fname}.csv", index=False)
+        
+    # 3. Non-inferiority
+    from lur.gates import noninferiority_cluster
+    ni_cfg = cfg.get("noninferiority")
+    if ni_cfg:
+        noninf = {}
+        for ctrl in ni_cfg["controls"]:
+            noninf[ctrl] = noninferiority_cluster(
+                df, ctrl_name=ctrl, lur_name="LUR", ni_cfg=ni_cfg, seed=cfg.get("seed", 42)
+            )
+        _save_json(f"{TAB}/gates_noninferiority.json", noninf)
 
 
 def _benchmark_finalize_from(cfg, Pt, Pm, Pw):

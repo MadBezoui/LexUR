@@ -137,3 +137,33 @@ def noninferiority(lur_loss, ctrl_loss, margin=0.01, margin_rel=0.02, name="ctrl
                 margin_abs=margin, margin_rel2pct=round(rel_margin, 4),
                 noninferior_abs=bool(hi < margin),
                 noninferior=bool(hi < eff_margin))
+
+
+def noninferiority_cluster(frame, ctrl_name, lur_name, ni_cfg, seed=0):
+    from lur.analysis import cluster_bootstrap_difference
+    
+    metric = ni_cfg["metric"]
+    margin = ni_cfg["margin_absolute"]
+    conf = ni_cfg["confidence"]
+    n_boot = ni_cfg["bootstrap_repetitions"]
+    unit = ni_cfg["bootstrap_unit"]
+    
+    # In analysis, cluster_bootstrap_difference returns diffs = control - treatment.
+    # We want diff = LUR - control. So let treatment=LUR, control=ctrl_name.
+    # Then diffs = ctrl - LUR. Wait, if we want LUR - ctrl, we should pass control=LUR, treatment=ctrl_name.
+    # diffs = LUR - ctrl.
+    md, ci_l, ci_u, rev = cluster_bootstrap_difference(
+        frame, control=lur_name, treatment=ctrl_name,
+        cluster_columns=unit, seed=seed, n_boot=n_boot, alpha=1.0 - conf
+    )
+    # Actually, cluster_bootstrap_difference:
+    # diffs = pivot[control] - pivot[treatment]
+    # So if control=lur_name, diffs = LUR - ctrl.
+    
+    # Non-inferiority condition: upper confidence interval of LUR - ctrl < margin
+    noninferior = bool(ci_u < margin)
+    
+    return dict(control=ctrl_name, mean_diff=round(md, 4),
+                ci=[round(ci_l, 4), round(ci_u, 4)],
+                margin_abs=margin, noninferior_abs=noninferior,
+                noninferior=noninferior)

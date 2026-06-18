@@ -54,7 +54,13 @@ multistakeholder:
   - 5
   - 10
   - 20
-noninferiority_margin: 0.01
+noninferiority:
+  metric: tail_loss
+  margin_absolute: 0.01
+  confidence: 0.95
+  controls: [ASF, MMR]
+  bootstrap_unit: [N, m, geometry, replication]
+  bootstrap_repetitions: 100
 redundancy:
   correlations:
   - 1.0

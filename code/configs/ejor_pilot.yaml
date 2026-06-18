@@ -45,7 +45,13 @@ methods:
 - LUR
 theta: 0.6
 tail_q: 0.9
-noninferiority_margin: 0.01
+noninferiority:
+  metric: tail_loss
+  margin_absolute: 0.01
+  confidence: 0.95
+  controls: [ASF, MMR]
+  bootstrap_unit: [N, m, geometry, replication]
+  bootstrap_repetitions: 1000
 redundancy:
   latent:
   - 3

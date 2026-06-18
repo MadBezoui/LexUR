@@ -44,23 +44,37 @@ def cliffs_delta(a: np.ndarray, b: np.ndarray) -> float:
     return float((gt - lt) / (len(a) * len(b)))
 
 
+def holm_adjust(pvalues):
+    p = np.asarray(pvalues, dtype=float)
+    order = np.argsort(p)
+    scaled = (len(p) - np.arange(len(p))) * p[order]
+    monotone = np.minimum(1.0, np.maximum.accumulate(scaled))
+    out = np.empty_like(monotone)
+    out[order] = monotone
+    return out
+
+
 def wilcoxon_holm(loss_matrix: np.ndarray, names, control: str):
     """Pairwise Wilcoxon signed-rank of `control` vs. every other method,
     Holm-Bonferroni corrected.  Returns dict name -> (p_raw, p_holm, delta)."""
     j_ctrl = names.index(control)
     others = [j for j in range(len(names)) if j != j_ctrl]
-    raw = {}
+    raw_ps = []
+    deltas = []
+    other_names = []
     for j in others:
         x, y = loss_matrix[:, j_ctrl], loss_matrix[:, j]
         try:
             _, p = stats.wilcoxon(x, y)
         except ValueError:
             p = 1.0
-        raw[names[j]] = (p, cliffs_delta(y, x))   # delta>0: other worse than control
-    # Holm correction
-    ordered = sorted(raw.items(), key=lambda kv: kv[1][0])
-    out, k = {}, len(ordered)
-    for rank, (nm, (p, d)) in enumerate(ordered):
-        p_holm = min(1.0, p * (k - rank))
-        out[nm] = (p, p_holm, d)
+        raw_ps.append(p)
+        deltas.append(cliffs_delta(y, x))
+        other_names.append(names[j])
+        
+    adjusted = holm_adjust(raw_ps)
+    
+    out = {}
+    for nm, p, p_h, d in zip(other_names, raw_ps, adjusted, deltas):
+        out[nm] = (float(p), float(p_h), float(d))
     return out
