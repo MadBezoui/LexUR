@@ -1,0 +1,139 @@
+\section{The Leximax Universal-Regret core}
+\label{sec:core}
+
+\subsection{Problem setting and normalisation}
+Let $\X\subseteq\R^n$ be the feasible set and $F:\X\to\R^m$, $F(x)=(f_1(x),\dots,
+f_m(x))$, the vector objective (minimisation; maximisation by sign reversal). For
+the finite case let $A=\{x_1,\dots,x_N\}\subseteq\X$ be a candidate set, e.g.\ an
+\emph{a posteriori} approximation of the efficient set; for the continuous case
+(\S\ref{sec:direct}) $A$ is not required. Criteria are normalised to $[0,1]$ by the
+positive affine map
+\begin{equation}
+r_i(x)=\frac{f_i(x)-\ideal_i}{\max\{\nadir_i-\ideal_i,\;\varepsilon\}},\qquad
+\ideal_i=\min_{x\in A}f_i(x),\;\; \nadir_i=\max_{x\in A}f_i(x),
+\label{eq:norm}
+\end{equation}
+with a small $\varepsilon>0$ guarding against a zero range, so that $r_i\in[0,1]$
+attains both endpoints on $A$. For the finite case all extrema ($\ideal$,
+$\nadir$, $q^\star$, $q^{\mathrm w}$ below) are taken over the candidate set $A$;
+for the continuous case (\S\ref{sec:direct}) they are taken over $\X$. We use the
+worst attainable value over $A$ in place of the true nadir over the efficient
+set, the two coincide when $A$ contains the criterion-wise worst efficient points
+and otherwise the former is a conservative bound. The rule is invariant to
+positive affine rescaling of the criteria when the bounds are transformed
+consistently; it is not invariant to arbitrary monotone transformations (e.g.\
+$f_i\mapsto\log f_i$), which change the distances that define regret---so such
+transformations are a modelling choice the analyst must make deliberately.
+
+\subsection{Admissible probes}
+A \emph{probe} is a scalar function $q:[0,1]^m\to\R$ encoding a rational decision
+question. The family $\Q$ is \emph{declared}: it is part of the specification.
+
+\begin{definition}[Admissible probe]
+\label{def:probe}
+A probe $q$ is \emph{admissible} if (i) it is non-decreasing in each $r_i$
+(monotonicity); (ii) it can be rescaled so that $q(\mathbf 0)=0$, $q(\mathbf
+1)=1$ (normalisation); and (iii) it is $L$-Lipschitz in $\|\cdot\|_\infty$.
+\end{definition}
+
+Here $\mathbf 0$ and $\mathbf 1$ denote the all-zeros and all-ones vectors.
+Monotonicity gives \emph{weak} Pareto compatibility; strict compatibility needs a
+separation property (Definition~\ref{def:sep}). Canonical admissible probes are
+the \emph{singletons} $q_i(r)=r_i$; the \emph{grand mean} $q_\mu(r)=\frac1m
+\sum_i r_i$ (the utilitarian question); the \emph{grand maximum}
+$q_{\max}(r)=\max_i r_i$ (the egalitarian/worst-criterion question); and, for any
+coalition $S\subseteq\{1,\dots,m\}$, the coalition mean and maximum. All have
+non-negative weights or are maxima, hence are monotone.
+
+\begin{definition}[Separating family]
+\label{def:sep}
+A probe family $\Q$ \emph{separates} criteria if for every $i$ there is a probe
+$q\in\Q$ strictly increasing in $r_i$. Including all $m$ singleton probes
+$q_i(r)=r_i$ is sufficient; LUR always does so.
+\end{definition}
+
+\subsection{Disappointment and regret}
+For each probe $q\in\Q$ let $q^\star=\min_{x}q(r(x))$ and $q^{\mathrm w}=\max_{x}q(r(x))$
+(or a user-supplied worst-acceptable value). The \emph{normalised disappointment}
+of $x$ under $q$ is
+\begin{equation}
+\reg_q(x)=\frac{q(r(x))-q^\star}{q^{\mathrm w} - q^\star+\varepsilon}\in[0,1],
+\label{eq:disap}
+\end{equation}
+with $\reg_q(x)=0$ iff $x$ is $q$-optimal and $1$ iff $x$ is $q$-worst.
+
+\subsection{The leximax order}
+Collect $\reg(x)=(\reg_{q_1}(x),\dots,\reg_{q_K}(x))$, $K=|\Q|$, and sort it in
+\emph{descending} order to obtain $\reg^{\downarrow}(x)=(\reg_{[1]}(x)\ge\dots\ge
+\reg_{[K]}(x))$. The \textbf{Leximax Universal-Regret order} is
+\begin{equation}
+x\preceq_{\mathrm{LUR}}y \iff \reg^{\downarrow}(x)\lex \reg^{\downarrow}(y),
+\label{eq:lur}
+\end{equation}
+i.e.\ $x$ is preferred if its worst disappointment is smaller; on ties, its
+second worst; and so on. The \emph{LUR solution} is $x^{\mathrm{LUR}}\in
+\argmin^{\mathrm{lex}}_{x}\reg^{\downarrow}(x)$, and its \emph{certificate} is the
+labelled, sorted vector $\reg^{\downarrow}(x^{\mathrm{LUR}})$ together with the
+probes attaining the largest entries.
+
+Because exact lexicographic comparison is discontinuous at ties, we use in
+practice---and in all guarantees below---a \emph{tolerance-based} leximax order:
+fix $\tau>0$ and compare $\reg^{\downarrow}(x)$ and $\reg^{\downarrow}(y)$ at the
+first coordinate where they differ by more than $\tau$, treating coordinates
+within $\tau$ as equal. This is the rule implemented in the released code and the
+one for which stability holds (Theorem~\ref{thm:stab}).
+
+\subsection{Foundational guarantees}
+\begin{theorem}[Existence and completeness]
+\label{thm:exist}
+For any finite $A$ and finite $\Q$, $x^{\mathrm{LUR}}$ exists and
+$\preceq_{\mathrm{LUR}}$ is a complete preorder on $A$.
+\end{theorem}
+
+\begin{theorem}[Weak and strict Pareto compatibility]
+\label{thm:pareto}
+Let $x$ strictly Pareto-dominate $y$ and let every $q\in\Q$ be monotone
+non-decreasing in each $r_i$. Then $\reg_q(x)\le\reg_q(y)$ for all $q$
+(\emph{weak} compatibility), so $x\preceq_{\mathrm{LUR}}y$. If, in addition, $\Q$
+\emph{separates} criteria (Definition~\ref{def:sep})---in particular if $\Q$
+contains the singleton probes---then $\reg_q(x)<\reg_q(y)$ for some $q$ and
+$x\prec_{\mathrm{LUR}}y$.
+\end{theorem}
+
+The separation hypothesis is necessary: with only the probe $q(r)=r_2$, the
+dominator $r(x)=(0,1)$ and the dominated $r(y)=(0.1,1)$ have equal disappointment,
+so monotonicity alone does not give a strict preference. LUR always includes the
+singletons, so it separates.
+
+\begin{corollary}[Dominated exclusion]
+\label{cor:dom}
+If $x$ is Pareto-dominated by a feasible $y$ and $\Q$ separates criteria, then
+$x$ is not LUR-optimal.
+\end{corollary}
+
+\begin{theorem}[Stability of the tolerance-based rule]
+\label{thm:stab}
+Use the $\tau$-tolerance leximax order. Let $\hat\reg_q(x)$ estimate $\reg_q(x)$
+with $\eta=\max_{x,q}|\hat\reg_q(x)-\reg_q(x)|$. Suppose the winner
+$x^{\mathrm{LUR}}$ beats every rival $y$ at the first coordinate $k(y)$ at which
+their sorted vectors differ by more than $\tau$, with margin
+$\reg_{[k(y)]}(y)-\reg_{[k(y)]}(x^{\mathrm{LUR}})\ge\Delta$, and that all earlier
+coordinates agree within $\tau-2\eta$. If $2\eta<\min\{\Delta-\tau,\ \tau\}$, the
+winner under $\hat\reg$ is unchanged.
+\end{theorem}
+
+Theorem~\ref{thm:stab} is deliberately stated for the tolerance rule: exact
+lexicographic comparison is \emph{not} perturbation-stable, because a winner that
+beats a rival only at a later coordinate after an exact earlier tie can be
+reversed by an arbitrarily small perturbation of the earlier coordinate. The
+tolerance $\tau$ absorbs exactly those near-ties. Proofs are in Appendix~A. For
+continuous $\X$, existence requires compactness of $\X$ and continuity of each
+$q\circ r$; uniqueness is not guaranteed and a small indifference class may arise.
+
+\subsection{Algorithm for finite candidate sets}
+Given $A$: (1) form $F_{ij}=f_j(x_i)$; (2) normalise to $R$ via \eqref{eq:norm};
+(3) evaluate $V_{iq}=q(r(x_i))$ for each probe; (4) set $q^\star=\min_i V_{iq}$,
+$q^{\mathrm w}=\max_i V_{iq}$; (5) form disappointments \eqref{eq:disap}; (6) sort each row
+descending; (7) return the lexicographically smallest row. The cost is
+$O\!\big(KNm+KN\log N+N\log N\big)$ with a tolerance-based lexicographic
+comparison; $K$ is controlled by the construction of \S\ref{sec:probes}.

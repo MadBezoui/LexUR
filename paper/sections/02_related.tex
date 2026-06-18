@@ -1,0 +1,113 @@
+\section{Background and related work}
+\label{sec:related}
+
+\subsection{Pareto efficiency and \emph{post hoc} selection}
+For a vector objective $F(x)=(f_1(x),\dots,f_m(x))$ (minimisation), $x$
+Pareto-dominates $y$ if $f_i(x)\le f_i(y)$ for all $i$ with at least one strict
+inequality; the efficient set is the non-dominated set. Because it is typically
+large, a single recommendation is obtained by \emph{post hoc} selection. The
+weighted sum, TOPSIS \citep{hwang1981}, compromise programming
+\citep{zeleny1982}, knee selection \citep{branke2008}, ELECTRE \citep{roy1991},
+PROMETHEE \citep{brans2016} and hypervolume selection \citep{zitzler1999} are the
+standard tools; each requires weights, thresholds, a metric, or an already
+generated front. LUR removes these by folding the selection criterion into a
+declared probe family and computing the recommendation directly.
+
+\subsection{Achievement scalarising functions and ordered aggregation}
+Achievement scalarising functions (ASF) project a reference point onto the
+efficient set through a parameterised metric interpolating between $L_1$ and
+$L_\infty$ \citep{wierzbicki1980,miettinen2002}. Ordered weighted averaging
+\citep{yager1988} aggregates sorted criteria, and \citet{ogryczak1997,ogryczak2006}
+connect ordered aggregation to lexicographic maximin. LUR \emph{recovers} these as special cases when the probe family is reduced to a
+single probe: the grand-maximum probe alone gives the (reference-at-ideal)
+Chebyshev/ASF rule, the grand-mean probe alone the weighted sum, and the
+singleton family the lexicographic maximin of normalised regret. We do not claim
+LUR subsumes these methods with its full adaptive family---there it is a
+\emph{different} aggregation paradigm. Its distinguishing features are that it
+sorts \emph{normalised regrets} (dimensionless disappointments relative to each
+probe's own attainable best and worst) over a \emph{declared family of probes}
+and breaks ties through the whole sorted vector, and that it emits a certificate.
+
+\subsection{Robust MCDA: SMAA, robust ordinal regression, preference robust
+optimisation}
+The work closest to LUR lies in \emph{robust} multicriteria decision analysis.
+\textbf{SMAA} \citep{lahdelma1998,tervonen2007} computes, by Monte-Carlo
+integration over a distribution of admissible weights (and possibly criterion
+values), acceptability indices describing how strongly each alternative is
+supported. \textbf{Robust ordinal regression} \citep{greco2008,figueira2009}
+reasons over the entire set of additive value functions compatible with a DM's
+holistic pairwise judgements, producing necessary and possible preference
+relations. \textbf{Preference robust optimisation} \citep{armbruster2015,hu2015}
+optimises the worst-case expected utility over an ambiguity set of utility
+functions. LUR shares the robust philosophy---perform well across a whole class of
+admissible preferences rather than commit to one---but differs in three ways.
+First, its admissible class is an explicit family of \emph{monotone probes}, not a
+weight distribution or an elicited polyhedron. Second, its criterion is the
+\emph{lexicographic minimax of normalised regret}, not an expected acceptability,
+a necessary/possible relation, or a single worst-case utility. Third, its output
+is an interpretable \emph{certificate} naming the binding coalitions. We note that
+SMAA is primarily an \emph{exploratory} framework that informs the DM through
+acceptability indices rather than emitting a single choice; to obtain a
+comparable single-choice rule we use the standard SMAA-2 device of recommending
+the alternative with the highest first-rank acceptability index (ties broken by
+expected value), and we treat the comparison as one of decision philosophies as
+much as a benchmark. We likewise compare against a Savage minimax-regret (MMR)
+recommender over a sampled linear weight set (\S\ref{sec:exp}). More broadly, LUR
+is complementary to data-driven preference disaggregation and inverse MCDA
+\citep{doumpos2011}, which infer preference parameters from holistic judgements:
+LUR instead dispenses with a fitted preference model and reasons over a declared
+class of questions, and could take an elicited probe family as input where such
+data exist.
+
+\subsection{Minimax regret and robust optimisation}
+Regret-based choice originates with \citet{savage1951} and \citet{loomes1982};
+minimax regret seeks alternatives minimising the largest shortfall from the best
+attainable value. Robust optimisation \citep{bental2002} and stochastic
+programming \citep{birge2011} address parameter uncertainty in the model rather
+than preference uncertainty in the DM. LUR extends minimax regret in three
+directions: it is \emph{lexicographic} (after the worst regret, minimise the
+second worst, and so on), \emph{probe-based} (regret is computed over rational
+coalitions of criteria, not raw criteria), and \emph{direct} (computed without
+enumerating the efficient set).
+
+\subsection{Social choice and fairness}
+Aggregating criteria resembles social choice, but treating criteria as voters
+invites Condorcet cycles; LUR avoids this by aggregating \emph{regrets over
+declared questions}, not votes over criteria. For multi-stakeholder settings we
+draw on the maximin principle of \citet{rawls1971} and the bargaining viewpoint
+of \citet{nash1950}; we claim natural fairness properties (anonymity, monotonicity,
+worst-stakeholder protection), not a uniqueness theorem.
+
+\subsection{Positioning summary}
+Table~\ref{tab:positioning} summarises where LUR sits. It is the only entry that
+requires neither weights, nor thresholds, nor a pre-generated front, returns a
+single Pareto-compatible recommendation, \emph{and} issues an interpretable
+certificate while admitting native stochastic and fairness extensions.
+
+\begin{table}[t]
+\centering\small
+\caption{Positioning of LUR relative to representative selection and robust-MCDA
+methods. ``No weights'' = requires no single preference weight vector (LUR still
+requires a declared probe family); ``No thresholds'' refers to \emph{preference}
+thresholds---LUR uses a clustering threshold $\theta$, which is not a preference
+parameter; ``No front'' = needs no efficient set generated first, which for LUR
+holds for the direct formulation of \S\ref{sec:direct} (the experiments here use
+candidate sets); ``Certificate'' = returns an interpretable account of the
+recommendation.}
+\label{tab:positioning}
+\begin{tabular}{lcccccc}
+\toprule
+Method & No weights & No thresholds & No front & Single rec. & Pareto comp. & Certificate\\
+\midrule
+Weighted sum            & \ding{55} & \ding{51} & \ding{51} & \ding{51} & \ding{51} & \ding{55}\\
+TOPSIS                  & \ding{55} & \ding{51} & \ding{55} & \ding{51} & \ding{51} & \ding{55}\\
+Compromise prog.        & \ding{55} & \ding{55} & \ding{55} & \ding{51} & \ding{51} & \ding{55}\\
+Knee selection          & \ding{51} & \ding{51} & \ding{55} & \ding{55} & \ding{51} & \ding{55}\\
+ELECTRE/PROMETHEE       & \ding{51} & \ding{55} & \ding{55} & \ding{55} & \ding{51} & partial\\
+ASF (ref.\ at ideal)    & \ding{51} & \ding{55} & \ding{55} & \ding{51} & \ding{51} & \ding{55}\\
+SMAA                    & \ding{51} & \ding{51} & \ding{55} & \ding{51} & \ding{51} & partial\\
+Minimax regret (linear) & \ding{51} & \ding{51} & \ding{51} & \ding{51} & cond. & \ding{55}\\
+\textbf{LUR (ours)}     & \ding{51} & \ding{51} & \ding{51} & \ding{51} & \ding{51} & \ding{51}\\
+\bottomrule
+\end{tabular}
+\end{table}

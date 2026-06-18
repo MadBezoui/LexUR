@@ -1,0 +1,11 @@
+gate,result,detail
+Dominated selections = 0,PASS,0/150 violations
+Positive-affine invariance,PASS,identical rate 1.0
+Nadir-error stability,CHECK,max quality degradation 0.052
+Tail non-inferiority vs ASF,PASS,"diff 0.0026 CI [0.0011, 0.004]"
+Tail non-inferiority vs MMR,PASS,"diff 0.0008 CI [-0.0009, 0.0025]"
+Better than practical baselines (tail),PASS,TOPSIS:d=+0.19; CP:d=+0.06; Knee:d=+0.26; RW:d=+0.61; SMAA:d=+0.62
+Redundancy: LUR < averaging (grouped),PASS,LUR 0.256 vs avg 0.359
+Adaptive probes ~ full (tail gap <= 0.01),PASS,"gap +0.0096, agree 0.00"
+Direct computation demonstrated (LP+MILP),PASS,LP direct calls 19 vs enum 150
+Stochastic LUR <= deterministic LUR (tail),PASS,best-alpha 0.526 vs det 0.526

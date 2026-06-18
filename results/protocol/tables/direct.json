@@ -1,0 +1,30 @@
+{
+  "linear": {
+    "direct_calls": 19.0,
+    "direct_points": 0.0,
+    "enum_calls": 150.0,
+    "enum_points": 24.9,
+    "direct_time": 0.01739988327026367,
+    "enum_time": 0.11547565460205078,
+    "tail_direct": 0.4522494808159231,
+    "tail_enum": 0.46969804515845637
+  },
+  "milp": {
+    "available": true,
+    "enum_solver_calls": 60,
+    "enum_points": 10,
+    "enum_time": 16.16,
+    "direct_solver_calls": 4,
+    "direct_time": 0.7,
+    "chosen_enum": [
+      35.64,
+      72.1,
+      10.14
+    ],
+    "chosen_direct": [
+      35.64,
+      72.1,
+      10.14
+    ]
+  }
+}

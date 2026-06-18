@@ -1,0 +1,113 @@
+% ============================================================================
+% Beyond Pareto Fronts: A Leximax Universal-Regret Core for Robust
+% Multicriteria Decision Support
+%
+% Formatted in the standard article class for portable compilation.
+% For final EJOR submission, switch the first line to
+%   \documentclass[review]{elsarticle}
+% and move the abstract/keywords into the elsarticle frontmatter; the body,
+% theorems, tables and figures below transfer unchanged.
+% ============================================================================
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{pifont}
+\usepackage[round]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{setspace}
+\onehalfspacing
+
+\graphicspath{{./}{./figures/}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Q}{\mathcal{Q}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\reg}{D}
+\newcommand{\ideal}{z^{\star}}
+\newcommand{\nadir}{z^{N}}
+\newcommand{\lex}{\leq_{\mathrm{lex}}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\Corr}{Corr}
+
+\title{\textbf{Beyond Pareto Fronts: A Leximax Universal-Regret Core\\
+for Robust Multicriteria Decision Support}}
+\author{Madani Bezoui\\[2pt]\small CESI LINEACT, UR 7527, Nancy, France\\\small mbezoui@cesi.fr}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Pareto optimality is a safety property, not a complete decision rule: an
+efficient set tells a decision maker (DM) which alternatives are not obviously
+bad, but offers no principled way to choose one. Practice fills this gap with
+\emph{post hoc} devices---weighted sums, TOPSIS, compromise programming,
+knee selection, outranking thresholds---each of which reintroduces exactly the
+preference parameters the DM was unable to state. We propose the
+\textbf{Leximax Universal-Regret (LUR) core}, a Pareto-compatible decision rule
+that ranks feasible alternatives by the lexicographically sorted vector of
+\emph{normalised regrets over a declared class of monotone probes}, and returns
+a single recommendation together with an auditable \emph{regret certificate}
+identifying the most disappointed coalitions of criteria. We position LUR within
+robust multicriteria decision analysis. It recovers achievement scalarisation,
+the weighted sum, and the lexicographic maximin as special cases when the probe
+family is reduced to the corresponding single probe, and it relates to---but is
+operationally distinct from---stochastic multicriteria acceptability analysis
+(SMAA), robust ordinal regression, and preference robust optimisation. We prove
+existence and completeness, Pareto compatibility \emph{under a separation
+condition}, dominated-solution exclusion, stability of the tolerance-based
+leximax rule under bounded perturbations, and a probe perturbation bound with
+explicit constants, and we give an adaptive correlation-clustering construction
+that keeps the probe count linear in the number of criteria. A replicated study
+(four front geometries, $m\in\{3,5,8,10\}$, 30 replications, 480 instances) and a
+six-objective stochastic smart-grid dispatch case evaluate every method against
+six held-out preference families, both additive and non-additive. On worst-case
+(tail) held-out loss LUR is practically equivalent to the best robust
+scalarisations (negligible effect size, Cliff's $|\delta|\le0.03$) and reduces
+loss by $11$--$47\%$ relative to the distance-based and Monte-Carlo preference
+methods used in practice, while (i) resisting redundant criteria, (ii) minimising
+its certificate regret by construction, and (iii) admitting native stochastic and
+multi-stakeholder extensions. We are explicit about scope: LUR relocates
+preference modelling into a declared probe family rather than removing it, and
+does not dominate the strongest robust scalarisations on average-case loss. All
+code, data and scripts that regenerate every table and figure are released.
+\end{abstract}
+
+\noindent\textbf{Keywords:} Decision support; Multicriteria decision analysis;
+Robust decision making; Minimax regret; Achievement scalarising functions;
+Pareto efficiency.
+
+% ---------------------------------------------------------------------------
+\input{sections/01_intro}
+\input{sections/02_related}
+\input{sections/03_core}
+\input{sections/04_direct}
+\input{sections/05_probes}
+\input{sections/06_extensions}
+\input{sections/07_experiments}
+\input{sections/08_discussion}
+\input{sections/09_conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+\input{sections/A_proofs}
+
+\end{document}

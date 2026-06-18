@@ -1,0 +1,38 @@
+{
+  "dominated": {
+    "name": "dominated_injection",
+    "violations": 0,
+    "trials": 150,
+    "change_rate_1.0": 0.68,
+    "change_rate_5.0": 0.627,
+    "change_rate_10.0": 0.633,
+    "pass": true
+  },
+  "affine": {
+    "name": "affine_invariance",
+    "identical_rate": 1.0,
+    "tests": 10000,
+    "pass": true
+  },
+  "nadir": {
+    "name": "nadir_error",
+    "loss_by_error": {
+      "0.0": 0.479,
+      "0.01": 0.5117,
+      "0.05": 0.4525,
+      "0.1": 0.4914,
+      "0.2": 0.4489,
+      "0.5": 0.531
+    },
+    "flip_by_error": {
+      "0.0": 0.0,
+      "0.01": 0.033,
+      "0.05": 0.067,
+      "0.1": 0.233,
+      "0.2": 0.5,
+      "0.5": 0.533
+    },
+    "max_quality_degradation": 0.052,
+    "pass": false
+  }
+}

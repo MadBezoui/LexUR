@@ -1,0 +1,32 @@
+\section{Conclusion}
+\label{sec:conc}
+
+We have presented the Leximax Universal-Regret core, a Pareto-compatible decision
+rule that replaces the efficient set as the final object of multicriteria analysis
+with an auditable regret certificate. LUR ranks alternatives by the
+lexicographically sorted vector of normalised regrets over a declared family of
+monotone probes, and returns a single robust recommendation together with an
+explanation of where it remains fragile. We proved existence and completeness,
+Pareto compatibility \emph{under a separation condition}, dominated-solution
+exclusion, stability of the tolerance-based rule under bounded perturbations, and
+a disappointment-perturbation bound with explicit constants, and we gave a
+redundancy-aware, correlation-clustering probe construction that keeps the family
+linear in the number of criteria. A replicated held-out study over six preference
+families and a stochastic smart-grid case showed that LUR attains best-group
+worst-case robustness---practically equivalent to the strongest robust
+scalarisations and far ahead of the averaging and Monte-Carlo preference methods
+used in practice---while reducing sensitivity to redundant criteria, certifying
+its choice, and extending naturally to noisy criteria and multiple stakeholders.
+
+The central message is that \emph{Pareto efficiency is a safety property, not a
+complete decision rule}. By folding robustness across a declared class of
+questions into the selection itself, LUR turns an efficient set into a defensible,
+explainable recommendation---a low-regret compromise across the declared
+interpretations of the criteria, accompanied by a certificate that reports which
+questions remain most disappointed.
+
+\paragraph{Reproducibility.}
+All code, generated data, and scripts that regenerate every table and figure in
+this paper are released, including the four-geometry benchmark, the redundancy
+benchmark, the statistical tests, the sensitivity analyses, and the smart-grid
+case study.

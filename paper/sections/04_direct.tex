@@ -1,0 +1,71 @@
+\section{Direct computation without efficient-set enumeration}
+\label{sec:direct}
+
+LUR is primarily a candidate-set selection rule, and that is the setting of our
+experiments. This section develops, more tentatively, how the recommendation can
+in principle be computed \emph{directly} on a continuous feasible set, replacing
+the usual two-stage pipeline (generate the efficient set, then post-process) by a
+single robust search. We present the finite case as exact and the continuous case
+as a formulation with assumptions whose large-scale empirical validation we leave
+to future work.
+
+\subsection{Cost of the anchors}
+Both the finite and continuous formulations need, for each probe, its attainable
+best $q^\star=\min_x q(r(x))$ and worst $q^{\mathrm w}=\max_x q(r(x))$. On a
+candidate set these are $O(N)$ scans; on a continuous $\X$ each is a scalar global
+optimisation, so the family contributes $2K$ such subproblems---cheap relative to
+front enumeration when $K$ is linear in $m$ (\S\ref{sec:probes}) but not free, and
+we account for it explicitly.
+
+\subsection{Sequential minimax-regret formulation}
+For continuous or large discrete $\X$, solve a sequence of minimax problems.
+\emph{Stage 1} minimises the worst regret,
+\begin{equation}
+\rho_1=\min_{x\in\X}\max_{q\in\Q}\reg_q(x),\qquad
+\X_1=\{x:\max_q\reg_q(x)=\rho_1\}.
+\end{equation}
+\emph{Stage $k\!>\!1$} fixes the probes already saturated and minimises the next
+worst regret over the remaining ones, restricted to $\X_{k-1}$, until the optimal
+set is a singleton or all probes are exhausted. This realises the lexicographic
+order \eqref{eq:lur} by construction.
+
+\subsection{Single-stage surrogate}
+The stages can be collapsed with a strictly decreasing weight schedule. For a
+large constant $M>1$,
+\begin{equation}
+\min_{x\in\X,\;\rho_1\ge\dots\ge\rho_K\ge 0}\;\sum_{k=1}^{K}M^{-(k-1)}\rho_k
+\quad\text{s.t.}\quad
+\reg_{(k)}(x)\le \rho_k,
+\end{equation}
+where $\reg_{(k)}(x)$ denotes the $k$-th largest disappointment at $x$. This is an
+\emph{exact} surrogate for the lexicographic order only under finite-gap
+assumptions---on a finite candidate set, $M$ larger than the ratio of the largest
+to the smallest positive coordinate gap suffices; for general continuous values no
+finite $M$ reproduces the exact order, so the single-stage form is then an
+approximation. A cleaner route avoids $M$ altogether: lexicographic minimisation
+of the sorted vector is equivalent to sequentially minimising the cumulative sums
+of the $p$ largest disappointments, $\sum_{k=1}^{p}\reg_{[k]}(x)$ for
+$p=1,\dots,K$, each of which is convex when the disappointments are convex and
+admits the standard ordered-value linearisation \citep{ogryczak2006}.
+
+\subsection{Smoothed continuous optimisation}
+For continuous $\X\subseteq\R^n$ the inner maximum is non-smooth; a log-sum-exp
+surrogate
+\begin{equation}
+\max_{q\in\Q}\reg_q(x)\approx \tfrac1\tau\log\!\Big(\textstyle\sum_{q\in\Q}
+\exp\!\big(\tau\,\reg_q(x)\big)\Big)
+\end{equation}
+is smooth and approaches the maximum as $\tau\to\infty$. A probe-active-set
+sequential convex program---linearise the active probes
+$\Q_k=\{q:\reg_q(x_k)\ge\rho_1-\varepsilon\}$ at the current iterate, solve the
+resulting convex subproblem, update, and repeat---then converges to a local LUR
+solution under standard convexity assumptions, analogously to SQP.
+
+\subsection{Why this matters, and what we do not yet show}
+The DM specifies the probe family once; in the finite case LUR returns the
+least-fragile compromise by the exact procedure above, and in the continuous case
+the formulations here make a front-free computation \emph{available} in principle.
+We are careful not to overclaim: our experiments operate on candidate sets, so the
+large-scale continuous advantage is argued, not yet demonstrated, and we flag its
+empirical validation as the main piece of future work. We quantify the
+probe-family savings in \S\ref{sec:probes}.

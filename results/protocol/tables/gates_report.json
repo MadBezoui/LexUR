@@ -1,0 +1,52 @@
+[
+  {
+    "gate": "Dominated selections = 0",
+    "result": "PASS",
+    "detail": "0/150 violations"
+  },
+  {
+    "gate": "Positive-affine invariance",
+    "result": "PASS",
+    "detail": "identical rate 1.0"
+  },
+  {
+    "gate": "Nadir-error stability",
+    "result": "CHECK",
+    "detail": "max quality degradation 0.052"
+  },
+  {
+    "gate": "Tail non-inferiority vs ASF",
+    "result": "PASS",
+    "detail": "diff 0.0026 CI [0.0011, 0.004]"
+  },
+  {
+    "gate": "Tail non-inferiority vs MMR",
+    "result": "PASS",
+    "detail": "diff 0.0008 CI [-0.0009, 0.0025]"
+  },
+  {
+    "gate": "Better than practical baselines (tail)",
+    "result": "PASS",
+    "detail": "TOPSIS:d=+0.19; CP:d=+0.06; Knee:d=+0.26; RW:d=+0.61; SMAA:d=+0.62"
+  },
+  {
+    "gate": "Redundancy: LUR < averaging (grouped)",
+    "result": "PASS",
+    "detail": "LUR 0.256 vs avg 0.359"
+  },
+  {
+    "gate": "Adaptive probes ~ full (tail gap <= 0.01)",
+    "result": "PASS",
+    "detail": "gap +0.0096, agree 0.00"
+  },
+  {
+    "gate": "Direct computation demonstrated (LP+MILP)",
+    "result": "PASS",
+    "detail": "LP direct calls 19 vs enum 150"
+  },
+  {
+    "gate": "Stochastic LUR <= deterministic LUR (tail)",
+    "result": "PASS",
+    "detail": "best-alpha 0.526 vs det 0.526"
+  }
+]

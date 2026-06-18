@@ -1,0 +1,64 @@
+\section{Discussion and limitations}
+\label{sec:disc}
+
+\paragraph{What LUR is, and is not.}
+LUR is a robust, certifiable decision rule, not a universal benchmark champion.
+Our results are deliberately honest about this: on worst-case held-out loss LUR
+is in the best-performing group---practically equivalent to achievement
+scalarisation and linear minimax regret (negligible effect size), and slightly
+behind them in average rank---while on average-case loss the classical averaging
+methods do better. LUR's distinctive value is the \emph{combination} it offers
+that no single competitor matches: best-group worst-case robustness across
+additive \emph{and} non-additive preferences, reduced sensitivity to redundant
+criteria, an interpretable certificate, and native stochastic and multi-stakeholder
+extensions. Where a DM cares only about average-case linear performance, a
+weighted sum or SMAA is appropriate; where the DM cannot state preferences and
+must defend a single robust, explainable choice, LUR is designed for exactly that
+situation.
+
+\paragraph{Relationship to existing rules.}
+LUR generalises rather than replaces. A single grand-maximum probe recovers the
+Chebyshev/ASF rule; a single grand-mean probe recovers the weighted sum; the
+singleton family recovers lexicographic maximin of normalised regret. The
+empirical question is whether the richer adaptive family helps, and the answer is
+that it does on redundant and asymmetric problems while never hurting on standard
+ones.
+
+\paragraph{Parameters.}
+LUR is not parameter-free: it requires normalisation bounds $\ideal,\nadir$, a
+tolerance $\varepsilon$, a clustering threshold $\theta$ (to which it is
+empirically insensitive over a wide range), and, for the extensions, a confidence
+level $\alpha$ and a fairness slack $\beta$. The honest claim is narrower than
+``parameter-free'': LUR replaces a single, hidden, ex ante weight vector with a
+transparent, auditable, declared family of rational questions whose parameters
+have natural defaults. As practical guidance: set $\theta=0.6$ unless criteria are
+known to be independent (then clustering can be disabled, as it is a no-op);
+default to the adaptive family (singletons $+$ grand mean/max $+$ cluster probes);
+take $\ideal,\nadir$ as the criterion-wise best and worst over the candidate set
+and report a sensitivity check when the nadir is uncertain; set $\varepsilon$ to a
+small fraction of the smallest non-degenerate criterion range; and choose the
+leximax tolerance $\tau$ on the scale of the regret-estimation error. The
+robustness studies of \S\ref{sec:exp} show the recommendation is stable to
+$\theta$ and that quality is stable to nadir error.
+
+\paragraph{When LUR is inappropriate.}
+LUR targets the selection of a single robust alternative. It is not the tool when
+the DM genuinely wants to explore the whole trade-off surface, when criteria are
+fundamentally incommensurable, or when reliable normalisation bounds cannot be
+obtained (the nadir is well known to be hard to estimate; our sensitivity study
+quantifies the resulting degradation).
+
+\paragraph{Threats to validity.}
+The held-out families, though disjoint from the probes, are themselves a modelling
+choice; we mitigate this by spanning linear, Chebyshev, ASF and CES forms and by
+reporting per-family results. Candidate sets are synthetic but cover four
+canonical geometries and a realistic stochastic application; extending to a wider
+library of real MCDA datasets is future work.
+
+\paragraph{Future work.}
+Natural next steps are $\epsilon$-net guarantees showing that a finite probe
+family approximates a continuous admissible-utility class to $O(\varepsilon)$;
+non-linear (product/ratio) probes for synergistic criteria; surrogate models for
+the direct continuous formulation in high dimension; and interactive elicitation
+that adapts the probe family from DM feedback, connecting LUR to interactive
+multiobjective optimisation.

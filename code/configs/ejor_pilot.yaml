@@ -1,0 +1,30 @@
+# EJOR PILOT config: identical pipeline to ejor_final.yaml at a smaller scale
+# that runs inside a sandbox (each stage < ~40s). Use this to reproduce the
+# numbers reported in the manuscript revision; scale up via ejor_final.yaml.
+seed: 20260618
+candidate_sizes: [300]
+criteria: [3, 5, 8, 10]
+geometries: [linear, convex, concave, disconnected, asymmetric, manyknee]
+replications: 12
+utilities_per_family: 200
+dirichlet_alphas: [0.2, 1.0, 5.0]      # cycled across replications
+families: [linear, sparse_linear, chebyshev, aug_asf, lp_compromise, ces, owa, choquet, satisfice, group_regret]
+methods: [TOPSIS, CP, VIKOR, Knee, HV, DistIdeal, RW, ASF, SMAA, MMR, ChebMMR, LUR]
+theta: 0.6
+tail_q: 0.90
+noninferiority_margin: 0.01
+redundancy:
+  latent: [3, 5, 8]
+  structures: [[1,1,1], [5,1,1], [10,5,1], [8,8,8]]
+  correlations: [1.0, 0.9, 0.7]
+  replications: 15
+gates:
+  dominated_injection: [0.0, 1.0, 5.0, 10.0]
+  affine_tests: 3000
+  nadir_errors: [0.0, 0.01, 0.05, 0.1, 0.2, 0.5]
+stochastic:
+  train_scenarios: 50
+  test_scenarios: 3000
+  alphas: [0.5, 0.8, 0.95]
+multistakeholder:
+  stakeholders: [3, 5, 10, 20]

@@ -1,0 +1,104 @@
+\section{Adaptive, redundancy-aware probe generation}
+\label{sec:probes}
+
+\subsection{The redundancy problem}
+The full coalition family (mean and maximum over every non-trivial subset of
+criteria) has size exponential in $m$. Worse, real criteria are often
+\emph{redundant}: several measured objectives track the same underlying concern
+and are strongly positively correlated. Averaging selection rules implicitly
+\emph{over-weight} such a group---it is counted once per member---biasing the
+recommendation. We need a probe family that (i) is small, (ii) stays monotone,
+and (iii) is less sensitive to redundancy than averaging aggregation.
+
+\subsection{Correlation clustering}
+We group \emph{redundant} criteria by single-linkage connected components of the
+graph whose edges join pairs with Pearson correlation $\Corr(f_i,f_j)\ge\theta$.
+\emph{Redundancy is positive correlation:} two criteria that rise and fall
+together carry duplicate information, whereas negatively correlated criteria are
+genuine trade-offs and must remain separate---hence we threshold the signed
+correlation, not its absolute value. This yields clusters $C_1,\dots,C_c$.
+
+\subsection{The adaptive probe family}
+LUR always includes the canonical anchors---the $m$ singletons, the grand mean,
+and the grand maximum---and adds one mean and one maximum probe \emph{per cluster}
+of size $>1$:
+\begin{equation}
+\Q=\{q_i\}_{i=1}^m\;\cup\;\{q_\mu,q_{\max}\}\;\cup\;
+\bigcup_{|C_k|>1}\{q_{C_k,\mathrm{mean}},\,q_{C_k,\max}\}.
+\end{equation}
+A redundant group thus contributes \emph{one} aggregate (cluster) question rather
+than a separate aggregate per member, so the family does not amplify a
+correlated group the way an averaging aggregate does, while the count stays
+$O(m+c)$---linear, not exponential. We stress that this \emph{reduces}, but does
+not eliminate, redundancy sensitivity: the singleton probes for the group's
+members remain in $\Q$ (they are needed for separation, Theorem~\ref{thm:pareto}),
+so a redundant group can still influence lower-order lexicographic tie-breaking.
+The claim is therefore empirical---less redundancy bias than averaging methods on
+the tested benchmarks (\S\ref{sec:exp})---not a duplication-invariance theorem.
+All probes are non-negative-weighted sums or maxima, hence monotone, so
+Pareto compatibility (Theorem~\ref{thm:pareto}) is preserved.
+
+\begin{theorem}[Non-negative-probe Pareto compatibility]
+\label{thm:nonneg}
+If every probe in $\Q$ is a non-negative-weighted sum or a maximum of the
+normalised criteria, then LUR is Pareto compatible.
+\end{theorem}
+
+\subsection{A perturbation bound (not a ranking guarantee)}
+We state the reduction effect as a regret-value perturbation lemma with explicit
+constants. We are deliberately modest: it bounds the change in individual
+disappointments, \emph{not} the change in the LUR ranking or winner, and it
+depends on the normalisation floor $\varepsilon$, which is decision-critical.
+
+\begin{lemma}[Disappointment perturbation]
+\label{thm:approx}
+Suppose for a full-family probe $q$ there is a reduced-family probe $q'$ with
+$\sup_r|q(r)-q'(r)|\le\eta$ (hence also $|q^\star-q'^\star|\le\eta$ and
+$|q^{\mathrm w}-q'^{\mathrm w}|\le\eta$), and let the normalisation ranges satisfy
+$q^{\mathrm w}-q^\star,\,q'^{\mathrm w}-q'^\star\ge\beta>0$. Then for every $x$
+\[
+|\reg_q(x)-\reg_{q'}(x)|\;\le\;\frac{3\eta}{\beta},
+\]
+with the floor $\beta\ge\varepsilon$ in the worst case. The bound is vacuous when
+$\beta$ is of order $\eta$, and informative only when the probe's attainable
+range is bounded away from zero---a regime the analyst can check directly.
+\end{lemma}
+
+Whether the reduced family admits such an $\eta$-close $q'$ for every full-family
+probe is \emph{not} established by correlation clustering in general; we therefore
+present Lemma~\ref{thm:approx} as a sensitivity statement and rely on the
+empirical redundancy study (\S\ref{sec:exp}) for evidence that clustering retains
+decision quality.
+
+\subsection{Empirical reduction}
+Table~\ref{tab:reduction} reports the realised reduction on concave instances.
+The full family here is $\{q_{\mathrm{mean},S},q_{\max,S}:\emptyset\neq
+S\subseteq\{1,\dots,m\}\}$, of size $2(2^m-1)-m$ (mean and max coincide on
+singletons); the adaptive family is linear in $m$, giving a nearly four-thousand
+-fold reduction by $m=15$ with, as \S\ref{sec:exp} shows, little loss of decision
+quality.
+
+\begin{table}[t]
+\centering\small
+\caption{Probe-family size: full coalition family ($2(2^m-1)-m$ probes) vs.\
+adaptive correlation-clustering family (concave instances, $N=400$).}
+\label{tab:reduction}
+\begin{tabular}{rrrr}
+\toprule
+$m$ & full coalitions & adaptive probes & reduction\\
+\midrule
+3  & 11     & 5  & 2.2$\times$\\
+5  & 57     & 7  & 8.1$\times$\\
+8  & 502    & 10 & 50.2$\times$\\
+10 & 2{,}036 & 12 & 169.7$\times$\\
+15 & 65{,}519 & 17 & 3{,}854.1$\times$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Greedy probe selection (optional)}
+When even the adaptive family is larger than needed, a greedy set-cover heuristic
+selects a minimal subfamily distinguishing all dominant pairs; for the
+max-coverage variant it attains a $(1-1/e)$ guarantee and for full coverage a
+$1+\ln d$ guarantee \citep{nemhauser1978,chvatal1979}. We do not use it in the
+experiments, which already run on the compact adaptive family.

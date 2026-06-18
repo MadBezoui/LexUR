@@ -1,0 +1,98 @@
+\section{Introduction}
+\label{sec:intro}
+
+\subsection{The Pareto front as a safety filter, not a decision object}
+Since the work of Pareto, efficiency has been the cornerstone of multicriteria
+analysis: an alternative is Pareto efficient if no criterion can be improved
+without worsening another. This is a logically impeccable \emph{safety
+property}---it removes alternatives that are dominated and therefore indefensible.
+It is, however, \emph{decisionally incomplete}. For $m$ conflicting criteria the
+efficient set is typically large or infinite, and the decision maker (DM) is left
+with a cloud of efficient alternatives and no principled rule for selecting one.
+
+Confronted with this gap, practice resorts to \emph{post hoc} selection devices,
+each of which reintroduces the very preference information the DM was unable to
+supply: a weighted sum requires weights and cannot reach non-convex parts of the
+front \citep{miettinen1999}; TOPSIS \citep{hwang1981} requires a distance metric
+and weights; compromise programming \citep{zeleny1982} requires a metric exponent
+and weights; knee-point rules \citep{branke2008} are scale sensitive; outranking
+methods such as ELECTRE \citep{roy1991} and PROMETHEE \citep{brans2016} require
+concordance/discordance thresholds; and hypervolume-based selection
+\citep{zitzler1999} favours extremes and is costly. Every one of these asks the
+DM to make \emph{further} choices \emph{after} optimisation---choices often no
+easier than the original problem.
+
+\subsection{From a front to a certificate}
+We argue that, for the purpose of \emph{choosing}, the efficient set is the wrong
+final object. The right object is a \emph{regret certificate}: a vector of
+normalised disappointments over the rational questions the DM might reasonably
+ask about the criteria, sorted from worst to best. Rather than asking ``which
+alternatives are efficient?'' we ask
+\begin{quote}
+\emph{which alternative is least fragile across all declared rational
+interpretations of the criteria?}
+\end{quote}
+This turns the output of the analysis from a \emph{set} into a \emph{certified
+recommendation}: a single alternative (or small indifference class) accompanied
+by an explanation of which questions are most disappointed and by how much.
+
+\subsection{The Leximax Universal-Regret core}
+We formalise this as the \textbf{Leximax Universal-Regret (LUR) core}. Given a
+feasible set and a \emph{declared} class $\Q$ of admissible monotone probes
+(scalar ``rational questions'' over the normalised criteria), LUR ranks
+alternatives by the lexicographically sorted vector of their normalised regrets
+across $\Q$, and returns the lexicographic minimiser together with its
+certificate. The construction rests on three principles: (i) \emph{declared
+admissibility}---$\Q$ is part of the problem statement, not hidden inside a
+scalarisation; (ii) \emph{Pareto compatibility}---under monotone probes a
+dominated alternative is never preferred to its dominator; and (iii) \emph{direct
+computability}---the recommendation is obtained by a sequence of minimax-regret
+problems, without enumerating the efficient set.
+
+\subsection{Positioning and contribution}
+LUR belongs to \emph{robust} multicriteria decision analysis. Its closest
+relatives are stochastic multicriteria acceptability analysis (SMAA)
+\citep{lahdelma1998,tervonen2007}, which integrates acceptability over a
+preference distribution; robust ordinal regression
+\citep{greco2008,figueira2009}, which reasons over the set of value functions
+compatible with elicited holistic judgements; and preference robust optimisation
+\citep{armbruster2015,hu2015}, which optimises against an ambiguity set of utility
+functions. LUR differs from all three in object and output: it computes the
+\emph{lexicographic minimax of normalised regret} over an explicit, monotone
+probe family and returns an interpretable certificate; it requires no preference
+distribution, no elicited judgements, and no single scalarisation. We show that
+achievement scalarisation \citep{wierzbicki1980}, the weighted sum, and the
+lexicographic maximin \citep{ogryczak1997} are recovered as special cases of the
+probe family, so LUR is a \emph{unifying} as well as a new rule.
+
+Our contributions are:
+\begin{enumerate}
+\item[\textbf{C1}] \textbf{The LUR order:} a complete, Pareto-respecting preorder
+on feasible alternatives based on lexicographic minimax regret over a declared
+class of monotone probes (\S\ref{sec:core}).
+\item[\textbf{C2}] \textbf{Guarantees:} existence and completeness, Pareto
+compatibility \emph{under an explicit separation condition} (it is enough that
+$\Q$ contains the singleton probes), dominated-solution exclusion, and stability
+of the tolerance-based leximax rule under bounded regret perturbations, with full
+proofs (\S\ref{sec:core}, Appendix~A).
+\item[\textbf{C3}] \textbf{Direct computation:} a sequential and a single-stage
+minimax-regret formulation that avoids efficient-set enumeration, with a smoothed
+variant for continuous feasible sets (\S\ref{sec:direct}).
+\item[\textbf{C4}] \textbf{Adaptive redundancy-aware probes:} a
+correlation-clustering construction that keeps the probe count linear in $m$ and
+the number of clusters, with a perturbation bound; empirically it reduces the
+redundancy sensitivity that distorts averaging methods (\S\ref{sec:probes}).
+\item[\textbf{C5}] \textbf{Extensions:} confidence-aware stochastic certificates
+and a Rawlsian multi-stakeholder variant (\S\ref{sec:ext}).
+\item[\textbf{C6}] \textbf{Held-out evaluation:} a replicated study against
+preference models \emph{not} used during selection, plus a stochastic smart-grid
+dispatch case, with non-parametric significance testing and a full reproducibility
+package (\S\ref{sec:exp}).
+\end{enumerate}
+
+The remainder of the paper reviews related work (\S\ref{sec:related}), develops
+the core and its guarantees (\S\ref{sec:core}), the direct formulation
+(\S\ref{sec:direct}), the adaptive probes (\S\ref{sec:probes}) and the extensions
+(\S\ref{sec:ext}), reports the computational study (\S\ref{sec:exp}), discusses
+limitations (\S\ref{sec:disc}) and concludes (\S\ref{sec:conc}). All proofs are
+in Appendix~A.

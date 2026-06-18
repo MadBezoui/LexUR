@@ -1,0 +1,48 @@
+\section{Extensions: stochastic and multi-stakeholder decision making}
+\label{sec:ext}
+
+\subsection{Stochastic regret certificates}
+When criteria are noisy, model $f_i(x)\sim P_i(x)$. Each probe value is then a
+random variable; for non-linear probes (e.g.\ $q_{\max}$) its mean $\mu_q(x)$ and
+standard deviation $\sigma_q(x)$ are \emph{not} simple functions of the criterion
+means and variances and---because criteria may be correlated---we estimate them
+by Monte-Carlo from joint samples rather than from marginal moments. The
+normalisation anchors $q^\star,q^{\mathrm w}$ are taken on the estimated means. We
+define the \emph{$\alpha$-confidence regret}
+\begin{equation}
+\reg_q^\alpha(x)=\frac{\mu_q(x)+z_\alpha\,\sigma_q(x)-q^\star}{q^{\mathrm w}-
+q^\star+\varepsilon},
+\end{equation}
+with $z_\alpha$ the standard-normal quantile, penalising both expected
+disappointment and its uncertainty, and apply the tolerance-based leximax order
+to $(\reg_{q_1}^\alpha,\dots,\reg_{q_K}^\alpha)$. We present this as a practical
+risk-adjusted rule; the asymptotic statement below uses the plug-in case
+$\alpha{=}\tfrac12$ and the tolerance rule of \S\ref{sec:core}.
+
+\begin{proposition}[Plug-in consistency]
+\label{thm:stoch}
+Let probe means be estimated from $n$ i.i.d.\ joint observations, with Lipschitz
+probes and finite second moments, and use the $\tau$-tolerance leximax order with
+$\tau>0$ fixed. Under the margin condition of Theorem~\ref{thm:stab}, the plug-in
+stochastic-LUR winner equals the true LUR winner with probability tending to one
+as $n\to\infty$.
+\end{proposition}
+\S\ref{sec:exp} gives an empirical confirmation: the recovery rate of the true
+winner rises monotonically with the number of observations.
+
+\subsection{Multi-stakeholder (Rawlsian) variant}
+Let $\mathcal S=\{1,\dots,S\}$ index stakeholders, each with importance weights
+$w_s\in\Delta^m$ inducing a stakeholder-specific disappointment $\reg_q^s(x)$.
+The \emph{Rawlsian LUR} applies the leximax order to the worst-stakeholder
+disappointments,
+\begin{equation}
+x^{\mathrm{LUR\text{-}R}}\in\argmin_{x}{}^{\mathrm{lex}}\;
+\mathrm{sort}^{\downarrow}\!\Big(\max_{s}\reg_{q_1}^s(x),\dots,
+\max_{s}\reg_{q_K}^s(x)\Big),
+\end{equation}
+optionally with a proportional-fairness cap $\reg_q^s(x)\le(1+\beta)\rho_1$ for
+all $s,q$. It satisfies \emph{anonymity} (invariance to relabelling
+stakeholders), \emph{monotonicity} (it does not worsen if every stakeholder's
+regret falls), and \emph{worst-stakeholder protection} (no stakeholder exceeds
+$(1+\beta)$ times the minimum worst regret). We claim these properties, not
+uniqueness or independence of irrelevant alternatives.

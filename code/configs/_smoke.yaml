@@ -1,0 +1,80 @@
+candidate_sizes:
+- 300
+criteria:
+- 3
+- 5
+dirichlet_alphas:
+- 0.2
+- 1.0
+- 5.0
+families:
+- linear
+- sparse_linear
+- chebyshev
+- aug_asf
+- lp_compromise
+- ces
+- owa
+- choquet
+- satisfice
+- group_regret
+gates:
+  affine_tests: 200
+  dominated_injection:
+  - 0.0
+  - 1.0
+  - 5.0
+  - 10.0
+  nadir_errors:
+  - 0.0
+  - 0.01
+  - 0.05
+  - 0.1
+  - 0.2
+  - 0.5
+geometries:
+- concave
+- linear
+methods:
+- TOPSIS
+- CP
+- VIKOR
+- Knee
+- HV
+- DistIdeal
+- RW
+- ASF
+- SMAA
+- MMR
+- ChebMMR
+- LUR
+multistakeholder:
+  stakeholders:
+  - 3
+  - 5
+  - 10
+  - 20
+noninferiority_margin: 0.01
+redundancy:
+  correlations:
+  - 1.0
+  - 0.9
+  - 0.7
+  latent:
+  - 3
+  replications: 2
+  structures:
+  - - 2
+    - 1
+replications: 2
+seed: 20260618
+stochastic:
+  alphas:
+  - 0.5
+  - 0.8
+  - 0.95
+  test_scenarios: 300
+  train_scenarios: 50
+tail_q: 0.9
+theta: 0.6
+utilities_per_family: 40
