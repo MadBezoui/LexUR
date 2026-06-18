@@ -353,6 +353,7 @@ def main():
                     help="Monte-Carlo weight count for randomized methods")
     ap.add_argument("--geoms", default=None,
                     help="comma list of geometries to restrict the benchmark chunk")
+    ap.add_argument("--new-run-id", action="store_true", help="Force overwrite of manifest if config hashes differ")
     args = ap.parse_args()
     if args.mcw:
         _MCW[0] = args.mcw
@@ -364,6 +365,17 @@ def main():
     if args.utils:
         cfg["utilities_per_family"] = args.utils
     os.makedirs(TAB, exist_ok=True); os.makedirs(FIG, exist_ok=True)
+    
+    from lur.provenance import build_manifest
+    manifest_path = os.path.join(ROOT, "run_manifest.json")
+    cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.config)
+    manifest = build_manifest(cfg_path, seed=cfg.get("seed", 42))
+    if os.path.exists(manifest_path):
+        existing = _load_json(manifest_path)
+        if existing.get("config_sha256") != manifest["config_sha256"] and not args.new_run_id:
+            sys.exit("Error: config_sha256 mismatch with existing run_manifest.json. Use --new-run-id to overwrite.")
+    _save_json(manifest_path, manifest)
+
     # 'all' should not silently chunk-skip finalisation
     todo = [s for s in STAGES if s != "bfinalize"] if args.stage == "all" else [args.stage]
     for s in todo:
