@@ -54,10 +54,15 @@ direct LP/MILP computation, stochastic and multi-stakeholder validation).
 
 ```bash
 cd code
-pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+
+# run tests
+make test
 
 # fast smoke test (reps=5, ~20 s)
-python run_all.py --quick
+make smoke
 
 # full study (reps=30); run stage-by-stage (each stage persists to ../results)
 python run_all.py --stage benchmark     # main comparison + stats + CD diagram
