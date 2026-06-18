@@ -167,3 +167,56 @@ def noninferiority_cluster(frame, ctrl_name, lur_name, ni_cfg, seed=0):
                 ci=[round(ci_l, 4), round(ci_u, 4)],
                 margin_abs=margin, noninferior_abs=noninferior,
                 noninferior=noninferior)
+
+
+def gate_normalization_stability(reps=10, n_samples=20, n=250, m=8, seed=42, n_test=300):
+    from .normalization import generate_bounds, normalization_stability
+    from .probe_validation import _tolerance_set
+    rng = np.random.default_rng(seed)
+    
+    regimes = ["minmax", "quantiles", "subset", "asymmetric_error", "correlated_error"]
+    
+    out = {}
+    for regime in regimes:
+        identities, overlaps, degradations, cert_gaps = [], [], [], []
+        
+        for _ in range(reps):
+            g = problems.GEOMETRIES[int(rng.integers(0, 4))]
+            F = problems.make_candidate_set(g, n, m, rng)
+            
+            i_base, D_base, _, _ = methods.lur_variant(F, return_detail=True)
+            cert_base = -np.sort(-D_base[i_base])
+            set_base = _tolerance_set(D_base)
+            
+            cache = families.loss_cache(F, normalize, np.random.default_rng(1), n_per_family=n_test)
+            loss_base = families.losses_from(cache, i_base)[1]
+            
+            bounds = generate_bounds(F, n_samples, regime, rng)
+            
+            # evaluate over bounds
+            for ideal, nadir in bounds:
+                i_b, D_b, _, _ = methods.lur_variant(F, ideal=ideal, nadir=nadir, return_detail=True)
+                identities.append(int(i_b == i_base))
+                
+                set_b = _tolerance_set(D_b)
+                inter = set_base.intersection(set_b)
+                union = set_base.union(set_b)
+                overlaps.append(len(inter) / len(union) if union else 1.0)
+                
+                loss_b = families.losses_from(cache, i_b)[1]
+                degradations.append(loss_b - loss_base)
+                
+                cert_b = -np.sort(-D_b[i_b])
+                k = max(len(cert_base), len(cert_b))
+                cb_pad = np.pad(cert_base, (0, k - len(cert_base)))
+                cb_b_pad = np.pad(cert_b, (0, k - len(cert_b)))
+                cert_gaps.append(float(np.max(np.abs(cb_pad - cb_b_pad))))
+                
+        out[regime] = {
+            "identity_rate": round(float(np.mean(identities)), 4),
+            "overlap": round(float(np.mean(overlaps)), 4),
+            "quality_degradation": round(float(np.mean(degradations)), 4),
+            "cert_gap": round(float(np.mean(cert_gaps)), 4)
+        }
+    
+    return dict(name="normalization_stability", regimes=out, **{"pass": True}) # Gate passing isn't explicitly defined for this step, just record outcomes

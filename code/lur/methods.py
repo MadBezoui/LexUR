@@ -292,7 +292,7 @@ def build_random_probes(F, k, rng):
     return probes, labels
 
 
-def lur_variant(F, variant="adaptive", rng=None, theta=0.6, return_detail=False, **kw):
+def lur_variant(F, variant="adaptive", rng=None, theta=0.6, return_detail=False, ideal=None, nadir=None, **kw):
     """LUR probe-design controls used in the ablation/probe study."""
     rng = np.random.default_rng(0) if rng is None else rng
     if variant == "adaptive":
@@ -313,7 +313,7 @@ def lur_variant(F, variant="adaptive", rng=None, theta=0.6, return_detail=False,
     else:
         raise ValueError(variant)
     
-    D = disappointment_matrix(F, probes)
+    D = disappointment_matrix(F, probes, ideal=ideal, nadir=nadir)
     idx = leximax_argmin(D)
     if return_detail:
         return idx, D, labels, probes

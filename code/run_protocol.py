@@ -339,6 +339,8 @@ def stage_gates(cfg):
     res["dominated"] = gates.gate_dominated_injection(g["dominated_injection"])
     res["affine"] = gates.gate_affine_invariance(tests=g["affine_tests"])
     res["nadir"] = gates.gate_nadir_error(g["nadir_errors"])
+    res["normalization"] = gates.gate_normalization_stability()
+
     _save_json(f"{TAB}/gates_invariance.json", res)
     print(f"  dominated pass={res['dominated']['pass']} "
           f"affine={res['affine']['identical_rate']} nadir_pass={res['nadir']['pass']}")
