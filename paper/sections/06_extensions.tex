@@ -1,48 +1,34 @@
-\section{Extensions: stochastic and multi-stakeholder decision making}
+\section{Extensions: stochastic and multi-stakeholder variants}
 \label{sec:ext}
 
 \subsection{Stochastic regret certificates}
-When criteria are noisy, model $f_i(x)\sim P_i(x)$. Each probe value is then a
-random variable; for non-linear probes (e.g.\ $q_{\max}$) its mean $\mu_q(x)$ and
-standard deviation $\sigma_q(x)$ are \emph{not} simple functions of the criterion
-means and variances and---because criteria may be correlated---we estimate them
-by Monte-Carlo from joint samples rather than from marginal moments. The
-normalisation anchors $q^\star,q^{\mathrm w}$ are taken on the estimated means. We
+When criteria are noisy, model $f_i(x)$ as drawn from a joint distribution $P(x)$. Each probe value is then a
+random variable; for non-linear probes (e.g.\ $q_{\max}$) its mean $\mu_q(x)$ is
+\emph{not} a simple function of the criterion
+marginal means. We estimate the robust stochastic probe value by its finite sample average over $S$ scenarios $\omega^{(1)},\dots,\omega^{(S)}$:
+\begin{equation}
+\hat\mu_q(x) = \frac{1}{S}\sum_{s=1}^S q(r(x, \omega^{(s)})).
+\end{equation}
+The normalisation anchors $q^\star,q^{\mathrm w}$ are taken on these estimated means. We
 define the \emph{$\alpha$-confidence regret}
 \begin{equation}
-\reg_q^\alpha(x)=\frac{\mu_q(x)+z_\alpha\,\sigma_q(x)-q^\star}{q^{\mathrm w}-
+\reg_q^\alpha(x)=\frac{\hat\mu_q(x)+z_\alpha\,\hat\sigma_q(x)-q^\star}{q^{\mathrm w}-
 q^\star+\varepsilon},
 \end{equation}
 with $z_\alpha$ the standard-normal quantile, penalising both expected
-disappointment and its uncertainty, and apply the tolerance-based leximax order
+disappointment and its sample uncertainty $\hat\sigma_q(x)$, and apply the tolerance-based leximax order
 to $(\reg_{q_1}^\alpha,\dots,\reg_{q_K}^\alpha)$. We present this as a practical
-risk-adjusted rule; the asymptotic statement below uses the plug-in case
-$\alpha{=}\tfrac12$ and the tolerance rule of \S\ref{sec:core}.
+risk-adjusted rule; we note that sample-average probes preserve exact Pareto compatibility.
 
-\begin{proposition}[Plug-in consistency]
+\begin{proposition}[Sample-average stochastic consistency]
 \label{thm:stoch}
-Let probe means be estimated from $n$ i.i.d.\ joint observations, with Lipschitz
-probes and finite second moments, and use the $\tau$-tolerance leximax order with
-$\tau>0$ fixed. Under the margin condition of Theorem~\ref{thm:stab}, the plug-in
-stochastic-LUR winner equals the true LUR winner with probability tending to one
-as $n\to\infty$.
+For any finite sample size $S$, if $x$ strictly dominates $y$ under all scenarios $\omega^{(s)}$, then $x \prec_{\mathrm{LUR}} y$ under the sample-average probe regrets.
 \end{proposition}
-\S\ref{sec:exp} gives an empirical confirmation: the recovery rate of the true
-winner rises monotonically with the number of observations.
+\S\ref{sec:exp} gives an empirical confirmation.
 
-\subsection{Multi-stakeholder (Rawlsian) variant}
-Let $\mathcal S=\{1,\dots,S\}$ index stakeholders, each with importance weights
-$w_s\in\Delta^m$ inducing a stakeholder-specific disappointment $\reg_q^s(x)$.
-The \emph{Rawlsian LUR} applies the leximax order to the worst-stakeholder
-disappointments,
-\begin{equation}
-x^{\mathrm{LUR\text{-}R}}\in\argmin_{x}{}^{\mathrm{lex}}\;
-\mathrm{sort}^{\downarrow}\!\Big(\max_{s}\reg_{q_1}^s(x),\dots,
-\max_{s}\reg_{q_K}^s(x)\Big),
-\end{equation}
-optionally with a proportional-fairness cap $\reg_q^s(x)\le(1+\beta)\rho_1$ for
-all $s,q$. It satisfies \emph{anonymity} (invariance to relabelling
-stakeholders), \emph{monotonicity} (it does not worsen if every stakeholder's
-regret falls), and \emph{worst-stakeholder protection} (no stakeholder exceeds
-$(1+\beta)$ times the minimum worst regret). We claim these properties, not
-uniqueness or independence of irrelevant alternatives.
+\subsection{Multi-stakeholder (Rawlsian) exploratory variant}
+Let $\mathcal U=\{1,\dots,U\}$ index stakeholders, each with importance weights
+$w_u\in\Delta^m$ inducing a stakeholder-specific disappointment $\reg_q^u(x)$.
+An exploratory \emph{Rawlsian LUR} applies the leximax order to the worst-stakeholder
+disappointments, $\max_{u}\reg_{q}^u(x)$.
+It maintains natural fairness properties such as anonymity and worst-stakeholder protection. A full treatment of this extension is beyond the scope of this paper, but we include it in our empirical evaluation to demonstrate the flexibility of the regret-certificate framework.

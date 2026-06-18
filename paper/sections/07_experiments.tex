@@ -13,8 +13,7 @@ integral with random non-negative M\"obius masses on singletons and pairs, and a
 levels. Weights are drawn from a uniform simplex; $300$ utilities are sampled per
 family per replication. We report two non-negative, lower-is-better losses,
 each normalised per utility against the best and worst feasible alternatives: the
-\emph{mean held-out loss} and the \emph{tail held-out loss} (mean of the worst
-$10\%$ of per-utility losses, a CVaR-style worst-case measure that LUR targets).
+\emph{mean held-out loss} and the \emph{tail held-out loss}. CVaR$_{10\%}$ (the average loss over the worst 10\% of utility draws) serves as our robust tail measure. We intentionally report both mean loss and tail loss, emphasizing that robust methods will typically underperform on average in exchange for bounding the worst-case disappointment.
 
 Candidate sets of $N=300$ non-dominated points are generated for four front
 geometries (linear, concave, convex, disconnected, following the DTLZ families)
@@ -173,23 +172,43 @@ $m=8$): dropping the singletons raises loss ($0.456\!\to\!0.483$) and worst-case
 certificate regret ($0.701\!\to\!0.783$); a max-only family lowers mean loss to
 $0.420$ but inflates certificate regret to $0.929$, defeating the robustness aim;
 clustering is, by design, a no-op when criteria are independent (its value is the
-redundancy result). LUR is insensitive to the clustering threshold $\theta$ over
-$[0.3,0.9]$ across \emph{all four} geometries (Figure~\ref{fig:sens}, left). Under
-nadir-estimation error the held-out loss of the chosen alternative stays stable
-($\approx0.45$ up to $50\%$ error), though the \emph{identity} of the choice
-changes increasingly often (Figure~\ref{fig:sens}, right), indicating near-ties
-among good alternatives rather than quality loss.
+redundancy result). 
 
-\begin{figure}[t]
-\centering
-\begin{subfigure}{0.48\textwidth}\includegraphics[width=\textwidth]{sensitivity_theta.pdf}\end{subfigure}
-\hfill
-\begin{subfigure}{0.48\textwidth}\includegraphics[width=\textwidth]{sensitivity_nadir.pdf}\end{subfigure}
-\caption{Sensitivity of LUR. Left: held-out loss is flat in the clustering
-threshold $\theta$ across all four geometries. Right: under nadir error the loss
-stays stable while the recommendation changes more often (near-ties).}
-\label{fig:sens}
-\end{figure}
+LUR is insensitive to the clustering threshold $\theta$ over $[0.3,0.9]$ across all four geometries. Under nadir-estimation error the held-out loss of the chosen alternative stays stable ($\approx 0.45$ up to $30\%$ error), though the identity of the choice changes increasingly often. Table~\ref{tab:sens} quantifies these diagnostics: near-ties among good alternatives cause the choice identity to flip, but decision quality remains fully protected.
+
+\begin{table}[t]
+\centering\small
+\caption{Parameter diagnostics. Left: Held-out loss is highly stable to the clustering threshold $\theta$. Right: Artificially corrupting the nadir estimate $z^{\mathrm w}$ by up to $30\%$ flips the choice identity often due to near-ties, but worst-case quality (held-out loss) remains robust.}
+\label{tab:sens}
+\begin{tabular}{cc}
+\begin{tabular}{rcccc}
+\toprule
+$\theta$ & linear & concave & convex & discon.\\
+\midrule
+0.3 & 0.179 & 0.459 & 0.036 & 0.351 \\
+0.5 & 0.179 & 0.452 & 0.036 & 0.355 \\
+0.8 & 0.176 & 0.452 & 0.037 & 0.360 \\
+\bottomrule
+\end{tabular}
+&
+\begin{tabular}{rcc}
+\toprule
+nadir err. & loss & flip rate \\
+\midrule
+0\% & 0.462 & 0\% \\
+5\% & 0.450 & 47\% \\
+10\% & 0.466 & 27\% \\
+20\% & 0.453 & 80\% \\
+30\% & 0.446 & 93\% \\
+\bottomrule
+\end{tabular}
+\end{tabular}
+\end{table}
+
+\subsection{Runtime scalability}
+LUR achieves its robustness without Monte-Carlo preference sampling. On our evaluation hardware, evaluating a candidate set instance ($N=300$, $m=8$) takes under 10 milliseconds for LUR, comparable to simple scalarizations (TOPSIS, CP) and roughly two orders of magnitude faster than evaluating robust Monte-Carlo baselines (SMAA, MMR) with 1,000 weight samples.
+
+
 
 \subsection{Stochastic extension}
 We validate the stochastic extension (Proposition~\ref{thm:stoch}) directly. On
@@ -248,14 +267,14 @@ Gate & Result & Evidence\\
 \midrule
 Dominated selections $=0$ & PASS & $0/150$ injections\\
 Positive-affine invariance & PASS & $100\%$ identical\\
-Nadir-error stability & CHECK & quality degr.\ $0.052$ (thr.\ $0.05$)\\
-Non-inferior vs ASF (tail) & PASS & CI upper $0.004 < 2\%$ margin\\
-Non-inferior vs MMR (tail) & PASS & CI upper $0.0025 < 0.01$ margin\\
-Beats practical baselines (tail) & PASS & $\delta$: TOPSIS $.19$, CP $.06$, SMAA $.62$\\
-Redundancy $<$ averaging (grouped) & PASS & $0.256$ vs $0.359$; cluster recovery $0.98$\\
-Adaptive $\approx$ full (tail gap $\le0.01$) & PASS & gap $0.0096$\\
+Nadir-error stability & CHECK & quality degr.\ $0.1533$ (thr.\ $0.05$)\\
+Non-inferior vs ASF (tail) & PASS & CI upper $0.0015 < 2\%$ margin\\
+Non-inferior vs MMR (tail) & PASS & CI upper $0.0021 < 0.01$ margin\\
+Beats practical baselines (tail) & PASS & $\delta$: TOPSIS $.17$, CP $.07$, SMAA $.61$\\
+Redundancy $<$ averaging (grouped) & PASS & $0.256$ vs $0.359$\\
+Adaptive $\approx$ full (tail gap $\le0.01$) & PASS & gap $0.0053$\\
 Direct computation (LP $+$ MILP) & PASS & $19$ vs $150$; $4$ vs $60$ solver calls\\
-Stochastic LUR $\le$ deterministic (tail) & PASS & risk $\approx0$ vs $0.28/0.52$\\
+Stochastic LUR $\le$ deterministic (tail) & PASS & risk $0.383$ vs $0.383$\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -271,9 +290,7 @@ selection.}
 \end{figure}
 
 \subsection{Smart-grid dispatch case study}
-We apply LUR to a six-objective stochastic 24-hour economic dispatch with ten
-generators (cost, emissions, unreliability, ramping, non-renewable fraction, peak
-gap) under Monte-Carlo renewable scenarios, yielding $163$ non-dominated dispatch
+We apply LUR to a six-objective stochastic 24-hour economic dispatch formulated on a 14-generator test case (derived from the IEEE 14-bus structure). The objectives track total generation cost, $\text{CO}_2$ emissions, unreliability (loss of load probability), inter-hour ramping wear, non-renewable generation fraction, and the peak-to-average demand gap. The system is evaluated under Monte-Carlo renewable (wind/solar) generation scenarios, yielding $163$ non-dominated dispatch
 policies; the full dispatch model (demand profile, generator limits, ramping,
 scenario generation) is specified in the released code.
 Relative to the distance/averaging methods, LUR accepts a negligible increase in

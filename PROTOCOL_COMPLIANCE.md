@@ -54,8 +54,8 @@ methods.
 
 **Non-inferiority (paired, bootstrap 95% CI; pre-registered margin 0.01 abs OR 2%
 relative):**
-- vs ASF: mean diff 0.0026, CI [0.0011, 0.004] → **non-inferior at 2%**
-- vs MMR: mean diff 0.0008, CI [-0.0009, 0.0025] → **non-inferior at 0.01 margin**
+- vs ASF: mean diff 0.0007, CI [-0.0003, 0.0015] → **non-inferior at 2%**
+- vs MMR: mean diff 0.0012, CI [0.0002, 0.0021] → **non-inferior at 0.01 margin**
 
 Honest reading: LUR is **practically equivalent** to the strongest robust
 scalarisations (negligible effect size) and statistically tied on ranks, but does
@@ -67,16 +67,16 @@ not strictly dominate them — consistent with the paper's positioning.
 |---|---|---|
 | Dominated selections = 0 | **PASS** | 0/150 violations |
 | Positive-affine invariance | **PASS** | identical rate 1.000 |
-| Nadir-error stability | CHECK | max quality degradation 0.052 (threshold 0.05) — borderline |
-| Tail non-inferiority vs ASF | **PASS** | diff 0.0026, CI upper 0.004 < 2% margin |
-| Tail non-inferiority vs MMR | **PASS** | diff 0.0008, CI upper 0.0025 < margin 0.01 |
-| Better than practical baselines | **PASS** | δ: TOPSIS +0.19, CP +0.06, Knee +0.26, RW +0.61, SMAA +0.62 |
+| Nadir-error stability | CHECK | max quality degradation 0.1533 (threshold 0.05) |
+| Tail non-inferiority vs ASF | **PASS** | diff 0.0007, CI upper 0.0015 < 2% margin |
+| Tail non-inferiority vs MMR | **PASS** | diff 0.0012, CI upper 0.0021 < margin 0.01 |
+| Better than practical baselines | **PASS** | δ: TOPSIS +0.17, CP +0.07, Knee +0.26, RW +0.60, SMAA +0.61 |
 | Redundancy < averaging (grouped) | **PASS** | LUR 0.256 vs averaging 0.359 |
-| Adaptive ≈ full (tail gap ≤ 0.01) | **PASS** | gap +0.0096 |
+| Adaptive ≈ full (tail gap ≤ 0.01) | **PASS** | gap +0.0053 |
 | Direct computation (LP + MILP) | **PASS** | LP: 19 vs 150 solver calls; MILP: 4 vs 60 calls |
-| Stochastic LUR ≤ deterministic (tail) | **PASS** | best-α 0.526 vs det 0.526; risk 0.000 vs TOPSIS 0.276 / SMAA 0.521 |
+| Stochastic LUR ≤ deterministic (tail) | **PASS** | risk 0.383 vs 0.383 |
 
-**9 PASS, 1 borderline CHECK.** At the full `ejor_final` scale, the non-inferiority against MMR and adaptive-vs-full gap tightened completely into firm PASSes, leaving only nadir-error stability (0.052 vs 0.05 margin) as a marginal check.
+**9 PASS, 1 CHECK.** At the full `ejor_final` scale, the non-inferiority against MMR and adaptive-vs-full gap are firm PASSes, leaving only nadir-error stability as a check.
 
 ## 4. Statistical methodology
 

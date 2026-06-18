@@ -78,36 +78,34 @@ draw on the maximin principle of \citet{rawls1971} and the bargaining viewpoint
 of \citet{nash1950}; we claim natural fairness properties (anonymity, monotonicity,
 worst-stakeholder protection), not a uniqueness theorem.
 
-\subsection{Positioning summary}
-Table~\ref{tab:positioning} summarises where LUR sits. It is the only entry that
-requires neither weights, nor thresholds, nor a pre-generated front, returns a
-single Pareto-compatible recommendation, \emph{and} issues an interpretable
-certificate while admitting native stochastic and fairness extensions.
+\subsection{What is new relative to existing regret and robust-MCDA rules}
+\label{sec:novelty}
+
+While LUR shares motivation with several robust approaches, its mathematical object and output differ fundamentally:
+\begin{itemize}
+\item \textbf{Versus minimax regret:} LUR minimises a sorted vector of normalised probe regrets, not a single maximum regret over raw utilities or sampled weights.
+\item \textbf{Versus ASF/Chebyshev:} ASF commits to one scalarising function or one reference structure; LUR evaluates a declared family and certifies binding probes.
+\item \textbf{Versus SMAA:} SMAA integrates over a preference distribution and reports acceptability; LUR does not require a probability distribution and returns a leximax regret certificate.
+\item \textbf{Versus robust ordinal regression (ROR):} ROR reasons over compatible value functions after elicited comparisons; LUR can operate without holistic preference judgements.
+\item \textbf{Versus preference robust optimisation (PRO):} PRO optimises worst-case utility over an ambiguity set; LUR optimises lexicographically sorted normalised disappointments over interpretable monotone probes.
+\item \textbf{Versus ordered weighted aggregation (OWA):} LUR sorts regrets across questions, not criterion values themselves.
+\end{itemize}
+
+The novelty is not minimax regret alone, but lexicographic minimax over normalised disappointments induced by a declared monotone probe family, with an auditable certificate and an adaptive redundancy-aware probe construction.
+
+Table~\ref{tab:positioning} summarises where LUR sits relative to representative MCDA and robust methods.
 
 \begin{table}[t]
-\centering\small
-\caption{Positioning of LUR relative to representative selection and robust-MCDA
-methods. ``No weights'' = requires no single preference weight vector (LUR still
-requires a declared probe family); ``No thresholds'' refers to \emph{preference}
-thresholds---LUR uses a clustering threshold $\theta$, which is not a preference
-parameter; ``No front'' = needs no efficient set generated first, which for LUR
-holds for the direct formulation of \S\ref{sec:direct} (the experiments here use
-candidate sets); ``Certificate'' = returns an interpretable account of the
-recommendation.}
+\centering\scriptsize
+\caption{Comparison of LUR with representative selection and robust-MCDA methods.}
 \label{tab:positioning}
-\begin{tabular}{lcccccc}
+\begin{tabular}{p{1.8cm}p{3.2cm}p{1.5cm}p{1.5cm}p{1.5cm}p{1.6cm}p{3.2cm}}
 \toprule
-Method & No weights & No thresholds & No front & Single rec. & Pareto comp. & Certificate\\
+Method & Main preference / model input & Requires candidate/front? & Single rec.? & Pareto comp. & Explanation / certificate & Main limitation \\
 \midrule
-Weighted sum            & \ding{55} & \ding{51} & \ding{51} & \ding{51} & \ding{51} & \ding{55}\\
-TOPSIS                  & \ding{55} & \ding{51} & \ding{55} & \ding{51} & \ding{51} & \ding{55}\\
-Compromise prog.        & \ding{55} & \ding{55} & \ding{55} & \ding{51} & \ding{51} & \ding{55}\\
-Knee selection          & \ding{51} & \ding{51} & \ding{55} & \ding{55} & \ding{51} & \ding{55}\\
-ELECTRE/PROMETHEE       & \ding{51} & \ding{55} & \ding{55} & \ding{55} & \ding{51} & partial\\
-ASF (ref.\ at ideal)    & \ding{51} & \ding{55} & \ding{55} & \ding{51} & \ding{51} & \ding{55}\\
-SMAA                    & \ding{51} & \ding{51} & \ding{55} & \ding{51} & \ding{51} & partial\\
-Minimax regret (linear) & \ding{51} & \ding{51} & \ding{51} & \ding{51} & cond. & \ding{55}\\
-\textbf{LUR (ours)}     & \ding{51} & \ding{51} & \ding{51} & \ding{51} & \ding{51} & \ding{51}\\
+Weighted sum & Weight vector & No & Yes & Yes ($w>0$) & Low & Cannot recover non-supported points in non-convex fronts \\
+SMAA & Distribution over preferences/weights & Usually & Not inherently (needs rule) & Usually & Acceptability indices & Exploratory; single-choice rule depends on post-processing \\
+\textbf{LUR (ours)} & Declared monotone probe family; normalisation bounds; tolerance $\tau$ & Candidate-set exact & Yes (or small $\tau$-class) & Yes (if separating probes) & Full labelled regret certificate & Sensitive to probe-family and normalisation choices \\
 \bottomrule
 \end{tabular}
 \end{table}

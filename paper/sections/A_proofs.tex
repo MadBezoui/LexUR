@@ -62,13 +62,5 @@ The constant is explicit and the dependence on the range floor $\beta$ (worst
 case $\varepsilon$) is exhibited, making clear when the bound is informative.
 \hfill$\square$
 
-\paragraph{Proposition~\ref{thm:stoch} (Plug-in consistency).}
-Let $\hat\mu_i$ be the mean of $n$ i.i.d.\ joint draws, so
-$|\hat\mu_i-\mu_i|=O_p(n^{-1/2})$ by the law of large numbers and finite second
-moments. For $L$-Lipschitz probes $|\hat q(x)-q(x)|\le L\sum_i|\hat\mu_i-\mu_i|
-=O_p(n^{-1/2})$, and since the normalisation anchors are continuous functionals
-of the estimated means, $|\hat\reg_q(x)-\reg_q(x)|=O_p(n^{-1/2})$. With finitely
-many candidates and probes a union bound gives a uniform error
-$\eta_n=O_p(n^{-1/2})$. Once $2\eta_n<\min\{\Delta-\tau,\tau\}$ the
-tolerance-rule stability (Theorem~\ref{thm:stab}) preserves the winner; as
-$\eta_n\to0$ this holds with probability tending to one. \hfill$\square$
+\paragraph{Proposition~\ref{thm:stoch} (Sample-average stochastic consistency).}
+If $x$ strictly dominates $y$ under all scenarios, then $r(x, \omega^{(s)}) \le r(y, \omega^{(s)})$ for all $s$, with strict inequality on at least one coordinate. For any separating monotone probe $q$, $q(r(x, \omega^{(s)})) \le q(r(y, \omega^{(s)}))$ for all scenarios, and strictly less for some separating probe. The finite sample average $\hat\mu_q(x) = \frac{1}{S}\sum_{s} q(r(x, \omega^{(s)}))$ strictly preserves this inequality. Since the normalisation constants $q^\star$ and $q^{\mathrm w}$ are fixed across alternatives, the corresponding regret is strictly lower for $x$, giving $x \prec_{\mathrm{LUR}} y$ by the exact same logic as Theorem~\ref{thm:pareto}. \hfill$\square$

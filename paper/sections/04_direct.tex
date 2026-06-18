@@ -1,13 +1,21 @@
-\section{Direct computation without efficient-set enumeration}
+\section{Exact candidate-set computation and conditional direct formulations}
 \label{sec:direct}
 
 LUR is primarily a candidate-set selection rule, and that is the setting of our
-experiments. This section develops, more tentatively, how the recommendation can
+experiments. We first present the exact finite algorithm. We then develop, more tentatively, how the recommendation can
 in principle be computed \emph{directly} on a continuous feasible set, replacing
-the usual two-stage pipeline (generate the efficient set, then post-process) by a
-single robust search. We present the finite case as exact and the continuous case
+the usual two-stage pipeline by a
+single robust search. We present the continuous case
 as a formulation with assumptions whose large-scale empirical validation we leave
 to future work.
+
+\subsection{Exact algorithm for finite candidate sets}
+Given a discrete candidate set $A=\{x_1,\dots,x_N\}$: (1) form $F_{ij}=f_j(x_i)$; (2) normalise to $R$ via \eqref{eq:norm};
+(3) evaluate $V_{iq}=q(r(x_i))$ for each probe; (4) set $q^\star=\min_i V_{iq}$,
+$q^{\mathrm w}=\max_i V_{iq}$; (5) form disappointments \eqref{eq:disap}; (6) sort each row
+descending; (7) return the lexicographically smallest row. 
+
+The worst-case complexity is $O(NKm + NK\log K + N \log N)$ when using a tolerance-based lexicographic comparison. Here $O(NKm)$ is the cost of probe evaluation, $O(NK\log K)$ is the cost of sorting the $K$-dimensional disappointment vector for each of the $N$ candidates, and $O(N\log N)$ is the cost of the final lexicographic sort across candidates. The number of probes $K$ is controlled by the construction of \S\ref{sec:probes}.
 
 \subsection{Cost of the anchors}
 Both the finite and continuous formulations need, for each probe, its attainable
@@ -29,7 +37,14 @@ worst regret over the remaining ones, restricted to $\X_{k-1}$, until the optima
 set is a singleton or all probes are exhausted. This realises the lexicographic
 order \eqref{eq:lur} by construction.
 
-\subsection{Single-stage surrogate}
+\subsection{Exact sequential cumulative-sum formulation}
+Lexicographic minimisation
+of the sorted vector is exactly equivalent to sequentially minimising the cumulative sums
+of the $p$ largest disappointments, $\sum_{k=1}^{p}\reg_{[k]}(x)$ for
+$p=1,\dots,K$. Each of these is convex when the disappointments are convex and
+admits the standard ordered-value linearisation \citep{ogryczak2006}. By solving $K$ sequential problems, we obtain the exact LUR recommendation without needing to enumerate the Pareto front.
+
+\subsection{Single-stage heuristic surrogate}
 The stages can be collapsed with a strictly decreasing weight schedule. For a
 large constant $M>1$,
 \begin{equation}
@@ -39,14 +54,8 @@ large constant $M>1$,
 \end{equation}
 where $\reg_{(k)}(x)$ denotes the $k$-th largest disappointment at $x$. This is an
 \emph{exact} surrogate for the lexicographic order only under finite-gap
-assumptions---on a finite candidate set, $M$ larger than the ratio of the largest
-to the smallest positive coordinate gap suffices; for general continuous values no
-finite $M$ reproduces the exact order, so the single-stage form is then an
-approximation. A cleaner route avoids $M$ altogether: lexicographic minimisation
-of the sorted vector is equivalent to sequentially minimising the cumulative sums
-of the $p$ largest disappointments, $\sum_{k=1}^{p}\reg_{[k]}(x)$ for
-$p=1,\dots,K$, each of which is convex when the disappointments are convex and
-admits the standard ordered-value linearisation \citep{ogryczak2006}.
+assumptions. For general continuous values no
+finite $M$ reproduces the exact order, so this single-stage form is primarily a heuristic approximation.
 
 \subsection{Smoothed continuous optimisation}
 For continuous $\X\subseteq\R^n$ the inner maximum is non-smooth; a log-sum-exp

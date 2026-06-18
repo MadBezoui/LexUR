@@ -7,12 +7,15 @@ criteria) has size exponential in $m$. Worse, real criteria are often
 \emph{redundant}: several measured objectives track the same underlying concern
 and are strongly positively correlated. Averaging selection rules implicitly
 \emph{over-weight} such a group---it is counted once per member---biasing the
-recommendation. We need a probe family that (i) is small, (ii) stays monotone,
-and (iii) is less sensitive to redundancy than averaging aggregation.
+recommendation. 
+
+Consider a simple illustrative example: a 3-criteria problem where $f_1$ is cost, and $f_2$ and $f_3$ are two identical measures of environmental impact. An averaging rule will implicitly double-weight the environmental impact simply because it was measured twice. We need a probe family that (i) is small, (ii) stays monotone,
+and (iii) is less sensitive to redundancy than averaging aggregation. LUR with adaptive probes identifies that $f_2$ and $f_3$ are identical (correlation 1.0) and clusters them, generating a reduced set of probes that does not repeatedly average the redundant pair.
 
 \subsection{Correlation clustering}
 We group \emph{redundant} criteria by single-linkage connected components of the
-graph whose edges join pairs with Pearson correlation $\Corr(f_i,f_j)\ge\theta$.
+graph whose edges join pairs with Pearson correlation $\Corr(f_i,f_j)\ge\theta$. We chose single-linkage clustering intentionally because it is conservative regarding redundancy. Two criteria only need a single path of high correlations between them to be grouped together. This prevents the artificial slicing of a continuous underlying dimension into multiple independent criteria that would otherwise overwhelm the probe generation.
+
 \emph{Redundancy is positive correlation:} two criteria that rise and fall
 together carry duplicate information, whereas negatively correlated criteria are
 genuine trade-offs and must remain separate---hence we threshold the signed

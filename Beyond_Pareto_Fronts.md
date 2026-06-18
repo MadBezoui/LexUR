@@ -19,9 +19,9 @@ journal: "European Journal of Operational Research"
 
 Pareto optimality is a fundamental efficiency concept, but it is not a complete decision rule. The Pareto front produces a set of efficient alternatives without providing a principled mechanism for selecting a single robust solution, forcing decision-makers to either inspect exponentially large fronts or impose arbitrary weights, distance metrics, or threshold parameters ex post.
 
-We introduce the **Leximax Universal-Regret (LUR) Core**, a regret-based robust-MCDA recommender that ranks feasible solutions by the lexicographically sorted vector of normalized regrets over a **declared class of monotone rational probes**. The core OR contribution is an auditable certificate with dominated-exclusion and stability guarantees that avoids explicit Pareto-front enumeration. The method returns a single solution or small equivalence class together with this **regret certificate** identifying the most critical objective coalitions. We prove: (1) existence and completeness of the induced preorder for finite candidate sets; (2) Pareto compatibility under monotone probes; (3) dominated-solution exclusion -- no dominated solution can be LUR-optimal if its dominator is feasible; (4) stability under bounded regret perturbations; and (5) direct computability through sequential minimax-regret constraints, avoiding explicit Pareto-front enumeration.
+We propose the **Leximax Universal-Regret (LUR) Core**, a declared-probe robust MCDA rule that ranks feasible alternatives by the lexicographically sorted vector of normalized disappointments over a finite family of monotone probes. LUR returns either a single recommendation or a small tolerance-induced indifference class, together with a labelled regret certificate identifying the most binding criteria coalitions. We prove: (1) existence and completeness of the induced preorder for finite candidate sets; (2) Pareto compatibility under monotone separating probes; (3) dominated-solution exclusion -- no dominated solution can be LUR-optimal if its dominator is feasible; and (4) stability under bounded regret perturbations.
 
-We define an **adaptive probe generation** mechanism that uses objective correlation clustering to identify redundancy and construct a nonnegative, monotone probe basis. This preserves Pareto compatibility while reducing the probe space from exponential to linear in the number of objective clusters. We also introduce a **stochastic regret certificate** with confidence bounds for noisy objectives, and a **multi-stakeholder extension** that protects the worst-off stakeholder across all probes.
+An **adaptive correlation-clustering probe construction** keeps the number of probes linear in the number of criteria and empirically reduces, without eliminating, redundancy sensitivity. We also outline **stochastic and multi-stakeholder variants** and evaluate them in targeted experiments.
 
 Computational experiments on the DTLZ and WFG benchmark suites, together with a smart-grid dispatch case study, evaluate LUR against held-out preference models (random linear, weighted Chebyshev, augmented ASF, CES utilities) not used during optimization. LUR achieves lower worst-case regret under these held-out models than TOPSIS, compromise programming, knee-point selection, and random weight scalarization, while requiring no ex ante weight specification. The framework is accompanied by open-source software (available at https://github.com/MadBezoui/LexUR) supporting direct optimization and interactive regret certificates.
 
@@ -42,15 +42,17 @@ This creates what we call the **Pareto paralysis problem**: the very tool design
 3. **Apply outranking methods** (ELECTRE, PROMETHEE) that require non-intuitive threshold parameters; or
 4. **Inspect the entire front**, a task that becomes cognitively intractable for $m > 3$ objectives.
 
-Each of these approaches requires the DM to make additional choices *after* the optimization is complete -- choices that are often no easier than the original decision problem. The fundamental issue is that **the Pareto front is a safety filter, not a decision engine**.
+These methods are valid and widely used, but they require the analyst or DM to commit to additional modelling choices—weights, metrics, thresholds, exponents, or reference points—that may be difficult to justify when preference information is intentionally incomplete. The fundamental issue is that **the Pareto front is a safety filter, not a complete decision rule**.
 
 ### 1.2 The Regret Turn: From Fronts to Certificates
 
-Our central thesis is that the **Pareto front is the wrong final object** for multiobjective decision-making. The correct object is a **regret certificate** -- a vector of normalized disappointments over all rational decision questions the DM might reasonably ask, sorted from worst to best. Instead of asking "Which solutions are efficient?" we ask:
+Our central thesis is that the Pareto front is often insufficient as a final decision object for multiobjective decision-making. We propose supplementing it with a **regret certificate** -- a vector of normalized disappointments over all rational decision questions the DM might reasonably ask, sorted from worst to best. Instead of asking "Which solutions are efficient?" we ask:
 
 > **"Which solution is least fragile across all rational interpretations of my objectives?"**
 
 This transforms the optimization object from a *set* to a *certificate*. The certificate tells the DM exactly which questions are most disappointed and by how much, providing a decision narrative rather than a cloud of points.
+
+It is crucial to note what this approach does and does not do. LUR is not parameter-free. It replaces a single preference vector by an explicit family of admissible probes, and it requires normalisation bounds and tolerance settings for numerical implementation. Its contribution is that these choices are declared, auditable, and separated from the final recommendation, not that they disappear.
 
 ### 1.3 The Leximax Universal-Regret (LUR) Core
 
@@ -68,14 +70,11 @@ This paper introduces a novel approach to the application of OR in Decision Supp
 
 The specific contributions of this paper are:
 
-- **C1. The LUR order:** A regret-based robust-MCDA recommender defining a complete, Pareto-respecting preorder over feasible solutions based on lexicographic minimax regret over a declared class of monotone rational probes.
-- **C2. Pareto compatibility and dominated exclusion:** Formal proofs that LUR never prefers a dominated solution over its dominator, and that dominated solutions are excluded from optimality.
-- **C3. Stability theorem:** If regret estimates are perturbed by at most $\eta$, and the lexicographic gap exceeds $2\eta$, the LUR winner is unchanged.
-- **C4. Direct optimization formulation:** A sequential minimax-regret formulation that computes the LUR solution without Pareto-front enumeration, for both finite and continuous feasible sets.
-- **C5. Adaptive nonnegative probe generation:** A correlation-based clustering mechanism that identifies redundant objectives and constructs a monotone probe basis, preserving Pareto compatibility while reducing probe count.
-- **C6. Stochastic regret certificates:** Confidence-aware regret bounds for noisy objectives.
-- **C7. Multi-stakeholder extension:** A Rawlsian variant that protects the worst-off stakeholder across all probes.
-- **C8. Held-out evaluation:** Experimental validation against preference models not used during optimization, demonstrating generalization.
+- **Core theoretical contribution:** We define the LUR order and its auditable certificate, proving existence, completeness, Pareto compatibility, dominated-solution exclusion, and stability of the tolerance-based rule under bounded perturbations.
+- **Computational contribution:** We present an exact candidate-set algorithm based on sequential lexicographic sorts, and outline a conditional formulation for structured continuous cases.
+- **Probe construction:** We propose an adaptive, redundancy-aware correlation-clustering probe family with empirical redundancy tests.
+- **Empirical validation:** We validate LUR on a broadened benchmark suite with held-out additive and non-additive preferences, and apply it to a smart-grid case study.
+- **Extensions:** We outline stochastic and multi-stakeholder variants as initial extensions demonstrating the framework's flexibility.
 
 ### 1.5 Organization
 
