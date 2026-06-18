@@ -50,11 +50,7 @@ TMP = f"{ROOT}/tmp_v2"       # benchmark chunk store (bounded-generator full run
 
 
 # --------------------------------------------------------------------------- #
-def _bench_block(cfg, csizes, crits):
-    """Run the benchmark over the given candidate sizes and criteria, returning
-    paired (inst x M) matrices of tail/mean/worst-family loss. Deterministic:
-    the per-instance seed depends only on (csize, m, geometry-index, rep), so
-    chunked runs concatenate to exactly the same suite as a single full run."""
+def _bench_block(cfg, csizes, crits, manifest):
     geoms_all = cfg["geometries"]
     sel = cfg.get("_geoms")
     geoms = [(gi, g) for gi, g in enumerate(geoms_all) if (sel is None or g in sel)]
@@ -62,7 +58,11 @@ def _bench_block(cfg, csizes, crits):
     nU = cfg["utilities_per_family"]; alphas = cfg["dirichlet_alphas"]
     fam = cfg["families"]; M = cfg["methods"]; tailq = cfg["tail_q"]
     base = cfg["seed"]
-    Pt, Pm, Pw = [], [], []
+    scopes = cfg.get("family_scopes", {})
+    records = []
+    
+    run_id = manifest.get("config_sha256", "unknown")
+    
     for N in csizes:
         for m in crits:
             for gi, g in geoms:
@@ -74,44 +74,93 @@ def _bench_block(cfg, csizes, crits):
                     cache = families.loss_cache(F, normalize, np.random.default_rng(s + 1),
                                                 alpha=a, n_per_family=nU, family_list=fam)
                     selrng = np.random.default_rng(s + 2)
-                    rt, rm, rw = [], [], []
                     for nm in M:
                         idx = _select(nm, F, rng=selrng)
                         ml, tl, wf, _ = families.losses_from(cache, idx, q=tailq)
-                        rt.append(tl); rm.append(ml); rw.append(wf)
-                    Pt.append(rt); Pm.append(rm); Pw.append(rw)
-    return np.array(Pt), np.array(Pm), np.array(Pw)
+                        
+                        records.append({
+                            "run_id": run_id,
+                            "config_sha256": manifest.get("config_sha256", ""),
+                            "seed": s,
+                            "N": N,
+                            "m": m,
+                            "geometry": g,
+                            "replication": rep,
+                            "dirichlet_alpha": float(a),
+                            "method": nm,
+                            "utility_scope": scopes.get(wf, "unknown"),
+                            "mean_loss": float(ml),
+                            "tail_loss": float(tl),
+                            "worst_family": wf,
+                            "selected_index": int(idx),
+                        })
+    return records
 
 
 def stage_benchmark(cfg):
     """Run one chunk (restricted by --csize/--crit) and persist it, OR, with no
     restriction, run the whole suite in-memory and finalise."""
+    manifest_path = os.path.join(ROOT, "run_manifest.json")
+    manifest = _load_json(manifest_path)
     M = cfg["methods"]
     csizes = [cfg["_csize"]] if cfg.get("_csize") else cfg["candidate_sizes"]
     crits = cfg["_crit"] if cfg.get("_crit") else cfg["criteria"]
-    Pt, Pm, Pw = _bench_block(cfg, csizes, crits)
+    records = _bench_block(cfg, csizes, crits, manifest)
+    
     if cfg.get("_csize") or cfg.get("_crit") or cfg.get("_geoms"):   # chunk mode
         os.makedirs(TMP, exist_ok=True)
         cs = csizes[0] if cfg.get("_csize") else "all"
         gtag = "-".join(g[:3] for g in cfg["_geoms"]) if cfg.get("_geoms") else "allg"
         tag = f"{cs}_{'-'.join(map(str,crits))}_{gtag}"
-        np.savez(f"{TMP}/bench_{tag}.npz", Pt=Pt, Pm=Pm, Pw=Pw, methods=np.array(M))
-        print(f"  saved chunk {tag}: {Pt.shape[0]} instances")
+        import pandas as pd
+        pd.DataFrame(records).to_parquet(f"{TMP}/bench_{tag}.parquet")
+        print(f"  saved chunk {tag}: {len(records)} records")
         return
-    _benchmark_finalize_from(cfg, Pt, Pm, Pw)
+    _benchmark_finalize_from_records(cfg, records)
 
 
 def stage_bfinalize(cfg):
     """Concatenate all persisted benchmark chunks and compute final stats."""
     import glob
-    M = cfg["methods"]
-    files = sorted(glob.glob(f"{TMP}/bench_*.npz"))
+    import pandas as pd
+    files = sorted(glob.glob(f"{TMP}/bench_*.parquet"))
     if not files:
         raise SystemExit("no benchmark chunks found in tmp/")
-    Pt = np.vstack([np.load(f)["Pt"] for f in files])
-    Pm = np.vstack([np.load(f)["Pm"] for f in files])
-    Pw = np.vstack([np.load(f)["Pw"] for f in files])
-    print(f"  combined {len(files)} chunks -> {Pt.shape[0]} instances")
+    
+    dfs = [pd.read_parquet(f) for f in files]
+    combined = pd.concat(dfs, ignore_index=True)
+    records = combined.to_dict('records')
+    print(f"  combined {len(files)} chunks -> {len(records)} records")
+    _benchmark_finalize_from_records(cfg, records)
+
+def _benchmark_finalize_from_records(cfg, records):
+    import pandas as pd
+    from lur.records import validate_benchmark_frame
+    
+    df = pd.DataFrame(records)
+    
+    # Save the tidy raw records
+    raw_dir = os.path.join(ROOT, "raw")
+    os.makedirs(raw_dir, exist_ok=True)
+    df.to_parquet(os.path.join(raw_dir, "benchmark.parquet"))
+    
+    # Validate
+    validate_benchmark_frame(df, cfg)
+    
+    # Create Pt, Pm, Pw matrices for existing statistical code
+    # Rows: unique instance (N, m, geometry, replication)
+    # Columns: method
+    pivot_t = df.pivot(index=["N", "m", "geometry", "replication"], columns="method", values="tail_loss")
+    pivot_m = df.pivot(index=["N", "m", "geometry", "replication"], columns="method", values="mean_loss")
+    # Pw is worst_family, but string. Just to keep the matrices aligned
+    pivot_w = df.pivot(index=["N", "m", "geometry", "replication"], columns="method", values="worst_family")
+    
+    # Ensure columns match cfg["methods"]
+    M = cfg["methods"]
+    Pt = pivot_t[M].values
+    Pm = pivot_m[M].values
+    Pw = pivot_w[M].values
+    
     _benchmark_finalize_from(cfg, Pt, Pm, Pw)
 
 

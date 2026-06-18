@@ -78,3 +78,14 @@ stochastic:
 tail_q: 0.9
 theta: 0.6
 utilities_per_family: 40
+family_scopes:
+  linear: in_class
+  sparse_linear: in_class
+  chebyshev: in_class
+  aug_asf: in_class
+  lp_compromise: adjacent
+  ces: adjacent
+  owa: adjacent
+  choquet: out_of_class
+  satisfice: out_of_class
+  group_regret: adversarial

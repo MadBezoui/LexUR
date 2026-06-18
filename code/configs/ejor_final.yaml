@@ -1,31 +1,116 @@
-# EJOR pre-registration config (FULL scale). Frozen before the final run.
-# Reproduce with:  python run_protocol.py --config configs/ejor_final.yaml --stage all
-# NB: the full scale is compute-heavy (hours). The pilot config reproduces the
-# same pipeline at a smaller, sandbox-runnable scale.
 seed: 20260618
-candidate_sizes: [100, 300, 1000]
-criteria: [3, 5, 8, 10, 15, 20]
-geometries: [linear, convex, concave, disconnected, degenerate, asymmetric, manyknee, irregular]
+candidate_sizes:
+- 100
+- 300
+- 1000
+criteria:
+- 3
+- 5
+- 8
+- 10
+- 15
+- 20
+geometries:
+- linear
+- convex
+- concave
+- disconnected
+- degenerate
+- asymmetric
+- manyknee
+- irregular
 replications: 50
 utilities_per_family: 2000
-dirichlet_alphas: [0.2, 1.0, 5.0]
-families: [linear, sparse_linear, chebyshev, aug_asf, lp_compromise, ces, owa, choquet, satisfice, group_regret]
-methods: [TOPSIS, CP, VIKOR, Knee, HV, RW, ASF, SMAA, MMR, ChebMMR, LUR]
+dirichlet_alphas:
+- 0.2
+- 1.0
+- 5.0
+families:
+- linear
+- sparse_linear
+- chebyshev
+- aug_asf
+- lp_compromise
+- ces
+- owa
+- choquet
+- satisfice
+- group_regret
+methods:
+- TOPSIS
+- CP
+- VIKOR
+- Knee
+- HV
+- RW
+- ASF
+- SMAA
+- MMR
+- ChebMMR
+- LUR
 theta: 0.6
-tail_q: 0.90
-noninferiority_margin: 0.01     # normalized tail-loss units vs ASF/MMR
+tail_q: 0.9
+noninferiority_margin: 0.01
 redundancy:
-  latent: [3, 5, 8]
-  structures: [[1,1,1], [5,1,1], [10,5,1], [8,8,8]]
-  correlations: [1.0, 0.99, 0.9, 0.7, 0.5]
+  latent:
+  - 3
+  - 5
+  - 8
+  structures:
+  - - 1
+    - 1
+    - 1
+  - - 5
+    - 1
+    - 1
+  - - 10
+    - 5
+    - 1
+  - - 8
+    - 8
+    - 8
+  correlations:
+  - 1.0
+  - 0.99
+  - 0.9
+  - 0.7
+  - 0.5
   replications: 50
 gates:
-  dominated_injection: [0.0, 1.0, 5.0, 10.0]
+  dominated_injection:
+  - 0.0
+  - 1.0
+  - 5.0
+  - 10.0
   affine_tests: 10000
-  nadir_errors: [0.0, 0.01, 0.05, 0.1, 0.2, 0.5]
+  nadir_errors:
+  - 0.0
+  - 0.01
+  - 0.05
+  - 0.1
+  - 0.2
+  - 0.5
 stochastic:
   train_scenarios: 200
   test_scenarios: 10000
-  alphas: [0.5, 0.8, 0.95]
+  alphas:
+  - 0.5
+  - 0.8
+  - 0.95
 multistakeholder:
-  stakeholders: [3, 5, 10, 20]
+  stakeholders:
+  - 3
+  - 5
+  - 10
+  - 20
+family_scopes:
+  linear: in_class
+  sparse_linear: in_class
+  chebyshev: in_class
+  aug_asf: in_class
+  lp_compromise: adjacent
+  ces: adjacent
+  owa: adjacent
+  choquet: out_of_class
+  satisfice: out_of_class
+  group_regret: adversarial
