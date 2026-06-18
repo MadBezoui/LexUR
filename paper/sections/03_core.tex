@@ -102,6 +102,12 @@ one for which stability holds (Theorem~\ref{thm:stab}).
 For any finite $A$ and finite $\Q$, $x^{\mathrm{LUR}}$ exists and
 $\preceq_{\mathrm{LUR}}$ is a complete preorder on $A$.
 \end{theorem}
+\begin{proof}
+For finite $A$ and finite $\Q$, each $\reg^{\downarrow}(x)\in[0,1]^K$ is a
+well-defined real vector. The lexicographic order on $\R^K$ is reflexive,
+transitive and total, hence a complete preorder; since $A$ is finite the
+lexicographic minimum exists.
+\end{proof}
 
 \begin{theorem}[Weak and strict Pareto compatibility]
 \label{thm:pareto}
@@ -112,6 +118,20 @@ non-decreasing in each $r_i$. Then $\reg_q(x)\le\reg_q(y)$ for all $q$
 contains the singleton probes---then $\reg_q(x)<\reg_q(y)$ for some $q$ and
 $x\prec_{\mathrm{LUR}}y$.
 \end{theorem}
+\begin{proof}
+Let $x\prec_P y$, so $r_i(x)\le r_i(y)$ for all $i$ with strict inequality for
+some $j$. For any monotone non-decreasing probe $q$, $q(r(x))\le q(r(y))$; as
+$q^\star,q^{\mathrm w}$ are constants independent of the alternative,
+$\reg_q(x)\le\reg_q(y)$ for all $q$, giving $\reg^{\downarrow}(x)\le
+\reg^{\downarrow}(y)$ componentwise after sorting and hence
+$x\preceq_{\mathrm{LUR}}y$ (weak compatibility, monotonicity only). If $\Q$
+separates criteria there is a probe $q$ strictly increasing in $r_j$, for which
+$q(r(x))<q(r(y))$ and thus $\reg_q(x)<\reg_q(y)$; the multiset of disappointments
+of $x$ is then componentwise $\le$ that of $y$ with at least one strict drop, so
+the descending-sorted vectors satisfy $\reg^{\downarrow}(x)\lex\reg^{\downarrow}
+(y)$ strictly and $x\prec_{\mathrm{LUR}}y$. The counterexample in the main text
+shows the separation hypothesis cannot be dropped.
+\end{proof}
 
 The separation hypothesis is necessary: with only the probe $q(r)=r_2$, the
 dominator $r(x)=(0,1)$ and the dominated $r(y)=(0.1,1)$ have equal disappointment,
@@ -123,6 +143,12 @@ singletons, so it separates.
 If $x$ is Pareto-dominated by a feasible $y$ and $\Q$ separates criteria, then
 $x$ is not LUR-optimal.
 \end{corollary}
+\begin{proof}
+If $x$ is dominated by a feasible $y$ and $\Q$ separates criteria,
+Theorem~\ref{thm:pareto} gives $y\prec_{\mathrm{LUR}}x$, so $x$ is not a
+lexicographic minimiser. Without separation only $y\preceq_{\mathrm{LUR}}x$ holds
+and a dominated alternative may tie its dominator.
+\end{proof}
 
 \begin{theorem}[Stability of the tolerance-based rule]
 \label{thm:stab}
@@ -134,6 +160,20 @@ $\reg_{[k(y)]}(y)-\reg_{[k(y)]}(x^{\mathrm{LUR}})\ge\Delta$, and that all earlie
 coordinates agree within $\tau-2\eta$. If $2\eta<\min\{\Delta-\tau,\ \tau\}$, the
 winner under $\hat\reg$ is unchanged.
 \end{theorem}
+\begin{proof}
+Write $\hat\reg_q(x)=\reg_q(x)+\xi_q(x)$, $|\xi_q(x)|\le\eta$; sorting is
+$1$-Lipschitz in $\|\cdot\|_\infty$, so each sorted coordinate moves by at most
+$\eta$. Fix a rival $y$ and the deciding coordinate $k=k(y)$ with true margin
+$\reg_{[k]}(y)-\reg_{[k]}(x^{\mathrm{LUR}})\ge\Delta$. Under perturbation this
+margin is at least $\Delta-2\eta$; since $2\eta<\Delta-\tau$ it stays above
+$\tau$, so the $\tau$-tolerance rule still decides coordinate $k$ in favour of
+$x^{\mathrm{LUR}}$. For the earlier coordinates $j<k$, which agree within
+$\tau-2\eta$ by hypothesis, the perturbed gaps stay within $\tau$ and are treated
+as ties, so the decision is not pre-empted before $k$. As $2\eta<\tau$ no spurious
+strict difference is created earlier. Hence $x^{\mathrm{LUR}}$ still beats every
+rival and the winner is unchanged. (Exact comparison, $\tau=0$, is excluded
+precisely because the second condition $2\eta<\tau$ then fails.)
+\end{proof}
 
 Theorem~\ref{thm:stab} is deliberately stated for the tolerance rule: exact
 lexicographic comparison is \emph{not} perturbation-stable, because a winner that

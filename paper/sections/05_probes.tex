@@ -57,6 +57,12 @@ Pareto compatibility (Theorem~\ref{thm:pareto}) is preserved.
 If every probe in $\Q$ is a non-negative-weighted sum or a maximum of the
 normalised criteria, then LUR is Pareto compatible.
 \end{theorem}
+\begin{proof}
+If $q(r)=\sum_i w_i r_i$ with $w_i\ge 0$, then $r\le r'$ componentwise implies
+$q(r)\le q(r')$; likewise $q_{\max}(r)=\max_i w_i r_i\le\max_i w_i r_i'=
+q_{\max}(r')$. All such probes are monotone non-decreasing, so
+Theorem~\ref{thm:pareto} applies.
+\end{proof}
 
 \subsection{A perturbation bound (not a ranking guarantee)}
 We state the reduction effect as a regret-value perturbation lemma with explicit
@@ -77,6 +83,20 @@ with the floor $\beta\ge\varepsilon$ in the worst case. The bound is vacuous whe
 $\beta$ is of order $\eta$, and informative only when the probe's attainable
 range is bounded away from zero---a regime the analyst can check directly.
 \end{lemma}
+\begin{proof}
+Fix $q$ and its approximant $q'$ with $\sup_r|q(r)-q'(r)|\le\eta$; then also
+$|q^\star-q'^\star|\le\eta$ and $|q^{\mathrm w}-q'^{\mathrm w}|\le\eta$. Write the
+ranges $N=q^{\mathrm w}-q^\star$ and $N'=q'^{\mathrm w}-q'^\star$, both
+$\ge\beta>0$. Using $\reg_q(x)\in[0,1]$,
+\[
+|\reg_q(x)-\reg_{q'}(x)|
+=\left|\frac{q(x)-q^\star}{N}-\frac{q'(x)-q'^\star}{N'}\right|
+\le\frac{|q(x)-q'(x)|+|q^\star-q'^\star|}{N'}+\reg_q(x)\frac{|N-N'|}{N'}
+\le\frac{2\eta+\eta}{\beta}=\frac{3\eta}{\beta}.
+\]
+The constant is explicit and the dependence on the range floor $\beta$ (worst
+case $\varepsilon$) is exhibited, making clear when the bound is informative.
+\end{proof}
 
 Whether the reduced family admits such an $\eta$-close $q'$ for every full-family
 probe is \emph{not} established by correlation clustering in general; we therefore
