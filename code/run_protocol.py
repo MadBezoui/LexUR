@@ -287,25 +287,49 @@ def _cluster_match(lab, truth):
 
 
 def stage_probes(cfg):
+    import time
+    from lur.probe_validation import compare_probe_families
+    
     rng = np.random.default_rng(cfg["seed"] + 2)
-    nU = cfg["utilities_per_family"]; fam = cfg["families"]
-    variants = ["adaptive", "full", "singletons", "no_singletons", "max_only",
-                "cluster_only", "random"]
-    rows = {v: {"tail": [], "agree_full": [], "nprobes": []} for v in variants}
-    for m in [3, 5, 8]:                          # full family only tractable for small m
-        for _ in range(20):
-            F = problems.make_candidate_set("concave", 300, m, rng)
-            cache = families.loss_cache(F, normalize, np.random.default_rng(int(rng.integers(1<<31))),
-                                        n_per_family=nU, family_list=fam)
-            i_full = methods.lur_variant(F, "full")
-            for v in variants:
-                iv = methods.lur_variant(F, v, rng=np.random.default_rng(1))
-                rows[v]["tail"].append(families.losses_from(cache, iv)[1])
-                rows[v]["agree_full"].append(float(iv == i_full))
-    df = pd.DataFrame([dict(variant=v, tail_loss=np.mean(rows[v]["tail"]),
-                            agree_with_full=np.mean(rows[v]["agree_full"])) for v in variants])
-    os.makedirs(TAB, exist_ok=True); df.to_csv(f"{TAB}/probes.csv", index=False)
-    print(df.to_string(index=False))
+    n_reps = 50
+    m_vals = [2, 3, 4, 5, 6, 8]
+    thetas = [0.3, 0.5, 0.6, 0.7, 0.9]
+    geoms = problems.GEOMETRIES
+    
+    records = []
+    
+    for m in m_vals:
+        for g in geoms:
+            for rep in range(n_reps):
+                F = problems.make_candidate_set(g, 300, m, rng)
+                for th in thetas:
+                    res = compare_probe_families(F, tolerance=1e-9, theta=th)
+                    res["m"] = m
+                    res["geometry"] = g
+                    res["replication"] = rep
+                    res["theta"] = th
+                    records.append(res)
+                    
+    df = pd.DataFrame(records)
+    os.makedirs(TAB, exist_ok=True)
+    df.to_csv(f"{TAB}/probes.csv", index=False)
+    
+    worst_regret_mean = df["worst_regret_gap"].mean()
+    cert_gap_mean = df["certificate_sup_norm_gap"].mean()
+    winner_agree = df["winner_agreement"].mean()
+    
+    gate_res = {
+        "predictive_quality": bool(worst_regret_mean < 0.05),
+        "certificate_approximation": bool(cert_gap_mean < 0.1),
+        "decision_set_agreement": bool(winner_agree > 0.8),
+        "worst_regret_gap": worst_regret_mean,
+        "certificate_sup_norm_gap": cert_gap_mean,
+        "winner_agreement": winner_agree,
+        "pass": bool(worst_regret_mean < 0.05 and cert_gap_mean < 0.1 and winner_agree > 0.8)
+    }
+    
+    _save_json(f"{TAB}/gates_adaptive.json", gate_res)
+    print(f"  Adaptive probes: pass={gate_res['pass']} (regret={worst_regret_mean:.3f}, cert={cert_gap_mean:.3f}, agree={winner_agree:.3f})")
     return df
 
 

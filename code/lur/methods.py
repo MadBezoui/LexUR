@@ -292,27 +292,32 @@ def build_random_probes(F, k, rng):
     return probes, labels
 
 
-def lur_variant(F, variant="adaptive", rng=None, theta=0.6, **kw):
+def lur_variant(F, variant="adaptive", rng=None, theta=0.6, return_detail=False, **kw):
     """LUR probe-design controls used in the ablation/probe study."""
     rng = np.random.default_rng(0) if rng is None else rng
     if variant == "adaptive":
-        probes, _ = build_probes(F, theta=theta)
+        probes, labels = build_probes(F, theta=theta)
     elif variant == "full":
-        probes, _ = build_full_probes(F)
+        probes, labels = build_full_probes(F)
     elif variant == "singletons":
-        probes, _ = build_probes(F, use_mean=False, use_max=False, use_clusters=False)
+        probes, labels = build_probes(F, use_mean=False, use_max=False, use_clusters=False)
     elif variant == "no_singletons":
-        probes, _ = build_probes(F, use_singletons=False)
+        probes, labels = build_probes(F, use_singletons=False)
     elif variant == "max_only":
-        probes, _ = build_probes(F, use_mean=False)
+        probes, labels = build_probes(F, use_mean=False)
     elif variant == "cluster_only":
-        probes, _ = build_probes(F, use_singletons=False, use_mean=True, use_max=True)
+        probes, labels = build_probes(F, use_singletons=False, use_mean=True, use_max=True)
     elif variant == "random":
         k = len(build_probes(F, theta=theta)[1])
-        probes, _ = build_random_probes(F, k, rng)
+        probes, labels = build_random_probes(F, k, rng)
     else:
         raise ValueError(variant)
-    return leximax_argmin(disappointment_matrix(F, probes))
+    
+    D = disappointment_matrix(F, probes)
+    idx = leximax_argmin(D)
+    if return_detail:
+        return idx, D, labels, probes
+    return idx
 
 
 # --------------------------------------------------------------------------- #
