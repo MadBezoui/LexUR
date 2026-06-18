@@ -16,11 +16,19 @@ generated front. LUR does not eliminate modelling choices. It relocates them int
 Achievement scalarising functions (ASF) project a reference point onto the
 efficient set through a parameterised metric interpolating between $L_1$ and
 $L_\infty$ \citep{wierzbicki1980,miettinen2002}. Ordered weighted averaging
-\citep{yager1988} aggregates sorted criteria, and \citet{ogryczak1997,ogryczak2006}
-connect ordered aggregation to lexicographic maximin. LUR \emph{recovers} these as special cases when the probe family is reduced to a
-single probe: the grand-maximum probe alone gives the (reference-at-ideal)
-Chebyshev/ASF rule, the grand-mean probe alone the weighted sum, and the
-singleton family the lexicographic maximin of normalised regret. We do not claim
+connect ordered aggregation to lexicographic maximin. 
+
+\begin{proposition}[Recovery of standard scalarisations]
+\label{prop:special}
+The LUR core recovers standard aggregation methods as exact special cases under specific, restricted probe families:
+\begin{itemize}
+\item \textbf{Weighted sum:} If $\Q=\{q_w(r)=w^\top r\}$, LUR exactly minimises the weighted sum of normalised criteria.
+\item \textbf{Chebyshev / ASF:} If $\Q=\{q_w(r)=\max_i w_i r_i\}$, LUR exactly minimises the Chebyshev distance to the ideal point.
+\item \textbf{Lexicographic minimax:} If $\Q=\{r_1,\dots,r_m\}$ (the singleton family), LUR performs a lexicographic minimax optimisation over the normalised regrets.
+\end{itemize}
+\end{proposition}
+
+We do not claim
 LUR subsumes these methods with its full adaptive family---there it is a
 \emph{different} aggregation paradigm. Its distinguishing features are that it
 sorts \emph{normalised regrets} (dimensionless disappointments relative to each

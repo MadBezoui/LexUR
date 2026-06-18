@@ -1,17 +1,17 @@
 # EJOR Validation Protocol — Compliance Report
 
-This documents how the pre-registered validation protocol was implemented and the
+This documents how the frozen validation protocol was implemented and the
 outcome of each acceptance gate. Everything is reproducible from a frozen config:
 
 ```bash
 cd code
 make protocol                       # CFG=configs/ejor_pilot.yaml (sandbox scale)
-make protocol CFG=configs/ejor_final.yaml   # full pre-registered scale
+make protocol CFG=configs/ejor_final.yaml   # full frozen scale
 # or:  python run_protocol.py --config configs/ejor_pilot.yaml --stage all
 ```
 
 **Scale note.** Two frozen configs implement the *identical* pipeline:
-`ejor_final.yaml` is the full pre-registered design (m up to 20, N up to 1000,
+`ejor_final.yaml` is the full frozen design (m up to 20, N up to 1000,
 50 reps, 2000 utilities/family, 8 geometries — hours of compute);
 `ejor_pilot.yaml` is the sandbox-runnable scale. The final evaluation removes
 DistIdeal, which behaves identically to equal-weight CP. The numbers below are

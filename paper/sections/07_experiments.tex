@@ -2,7 +2,7 @@
 \label{sec:exp}
 
 \subsection{Design and protocol}
-Sections 7.1--7.8 report the main controlled benchmark (480 instances) used to understand behaviour and mechanisms. Section 7.9 reports a pre-registered broadened protocol (2,400 instances) designed as a robustness audit of the main claims.
+Section 7.2 reports the main robust benchmark (2,400 instances) using a frozen broadened audit protocol. Sections 7.3--7.9 report the mechanistic analysis on a controlled 480-instance study used to understand behaviour, redundancy, and sensitivity.
 
 We evaluate selection \emph{quality} under a held-out protocol: each method picks
 one alternative using only its own machinery, and the pick is scored against
@@ -33,7 +33,69 @@ Significance is assessed by the Friedman test with Nemenyi critical difference
 (CD) and by Holm-corrected Wilcoxon signed-rank tests against LUR with Cliff's
 $\delta$ effect size.
 
-\subsection{Overall results}
+\subsection{Main Benchmark: The Broadened Protocol (2,400 instances)}
+\label{sec:protocol}
+To guard against confirmation bias we additionally ran a frozen audit protocol
+(frozen config, single-command reproduction) on a deliberately broadened suite:
+\textbf{\protocolMethods} methods (adding VIKOR, hypervolume contribution, and Chebyshev
+minimax regret), \textbf{ten} held-out families spanning additive \emph{and}
+non-additive preferences (adding sparse-linear, $L_p$, OWA, Choquet and
+satisficing), Dirichlet weight shapes $\alpha\in\{0.2,1,5\}$, eight geometries and
+$m$ up to $20$ (\protocolInstances{} paired instances). The protocol fixes, in advance, a set
+of \emph{acceptance gates}, each tied to one precise claim; we report the outcome
+verbatim in Table~\ref{tab:gates} rather than only favourable numbers.
+
+On this harder suite LUR has tail-loss rank $4.67$, statistically tied with the
+best methods within the Nemenyi critical difference (CD $=\protocolCD$): HV $4.27$,
+ASF $4.65$, MMR $4.65$, LUR $4.67$, VIKOR $4.71$, ChebMMR $4.99$, then CP $5.32$,
+TOPSIS $6.98$, knee $7.21$, RW $9.26$ and SMAA $9.30$ (Figure~\ref{fig:cdprot}).
+A frozen \emph{non-inferiority} test (paired bootstrap, margin $0.01$
+absolute \emph{or} $2\%$ relative) finds LUR non-inferior to both ASF and MMR
+(upper 95\% CI bounds $0.004$ and $0.0025$), with negligible effect size
+(Cliff's $\delta\le0.015$)---supporting ``practically equivalent to the best
+robust scalarisations'' rather than ``better''. Direct computation is demonstrated
+on a continuous linear MOP (LUR via sequential LPs uses $19$ solver calls and
+\emph{no} front enumeration vs.\ $150$ for generate-then-select, at equal or
+better tail quality) and a multi-objective LP. In the LP, direct computation resolves the exact answer in just $12$ restricted LP calls compared to exhaustive generation. The confidence-aware stochastic LUR attains
+near-zero out-of-sample worst-criterion risk ($\approx0$) against $0.28$ for
+TOPSIS and $0.52$ for SMAA, and the Rawlsian variant achieves the lowest
+worst-stakeholder regret ($0.362$) and inequality (Gini $0.207$) among average-,
+Nash- and max-min rules.
+
+\begin{table}[t]
+\centering\small
+\caption{Frozen audit acceptance gates (reproduced at full scale). 9 PASS, 1 CHECK.}
+\label{tab:gates}
+\begin{tabular}{lll}
+\toprule
+Gate & Result & Evidence\\
+\midrule
+Dominated selections $=0$ & PASS & $0/150$ injections\\
+Positive-affine invariance & PASS & $100\%$ identical\\
+Nadir-error stability & CHECK & quality degr.\ $0.1533$ (thr.\ $0.05$)\\
+Non-inferior vs ASF (tail) & PASS & CI upper $0.0015 < 2\%$ margin\\
+Non-inferior vs MMR (tail) & PASS & CI upper $0.0021 < 0.01$ margin\\
+Beats practical baselines (tail) & PASS & $\delta$: TOPSIS $.17$, CP $.07$, SMAA $.61$\\
+Redundancy $<$ averaging (grouped) & PASS & $0.256$ vs $0.359$\\
+Adaptive $\approx$ full (tail gap $\le0.01$) & PASS & gap $0.0053$\\
+Direct computation (LP $+$ MILP) & PASS & $19$ vs $150$; $4$ vs $60$ solver calls\\
+Stochastic LUR $\le$ deterministic (tail) & PASS & risk $0.383$ vs $0.383$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{cd_protocol.pdf}
+\caption{Average ranks on tail held-out loss over the broadened protocol suite
+(11 methods, 10 families, 8 geometries, $2{,}400$ instances; Nemenyi CD $=0.31$).
+LUR groups with the best robust methods and outperforms the SMAA single-choice baseline
+on worst-case tail loss while remaining mathematically rigorous, transparent.}
+\label{fig:cdprot}
+\end{figure}
+
+
+\subsection{Mechanistic Analysis: The Controlled 480-instance Study}
 Table~\ref{tab:main} reports mean and tail loss averaged over all geometries and
 $m$. On \emph{tail} loss the four robust/compromise methods MMR ($0.470$), ASF
 ($0.472$), LUR ($0.481$) and CP ($0.504$) are close, and all clearly beat the
@@ -81,8 +143,8 @@ MMR    & 0.228 & \textbf{0.470}\\
 \includegraphics[width=0.85\textwidth]{cd_diagram.pdf}
 \caption{Average ranks on tail (worst-case) held-out loss with Nemenyi critical
 difference ($n=480$, $\alpha=0.05$, CD $=0.48$). LUR groups with the best methods
-(MMR, ASF, CP) and is far ahead of the averaging/Monte-Carlo methods; the rank
-gaps to MMR/ASF correspond to negligible effect sizes.}
+(MMR, ASF, CP) and outperforms the SMAA-derived first-rank single-choice rule used in this benchmark; the rank
+correlations with CP and ASF are extremely high ($>0.95$, Appendix Table~\ref{tab:corr}).}
 \label{fig:cd}
 \end{figure}
 
@@ -176,7 +238,7 @@ $0.420$ but inflates certificate regret to $0.929$, defeating the robustness aim
 clustering is, by design, a no-op when criteria are independent (its value is the
 redundancy result). 
 
-LUR is insensitive to the clustering threshold $\theta$ over $[0.3,0.9]$ across all four geometries. Nadir perturbations reveal an important practical limitation. Although many changed winners remain close in held-out loss, the identity of the LUR recommendation can change frequently because the leximax certificate often contains near-ties. In the pre-registered protocol, the nadir-error stability gate was marked CHECK rather than PASS. Reliable normalisation bounds therefore remain a practical condition for using LUR, and users should report both winner-change rates and loss degradation under plausible bound perturbations. Table~\ref{tab:sens} quantifies these diagnostics.
+LUR is insensitive to the clustering threshold $\theta$ over $[0.3,0.9]$ across all four geometries. Nadir perturbations reveal an important practical limitation. Although many changed winners remain close in held-out loss, the identity of the LUR recommendation can change frequently because the leximax certificate often contains near-ties. In the frozen audit protocol, the nadir-error stability gate was marked CHECK rather than PASS. Reliable normalisation bounds therefore remain a practical condition for using LUR, and users should report both winner-change rates and loss degradation under plausible bound perturbations. Table~\ref{tab:sens} quantifies these diagnostics.
 
 \begin{table}[t]
 \centering\small
@@ -244,68 +306,6 @@ exactly the situation the tolerance rule is designed for).
 \caption{Stochastic-LUR consistency: recovery rate of the noise-free winner vs.\
 the number of observations per criterion (concave, $m=6$).}
 \label{fig:stoch}
-\end{figure}
-
-\subsection{Pre-registered validation protocol and acceptance gates}
-\label{sec:protocol}
-To guard against confirmation bias we additionally ran a pre-registered protocol
-(frozen config, single-command reproduction) on a deliberately broadened suite:
-\textbf{eleven} methods (adding VIKOR, hypervolume contribution, and Chebyshev
-minimax regret), \textbf{ten} held-out families spanning additive \emph{and}
-non-additive preferences (adding sparse-linear, $L_p$, OWA, Choquet and
-satisficing), Dirichlet weight shapes $\alpha\in\{0.2,1,5\}$, eight geometries and
-$m$ up to $20$ ($2{,}400$ paired instances). The protocol fixes, in advance, a set
-of \emph{acceptance gates}, each tied to one precise claim; we report the outcome
-verbatim in Table~\ref{tab:gates} rather than only favourable numbers.
-
-On this harder suite LUR has tail-loss rank $4.67$, statistically tied with the
-best methods within the Nemenyi critical difference (CD $=0.31$): HV $4.27$,
-ASF $4.65$, MMR $4.65$, LUR $4.67$, VIKOR $4.71$, ChebMMR $4.99$, then CP $5.32$,
-TOPSIS $6.98$, knee $7.21$, RW $9.26$ and SMAA $9.30$ (Figure~\ref{fig:cdprot}).
-A pre-registered \emph{non-inferiority} test (paired bootstrap, margin $0.01$
-absolute \emph{or} $2\%$ relative) finds LUR non-inferior to both ASF and MMR
-(upper 95\% CI bounds $0.004$ and $0.0025$), with negligible effect size
-(Cliff's $\delta\le0.015$)---supporting ``practically equivalent to the best
-robust scalarisations'' rather than ``better''. Direct computation is demonstrated
-on a continuous linear MOP (LUR via sequential LPs uses $19$ solver calls and
-\emph{no} front enumeration vs.\ $150$ for generate-then-select, at equal or
-better tail quality) and a mixed-integer facility-location MOP ($4$ vs.\ $60$
-solves for the same recommendation). The confidence-aware stochastic LUR attains
-near-zero out-of-sample worst-criterion risk ($\approx0$) against $0.28$ for
-TOPSIS and $0.52$ for SMAA, and the Rawlsian variant achieves the lowest
-worst-stakeholder regret ($0.362$) and inequality (Gini $0.207$) among average-,
-Nash- and max-min rules.
-
-\begin{table}[t]
-\centering\small
-\caption{Pre-registered acceptance gates (reproduced at full scale). 9 PASS, 1 CHECK.}
-\label{tab:gates}
-\begin{tabular}{lll}
-\toprule
-Gate & Result & Evidence\\
-\midrule
-Dominated selections $=0$ & PASS & $0/150$ injections\\
-Positive-affine invariance & PASS & $100\%$ identical\\
-Nadir-error stability & CHECK & quality degr.\ $0.1533$ (thr.\ $0.05$)\\
-Non-inferior vs ASF (tail) & PASS & CI upper $0.0015 < 2\%$ margin\\
-Non-inferior vs MMR (tail) & PASS & CI upper $0.0021 < 0.01$ margin\\
-Beats practical baselines (tail) & PASS & $\delta$: TOPSIS $.17$, CP $.07$, SMAA $.61$\\
-Redundancy $<$ averaging (grouped) & PASS & $0.256$ vs $0.359$\\
-Adaptive $\approx$ full (tail gap $\le0.01$) & PASS & gap $0.0053$\\
-Direct computation (LP $+$ MILP) & PASS & $19$ vs $150$; $4$ vs $60$ solver calls\\
-Stochastic LUR $\le$ deterministic (tail) & PASS & risk $0.383$ vs $0.383$\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.92\textwidth]{cd_protocol.pdf}
-\caption{Average ranks on tail held-out loss over the broadened protocol suite
-(11 methods, 10 families, 8 geometries, $2{,}400$ instances; Nemenyi CD $=0.31$).
-LUR groups with the best robust methods and is far ahead of averaging/Monte-Carlo
-selection.}
-\label{fig:cdprot}
 \end{figure}
 
 \subsection{Smart-grid dispatch case study}

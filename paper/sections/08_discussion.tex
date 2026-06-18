@@ -14,7 +14,26 @@ criteria, an interpretable certificate, and native stochastic and multi-stakehol
 extensions. Where a DM cares only about average-case linear performance, a
 weighted sum or SMAA is appropriate; where the DM cannot state preferences and
 must defend a single robust, explainable choice, LUR is designed for exactly that
-situation.
+situation. Table~\ref{tab:claims} provides a concise summary mapping the central claims of the paper to their theoretical or empirical evidence.
+
+\begin{table}[h]
+\centering\small
+\caption{Claim-evidence matrix mapping theoretical properties and empirical findings to their supporting evidence.}
+\label{tab:claims}
+\begin{tabular}{p{5cm}p{7cm}}
+\toprule
+Claim & Evidence \\
+\midrule
+Pareto compatibility & Theorem~\ref{thm:pareto} (general) and Theorem~\ref{thm:nonneg} (non-negative probes) \\
+Existence and completeness & Theorem~\ref{thm:exist} \\
+Tolerance-rule stability & Theorem~\ref{thm:stab} (margin condition) \\
+Reduced redundancy bias & Table~\ref{tab:redund} (grouped loss) \\
+Robustness on tail held-out loss & Figure~\ref{fig:cd} and Table~\ref{tab:main} \\
+Stochastic consistency & Proposition~\ref{thm:stoch2} and Figure~\ref{fig:stoch} \\
+Smart-grid applicability & Appendix~\ref{app:smartgrid} and Figure~\ref{fig:cert} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Relationship to existing rules.}
 LUR generalises rather than replaces. A single grand-maximum probe recovers the

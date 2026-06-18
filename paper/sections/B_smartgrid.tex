@@ -1,23 +1,23 @@
 \section{Smart-grid economic dispatch formulation}
 \label{app:smartgrid}
-The case study in \S\ref{sec:exp} formulates a 24-hour economic dispatch on a 14-generator system. The decision variables are the scheduled power $p_{gt}$ and commitment status $u_{gt}$ for generator $g$ at hour $t$. The uncertain parameters are the demand $d_t$, non-dispatchable renewable generation $w_t(\omega)$ (wind) and $s_t(\omega)$ (solar) under scenario $\omega$, and line losses $\ell_t(\omega)$.
+The case study in \S\ref{sec:exp} formulates a 24-hour stochastic economic dispatch with recourse as a ten-generator heuristic illustration. The first-stage decision variables are the day-ahead unit commitment status $u_{gt}$. The second-stage (recourse) variables under scenario $\omega$ are the scheduled power $p_{gt}(\omega)$, renewable curtailment $c_t^{\mathrm{ren}}(\omega)$, and load shedding $s_t^{\mathrm{shed}}(\omega)$. The uncertain parameters are the demand $d_t(\omega)$, non-dispatchable renewable generation $w_t(\omega)$ (wind) and $s_t(\omega)$ (solar) under scenario $\omega$, and line losses $\ell_t(\omega)$.
 
 The power-balance constraint ensures that total generation meets demand and losses:
 \begin{equation}
-\sum_g p_{gt} + w_t(\omega) + s_t(\omega) = d_t + \ell_t(\omega), \quad \forall t, \omega.
+\sum_g p_{gt}(\omega) + w_t(\omega) + s_t(\omega) - c_t^{\mathrm{ren}}(\omega) + s_t^{\mathrm{shed}}(\omega) = d_t(\omega) + \ell_t(\omega), \quad \forall t, \omega.
 \end{equation}
 Generators are subject to minimum and maximum capacity bounds and ramping constraints $R_g$:
 \begin{equation}
-P_g^{\min}u_{gt} \le p_{gt} \le P_g^{\max}u_{gt}, \qquad |p_{g,t}-p_{g,t-1}| \le R_g.
+P_g^{\min}u_{gt} \le p_{gt}(\omega) \le P_g^{\max}u_{gt}, \qquad |p_{g,t}(\omega)-p_{g,t-1}(\omega)| \le R_g, \quad \forall \omega.
 \end{equation}
 The six objectives to be minimised are:
 \begin{enumerate}
     \item \textbf{Cost:} Expected total fuel cost.
-    \item \textbf{Emissions:} Total $\mathrm{CO}_2$ emissions.
-    \item \textbf{Unreliability:} Loss of load probability.
-    \item \textbf{Ramping wear:} Total absolute generation change $\sum_{g,t} |p_{g,t}-p_{g,t-1}|$.
-    \item \textbf{Non-renewable fraction:} Ratio of thermal to total generation.
-    \item \textbf{Peak gap:} Difference between the maximum and average net demand.
+    \item \textbf{Emissions:} Expected total $\mathrm{CO}_2$ emissions.
+    \item \textbf{Unreliability:} Loss of load probability $f_3(x)=\mathbb{P}\left(\sum_t s_t^{\mathrm{shed}}(\omega)>0\right)$.
+    \item \textbf{Ramping wear:} Expected absolute generation change $\mathbb{E}[\sum_{g,t} |p_{g,t}(\omega)-p_{g,t-1}(\omega)|]$.
+    \item \textbf{Non-renewable fraction:} Expected ratio of thermal to total generation.
+    \item \textbf{Peak stress:} Expected difference between the maximum and average dispatch-dependent net load on the thermal fleet.
 \end{enumerate}
 
-The model is evaluated using sample-average approximation over 100 scenarios. All parameter values are available in the open-source repository.
+The model is evaluated using sample-average approximation over 100 scenarios. All parameter values (generator data, costs, emissions, ramp limits, and scenario bounds) are available in the open-source repository. This formulation serves as an illustrative application of the robust certificate framework.

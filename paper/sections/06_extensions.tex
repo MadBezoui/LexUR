@@ -5,24 +5,18 @@
 When criteria are noisy, model $f_i(x)$ as drawn from a joint distribution $P(x)$. Each probe value is then a
 random variable; for non-linear probes (e.g.\ $q_{\max}$) its mean $\mu_q(x)$ is
 \emph{not} a simple function of the criterion
-marginal means. We estimate the robust stochastic probe value by its finite sample average over $S$ scenarios $\omega^{(1)},\dots,\omega^{(S)}$:
+marginal means. Let $\rho$ be a generic monotone risk functional over the scenarios, for example the sample average $\rho_q(x) = \frac{1}{S}\sum_{s=1}^S q(r(x, \omega^{(s)}))$ or the empirical Conditional Value-at-Risk $\rho_q(x) = \mathrm{CVaR}_\alpha(q(r(x,\omega)))$. The normalisation anchors must be taken consistently on this functional: $\rho_q^\star = \min_{x\in A} \rho_q(x)$ and $\rho_q^{\mathrm w} = \max_{x\in A} \rho_q(x)$. We define the \emph{stochastic regret} as
 \begin{equation}
-\hat\mu_q(x) = \frac{1}{S}\sum_{s=1}^S q(r(x, \omega^{(s)})).
+\reg_q^\rho(x)=\frac{\rho_q(x)-\rho_q^\star}{\rho_q^{\mathrm w}-\rho_q^\star},
 \end{equation}
-The normalisation anchors $q^\star,q^{\mathrm w}$ are taken on these estimated means. We
-define the \emph{$\alpha$-confidence regret}
-\begin{equation}
-\reg_q^\alpha(x)=\frac{\mathrm{CVaR}_\alpha(q(r(x,\omega)))-q^\star}{q^{\mathrm w}-
-q^\star+\varepsilon},
-\end{equation}
-where $\mathrm{CVaR}_\alpha$ is the empirical Conditional Value-at-Risk at confidence level $\alpha$. This penalises both expected disappointment and its sample uncertainty. Because $\mathrm{CVaR}$ is a monotone risk measure, exact Pareto compatibility is preserved.
+assuming the active range is non-degenerate ($ \ge \varepsilon_q$). Using $\mathrm{CVaR}_\alpha$ penalises both expected disappointment and its sample uncertainty. Because $\mathrm{CVaR}$ is a monotone risk measure, exact Pareto compatibility is preserved.
 
 \begin{proposition}[Scenario-wise Pareto compatibility]
 \label{thm:stoch}
 For finite $A$, finite $\Q$, and sample-average probe means $\hat{\mu}_q(x)=S^{-1}\sum_s q(r(x,\omega^{(s)}))$, if $x$ weakly dominates $y$ in every scenario and strictly dominates it in at least one criterion for at least one scenario, then the sample-average LUR rule does not prefer $y$ to $x$. If $\Q$ separates criteria and the dominance is strict on a separated coordinate, then $x$ is strictly preferred by the exact LUR order.
 \end{proposition}
 \begin{proof}
-If $x$ weakly dominates $y$ under all scenarios and strictly dominates it in at least one criterion for at least one scenario, then $r(x, \omega^{(s)}) \le r(y, \omega^{(s)})$ for all $s$, with strict inequality on at least one coordinate for some scenario. For any monotone probe $q$, $q(r(x, \omega^{(s)})) \le q(r(y, \omega^{(s)}))$ for all scenarios. The finite sample average $\hat\mu_q(x) = \frac{1}{S}\sum_{s} q(r(x, \omega^{(s)}))$ preserves this weak inequality, meaning weak Pareto compatibility is preserved. If $\Q$ separates criteria and dominance is strict on a separated coordinate, then $\hat\mu_q(x) < \hat\mu_q(y)$ for that probe. Since the normalisation constants $q^\star$ and $q^{\mathrm w}$ are fixed across alternatives, the corresponding regret is strictly lower for $x$, giving $x \prec_{\mathrm{LUR}} y$ by the logic of Theorem~\ref{thm:pareto}.
+If $x$ weakly dominates $y$ under all scenarios and strictly dominates it in at least one criterion for at least one scenario, then $r(x, \omega^{(s)}) \le r(y, \omega^{(s)})$ for all $s$, with strict inequality on at least one coordinate for some scenario. For any monotone probe $q$, $q(r(x, \omega^{(s)})) \le q(r(y, \omega^{(s)}))$ for all scenarios. The functional $\rho_q(x) = \frac{1}{S}\sum_{s} q(r(x, \omega^{(s)}))$ preserves this weak inequality, meaning weak Pareto compatibility is preserved. If $\Q$ separates criteria and dominance is strict on a separated coordinate, then $\rho_q(x) < \rho_q(y)$ for that probe. Since the normalisation constants $\rho_q^\star$ and $\rho_q^{\mathrm w}$ are fixed across alternatives, the corresponding regret is strictly lower for $x$, giving $x \prec_{\mathrm{LUR}} y$ by the logic of Theorem~\ref{thm:pareto}.
 \end{proof}
 
 \begin{proposition}[Sample-average consistency under a margin condition]

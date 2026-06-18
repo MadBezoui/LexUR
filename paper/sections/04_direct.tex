@@ -10,10 +10,36 @@ as a formulation with assumptions whose large-scale empirical validation we leav
 to future work.
 
 \subsection{Exact algorithm for finite candidate sets}
-Given a discrete candidate set $A=\{x_1,\dots,x_N\}$: (1) form $F_{ij}=f_j(x_i)$; (2) normalise to $R$ via \eqref{eq:norm};
-(3) evaluate $V_{iq}=q(r(x_i))$ for each probe; (4) set $q^\star=\min_i V_{iq}$,
-$q^{\mathrm w}=\max_i V_{iq}$; (5) form disappointments \eqref{eq:disap}; (6) sort each row
-descending; (7) return the lexicographically smallest row. 
+
+The finite-set procedure is summarised in Algorithm~\ref{alg:finite}.
+\begin{figure}[h]
+\centering
+\fbox{
+\begin{minipage}{0.9\textwidth}
+\textbf{Algorithm 1:} Exact LUR recommendation on a finite candidate set\vspace{2mm}\\
+\textbf{Input:} Candidate set $A=\{x_1,\dots,x_N\}$; objectives $F(x)$; monotone probe family $\Q=\{q_1,\dots,q_K\}$; tolerance $\tau \ge 0$.\\
+\textbf{Output:} LUR winner $x^{\mathrm{LUR}}$ and its certificate $\reg^{\downarrow}(x^{\mathrm{LUR}})$.\vspace{2mm}\\
+\textbf{1. Dominance filter:} Remove any Pareto-dominated $x \in A$.\\
+\textbf{2. Normalisation:} For each criterion $i$:
+\begin{itemize}
+    \item Compute active range $\ideal_i = \min_A f_i(x)$ and $\nadir_i = \max_A f_i(x)$.
+    \item If non-degenerate, compute $r_i(x) = (f_i(x) - \ideal_i) / (\nadir_i - \ideal_i)$.
+\end{itemize}
+\textbf{3. Anchor bounds:} For each probe $q \in \Q$:
+\begin{itemize}
+    \item Evaluate $V_{iq} = q(r(x_i))$ for all active $x_i \in A$.
+    \item Find $q^\star = \min_i V_{iq}$ and $q^{\mathrm w} = \max_i V_{iq}$.
+\end{itemize}
+\textbf{4. Regret evaluation:} For each $x \in A$ and each valid probe $q \in \Q$:
+\begin{itemize}
+    \item Compute $\reg_q(x) = (V_{iq} - q^\star) / (q^{\mathrm w} - q^\star)$.
+\end{itemize}
+\textbf{5. Certificate sorting:} For each $x$, sort its regrets descending to get $\reg^{\downarrow}(x)$.\\
+\textbf{6. Selection:} Return the lexicographically smallest row under $\tau$-tolerance.
+\end{minipage}
+}
+\label{alg:finite}
+\end{figure}
 
 The worst-case complexity is straightforward. With naive probe evaluation, winner selection costs $O(NKm + NK\log K + NK)$. Producing a complete lexicographic ranking of all candidates costs $O(NKm + NK\log K + NK\log N)$. Here $O(NKm)$ is the cost of probe evaluation and $O(NK\log K)$ is the cost of sorting the $K$-dimensional disappointment vector for each of the $N$ candidates. The number of probes $K$ is controlled by the construction of \S\ref{sec:probes}.
 
@@ -26,11 +52,11 @@ front enumeration when $K$ is linear in $m$ (\S\ref{sec:probes}) but not free, a
 we account for it explicitly.
 
 \subsection{Exact sequential cumulative-sum formulation}
-Lexicographic minimisation of the sorted vector is exactly equivalent to sequentially minimising the cumulative sums of the $p$ largest disappointments. For each $p = 1,\dots,K$, define:
+Lexicographic minimisation of the sorted vector is exactly equivalent to sequentially minimising the cumulative sums of the $p$ largest disappointments. For each $p = 1,\dots,K$, the sum of the $p$ largest disappointments admits the exact ordered-value linearisation \citep{ogryczak2006}:
 \begin{equation}
-S_p(x) = \sum_{k=1}^{p} \reg_{[k]}(x),
+S_p(x) = \min_{t_p, d_{pq}} \left( p t_p + \sum_{q=1}^K d_{pq} \right) \quad \text{s.t.} \quad t_p + d_{pq} \ge \reg_q(x), \; d_{pq} \ge 0, \quad \forall q,
 \end{equation}
-where $\reg_{[1]}(x)\ge \dots \ge \reg_{[K]}(x)$ are the sorted disappointments. Then solve sequentially:
+where $\reg_q(x)$ are the unordered disappointments. Then solve sequentially:
 \begin{equation}
 \rho_p = \min_{x \in \X_{p-1}} S_p(x), \quad \X_p = \{x\in \X_{p-1}: S_p(x)=\rho_p\},
 \end{equation}
@@ -69,4 +95,4 @@ the formulations here make a front-free computation \emph{available} in principl
 We are careful not to overclaim: our experiments operate on candidate sets, so the
 large-scale continuous advantage is argued, not yet demonstrated, and we flag its
 We quantify the
-probe-family savings in \S\ref{sec:probes}. The direct formulations are empirically exercised in \S\ref{sec:exp} on one continuous linear multiobjective problem and one mixed-integer facility-location problem. These tests demonstrate feasibility for structured cases, but not yet a general large-scale continuous optimisation advantage.
+probe-family savings in \S\ref{sec:probes}. The direct formulations are empirically exercised in \S\ref{sec:exp} on one continuous linear multiobjective problem. These tests demonstrate feasibility for structured cases, but not yet a general large-scale continuous optimisation advantage.

@@ -15,22 +15,21 @@ f_m(x))$, the vector objective.
 
 For
 the finite case let $A=\{x_1,\dots,x_N\}\subseteq\X$ be a candidate set, e.g.\ an
-\emph{a posteriori} approximation of the efficient set; for the continuous case
-(\S\ref{sec:direct}) $A$ is not required. Criteria are normalised to $[0,1]$ by the
+\emph{a posteriori} approximation of the efficient set. Before evaluation, Pareto-dominated alternatives are removed from $A$ unless the analyst explicitly requires selection over the raw un-filtered set. For the continuous case (\S\ref{sec:direct}) $A$ is not required. Criteria are normalised to $[0,1]$ by the
 positive affine map
 \begin{equation}
-r_i(x)=\frac{f_i(x)-\ideal_i}{\max\{\nadir_i-\ideal_i,\;\varepsilon\}},\qquad
+r_i(x)=\frac{f_i(x)-\ideal_i}{\nadir_i-\ideal_i},\qquad
 \ideal_i=\min_{x\in A}f_i(x),\;\; \nadir_i=\max_{x\in A}f_i(x),
 \label{eq:norm}
 \end{equation}
-attains both endpoints on $A$. If $\nadir_i - \ideal_i$ approaches zero, the normalisation floor $\varepsilon$ prevents division by zero and effectively zeros out the relevance of that criterion. A criterion is flagged as numerically degenerate when $\nadir_i-\ideal_i < \kappa \max\{1, |\ideal_i|, |\nadir_i|\}$, with $\kappa$ set to a small numerical tolerance such as $10^{-8}$. Degenerate criteria are reported and excluded from non-singleton probe construction unless the analyst supplies external bounds.
+which attains both endpoints on $A$. A criterion is flagged as numerically degenerate if the range $\nadir_i-\ideal_i$ approaches zero. Degenerate criteria are reported and excluded from non-singleton probe construction unless the analyst supplies external bounds.
 
 For the finite case all extrema ($\ideal$,
-$\nadir$, $q^\star$, $q^{\mathrm w}$ below) are taken over the candidate set $A$;
+$\nadir$, $q^\star$, $q^{\mathrm w}$ below) are taken over the active candidate set $A$;
 for the continuous case (\S\ref{sec:direct}) they are taken over $\X$. We use the
-worst attainable value over $A$ in place of the true nadir over the efficient
-set, the two coincide when $A$ contains the criterion-wise worst efficient points
-and otherwise the former is a conservative bound. The rule is invariant to
+upper attainable value over $A$ in place of the true nadir over the efficient
+set; the two coincide when $A$ contains the criterion-wise worst efficient points,
+and otherwise the former is a conservative upper normalisation bound. The rule is invariant to
 positive affine rescaling of the criteria when the bounds are transformed
 consistently; it is not invariant to arbitrary monotone transformations (e.g.\
 $f_i\mapsto\log f_i$), which change the distances that define regret---so such
@@ -64,14 +63,13 @@ $q_i(r)=r_i$ is sufficient; LUR always does so.
 \end{definition}
 
 \subsection{Disappointment and regret}
-For each probe $q\in\Q$ let $q^\star=\min_{x}q(r(x))$ and $q^{\mathrm w}=\max_{x}q(r(x))$
-(or a user-supplied worst-acceptable value). The \emph{normalised disappointment}
-of $x$ under $q$ is
+For each probe $q\in\Q$ let $q^\star=\min_{x\in A}q(r(x))$ and $q^{\mathrm w}=\max_{x\in A}q(r(x))$
+(or a user-supplied worst-acceptable bound). Define the active range $R_q = q^{\mathrm w} - q^\star$. If $R_q < \varepsilon_q$ for a small numerical threshold, the probe is degenerate and is excluded from the primary decision vector. Otherwise, the \emph{normalised disappointment} of $x$ under $q$ is
 \begin{equation}
-\reg_q(x)=\frac{q(r(x))-q^\star}{q^{\mathrm w} - q^\star+\varepsilon}\in[0,1],
+\reg_q(x)=\frac{q(r(x))-q^\star}{R_q}\in[0,1],
 \label{eq:disap}
 \end{equation}
-with $\reg_q(x)=0$ iff $x$ is $q$-optimal and $1$ iff $x$ is $q$-worst.
+so that $\reg_q(x)=0$ iff $x$ is $q$-optimal and $1$ iff $x$ attains the worst bound.
 
 We use the term \emph{disappointment} for the normalised shortfall of an alternative from the best attainable value of a single given probe, and \emph{regret certificate} for the vector collecting these probe-wise disappointments. This is regret-like but differs from classical pairwise Savage regret unless the probe family is interpreted specifically as the uncertainty set of possible true preference functions.
 
@@ -89,17 +87,12 @@ second worst; and so on. The \emph{LUR solution} is $x^{\mathrm{LUR}}\in
 labelled, sorted vector $\reg^{\downarrow}(x^{\mathrm{LUR}})$ together with the
 probes attaining the largest entries.
 
-Because exact lexicographic comparison is discontinuous at ties, we use in
-practice---and in all guarantees below---a \emph{tolerance-based} leximax order:
-fix $\tau>0$ and compare $\reg^{\downarrow}(x)$ and $\reg^{\downarrow}(y)$ at the
-first coordinate where they differ by more than $\tau$, treating coordinates
-within $\tau$ as equal. This is the rule implemented in the released code and the
-one for which stability holds (Theorem~\ref{thm:stab}).
+Exact LUR defines the mathematical complete preorder. In computation and practical reporting, a tolerance $\tau>0$ is used only to define a numerical indifference class: we report alternatives whose sorted disappointment vectors are not separated from the exact winner by more than $\tau$ at the first differing coordinate. The $\tau$-tolerance rule is not itself a transitive preorder, but rather a numerical reporting and stability device around the exact or margin-separated winner (Theorem~\ref{thm:stab}).
 
 \subsection{Foundational guarantees}
-\begin{theorem}[Existence and completeness]
+\begin{theorem}[Existence and completeness of exact LUR]
 \label{thm:exist}
-For any finite $A$ and finite $\Q$, $x^{\mathrm{LUR}}$ exists and
+For any finite $A$ and finite $\Q$, $x^{\mathrm{LUR}}$ exists and exact
 $\preceq_{\mathrm{LUR}}$ is a complete preorder on $A$.
 \end{theorem}
 \begin{proof}
@@ -150,10 +143,10 @@ lexicographic minimiser. Without separation only $y\preceq_{\mathrm{LUR}}x$ hold
 and a dominated alternative may tie its dominator.
 \end{proof}
 
-\begin{theorem}[Stability of the tolerance-based rule]
+\begin{theorem}[Stability of the implemented winner under a margin condition]
 \label{thm:stab}
-Use the $\tau$-tolerance leximax order. Let $\hat\reg_q(x)$ estimate $\reg_q(x)$
-with $\eta=\max_{x,q}|\hat\reg_q(x)-\reg_q(x)|$. Suppose the winner
+Let $\hat\reg_q(x)$ estimate $\reg_q(x)$
+with $\eta=\max_{x,q}|\hat\reg_q(x)-\reg_q(x)|$. Suppose the exact winner
 $x^{\mathrm{LUR}}$ beats every rival $y$ at the first coordinate $k(y)$ at which
 their sorted vectors differ by more than $\tau$, with margin
 $\reg_{[k(y)]}(y)-\reg_{[k(y)]}(x^{\mathrm{LUR}})\ge\Delta$, and that all earlier

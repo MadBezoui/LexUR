@@ -384,17 +384,17 @@ def stage_report(cfg):
         rows.append(dict(gate=gate, result="PASS" if passed else "CHECK", detail=detail))
 
     if gi:
-        d = gi["dominated"]; add("Dominated selections = 0",
+        d = gi["dominated"]; add("dominated_injection",
             d["pass"], f"{d['violations']}/{d['trials']} violations")
-        a = gi["affine"]; add("Positive-affine invariance",
+        a = gi["affine"]; add("affine_invariance",
             a["pass"], f"identical rate {a['identical_rate']}")
         nd = gi["nadir"]; add("Nadir-error stability",
             nd["pass"], f"max quality degradation {nd['max_quality_degradation']}")
     if bs:
         ni = bs["noninferiority"]
-        add("Tail non-inferiority vs ASF", ni["ASF"]["noninferior"],
+        add("tail_noninferiority_asf", ni["ASF"]["noninferior"],
             f"diff {ni['ASF']['mean_diff']} CI {ni['ASF']['ci95']}")
-        add("Tail non-inferiority vs MMR", ni["MMR"]["noninferior"],
+        add("tail_noninferiority_mmr", ni["MMR"]["noninferior"],
             f"diff {ni['MMR']['mean_diff']} CI {ni['MMR']['ci95']}")
         wh = bs["wilcoxon_vs_LUR"]
         practical = ["TOPSIS", "CP", "Knee", "RW", "SMAA"]
@@ -405,7 +405,7 @@ def stage_report(cfg):
     try:
         rd = pd.read_csv(f"{TAB}/redundancy.csv").set_index("method")
         avg = rd.loc[["TOPSIS", "SMAA", "RW"], "grouped_loss"].mean()
-        add("Redundancy: LUR < averaging (grouped)", rd.loc["LUR", "grouped_loss"] < avg,
+        add("redundancy_grouped_loss", rd.loc["LUR", "grouped_loss"] < avg,
             f"LUR {rd.loc['LUR','grouped_loss']:.3f} vs avg {avg:.3f}")
     except Exception:
         pass

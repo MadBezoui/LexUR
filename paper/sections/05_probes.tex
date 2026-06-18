@@ -15,13 +15,13 @@ Consider a 3-criteria numerical example where $f_1$ is a weak independent criter
 \toprule
 Alternative & $r_1$ & $r_2$ & $r_3$ & Interpretation \\
 \midrule
-A & 0.20 & 0.21 & 0.70 & good redundant group, weak independent criterion \\
-B & 0.35 & 0.36 & 0.45 & balanced \\
-C & 0.55 & 0.56 & 0.25 & weak redundant group, good independent criterion \\
+A & 0.70 & 0.20 & 0.21 & weak independent criterion, good redundant group \\
+B & 0.45 & 0.35 & 0.36 & balanced \\
+C & 0.25 & 0.55 & 0.56 & good independent criterion, weak redundant group \\
 \bottomrule
 \end{tabular}
 \end{center}
-A full coalition family overcounts $\{r_1, r_2\}$ (which are highly correlated), implicitly double-weighting the environmental impact. The adaptive clustered family identifies the correlation and reduces overcounting by adding one cluster mean/max instead of many redundant coalitions. However, singleton probes remain (for separation), so perfect duplication invariance is not claimed; singleton influence usually appears in lower-order tie-breaking unless top regrets are tied. We need a probe family that (i) is small, (ii) stays monotone, and (iii) is less sensitive to redundancy than averaging aggregation.
+A full coalition family overcounts $\{r_2, r_3\}$ (which are highly correlated), implicitly double-weighting the environmental impact. The adaptive clustered family reduces the number of redundant coalition probes, but singleton probes remain for separation. Therefore, it reduces but does not eliminate redundancy sensitivity. We need a probe family that (i) is small, (ii) stays monotone, and (iii) is less sensitive to redundancy than averaging aggregation.
 
 \subsection{Correlation clustering}
 We group \emph{redundant} criteria by single-linkage connected components of the
@@ -77,7 +77,7 @@ $\sup_r|q(r)-q'(r)|\le\eta$ (hence also $|q^\star-q'^\star|\le\eta$ and
 $|q^{\mathrm w}-q'^{\mathrm w}|\le\eta$), and let the normalisation ranges satisfy
 $q^{\mathrm w}-q^\star,\,q'^{\mathrm w}-q'^\star\ge\beta>0$. Then for every $x$
 \[
-|\reg_q(x)-\reg_{q'}(x)|\;\le\;\frac{3\eta}{\beta},
+|\reg_q(x)-\reg_{q'}(x)|\;\le\;\frac{4\eta}{\beta},
 \]
 with the floor $\beta\ge\varepsilon$ in the worst case. The bound is vacuous when
 $\beta$ is of order $\eta$, and informative only when the probe's attainable
@@ -92,7 +92,7 @@ $\ge\beta>0$. Using $\reg_q(x)\in[0,1]$,
 |\reg_q(x)-\reg_{q'}(x)|
 =\left|\frac{q(x)-q^\star}{N}-\frac{q'(x)-q'^\star}{N'}\right|
 \le\frac{|q(x)-q'(x)|+|q^\star-q'^\star|}{N'}+\reg_q(x)\frac{|N-N'|}{N'}
-\le\frac{2\eta+\eta}{\beta}=\frac{3\eta}{\beta}.
+\le\frac{2\eta}{\beta}+1\cdot\frac{2\eta}{\beta}=\frac{4\eta}{\beta}.
 \]
 The constant is explicit and the dependence on the range floor $\beta$ (worst
 case $\varepsilon$) is exhibited, making clear when the bound is informative.

@@ -33,7 +33,7 @@ This turns the output of the analysis from a \emph{set} into a \emph{certified
 recommendation}: a single alternative (or small indifference class) accompanied
 by an explanation of which questions are most disappointed and by how much.
 
-It is crucial to note what this approach does and does not do. LUR is not parameter-free. It replaces a single preference vector by an explicit family of admissible probes, and it requires normalisation bounds and tolerance settings for numerical implementation. Its contribution is that these choices are declared, auditable, and separated from the final recommendation, not that they disappear.
+It is crucial to note what this approach does and does not do. LUR is not parameter-free; preferences are represented by an explicit auditable probe family, and it requires normalisation bounds and tolerance settings for numerical implementation. Its contribution is that these choices are declared, auditable, and separated from the final recommendation, not that they disappear.
 
 \subsection{The Leximax Universal-Regret core}
 We formalise this as the \textbf{Leximax Universal-Regret (LUR) core}. Given a
