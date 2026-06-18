@@ -10,8 +10,7 @@ weighted sum, TOPSIS \citep{hwang1981}, compromise programming
 \citep{zeleny1982}, knee selection \citep{branke2008}, ELECTRE \citep{roy1991},
 PROMETHEE \citep{brans2016} and hypervolume selection \citep{zitzler1999} are the
 standard tools; each requires weights, thresholds, a metric, or an already
-generated front. LUR removes these by folding the selection criterion into a
-declared probe family and computing the recommendation directly.
+generated front. LUR does not eliminate modelling choices. It relocates them into a declared family of admissible monotone probes and, on finite candidate sets, computes the resulting recommendation exactly while returning a labelled regret certificate.
 
 \subsection{Achievement scalarising functions and ordered aggregation}
 Achievement scalarising functions (ASF) project a reference point onto the
@@ -99,13 +98,19 @@ Table~\ref{tab:positioning} summarises where LUR sits relative to representative
 \centering\scriptsize
 \caption{Comparison of LUR with representative selection and robust-MCDA methods.}
 \label{tab:positioning}
-\begin{tabular}{p{1.8cm}p{3.2cm}p{1.5cm}p{1.5cm}p{1.5cm}p{1.6cm}p{3.2cm}}
+\begin{tabular}{p{2.3cm}p{3.2cm}p{1.5cm}p{1.5cm}p{1.5cm}p{1.6cm}p{3.2cm}}
 \toprule
 Method & Main preference / model input & Requires candidate/front? & Single rec.? & Pareto comp. & Explanation / certificate & Main limitation \\
 \midrule
 Weighted sum & Weight vector & No & Yes & Yes ($w>0$) & Low & Cannot recover non-supported points in non-convex fronts \\
+TOPSIS & Weights and distance metric & Yes & Yes & Not strictly & Low & Rank reversal; distance to non-feasible ideal \\
+Compromise programming & Weights and $L_p$ norm exponent & Yes & Yes & Yes ($p<\infty$) & Low & Non-linear scaling effects \\
+ASF / Chebyshev & Reference point and scaling & No & Yes & Yes & Low & Requires setting an arbitrary reference point \\
+MMR (sampled weights) & Linear weight distribution & Yes & Yes & Yes & Worst-case regret value & Limited to linear aggregations \\
 SMAA & Distribution over preferences/weights & Usually & Not inherently (needs rule) & Usually & Acceptability indices & Exploratory; single-choice rule depends on post-processing \\
-\textbf{LUR (ours)} & Declared monotone probe family; normalisation bounds; tolerance $\tau$ & Candidate-set exact & Yes (or small $\tau$-class) & Yes (if separating probes) & Full labelled regret certificate & Sensitive to probe-family and normalisation choices \\
+VIKOR & Weights and majority threshold & Yes & Yes & Not strictly & Low & Complex parameter interaction \\
+Hypervolume contrib. & Reference point & Yes & Yes & Yes & Low & Favours extremes; sensitive to reference point \\
+\textbf{LUR (ours)} & Declared monotone probe family; bounds; tolerance $\tau$; optional $\theta$ & Candidate-set exact; continuous cond. & Yes (or small $\tau$-class) & Yes (if separating probes) & Full labelled regret certificate & Sensitive to probe family, normalisation, and near-ties \\
 \bottomrule
 \end{tabular}
 \end{table}

@@ -23,8 +23,7 @@ r_i(x)=\frac{f_i(x)-\ideal_i}{\max\{\nadir_i-\ideal_i,\;\varepsilon\}},\qquad
 \ideal_i=\min_{x\in A}f_i(x),\;\; \nadir_i=\max_{x\in A}f_i(x),
 \label{eq:norm}
 \end{equation}
-with a small $\varepsilon>0$ guarding against a zero range, so that $r_i\in[0,1]$
-attains both endpoints on $A$. If $\nadir_i - \ideal_i$ approaches zero, the normalisation floor $\varepsilon$ prevents division by zero and effectively zeros out the relevance of that criterion. In practice, analysts should check if $\nadir_i - \ideal_i < 10^{-6}$; if so, the criterion is degenerate on the candidate set and should be excluded from probe generation to avoid numerical noise.
+attains both endpoints on $A$. If $\nadir_i - \ideal_i$ approaches zero, the normalisation floor $\varepsilon$ prevents division by zero and effectively zeros out the relevance of that criterion. A criterion is flagged as numerically degenerate when $\nadir_i-\ideal_i < \kappa \max\{1, |\ideal_i|, |\nadir_i|\}$, with $\kappa$ set to a small numerical tolerance such as $10^{-8}$. Degenerate criteria are reported and excluded from non-singleton probe construction unless the analyst supplies external bounds.
 
 For the finite case all extrema ($\ideal$,
 $\nadir$, $q^\star$, $q^{\mathrm w}$ below) are taken over the candidate set $A$;

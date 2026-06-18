@@ -15,7 +15,7 @@ Given a discrete candidate set $A=\{x_1,\dots,x_N\}$: (1) form $F_{ij}=f_j(x_i)$
 $q^{\mathrm w}=\max_i V_{iq}$; (5) form disappointments \eqref{eq:disap}; (6) sort each row
 descending; (7) return the lexicographically smallest row. 
 
-The worst-case complexity is $O(NKm + NK\log K + N \log N)$ when using a tolerance-based lexicographic comparison. Here $O(NKm)$ is the cost of probe evaluation, $O(NK\log K)$ is the cost of sorting the $K$-dimensional disappointment vector for each of the $N$ candidates, and $O(N\log N)$ is the cost of the final lexicographic sort across candidates. The number of probes $K$ is controlled by the construction of \S\ref{sec:probes}.
+The worst-case complexity is straightforward. With naive probe evaluation, winner selection costs $O(NKm + NK\log K + NK)$. Producing a complete lexicographic ranking of all candidates costs $O(NKm + NK\log K + NK\log N)$. Here $O(NKm)$ is the cost of probe evaluation and $O(NK\log K)$ is the cost of sorting the $K$-dimensional disappointment vector for each of the $N$ candidates. The number of probes $K$ is controlled by the construction of \S\ref{sec:probes}.
 
 \subsection{Cost of the anchors}
 Both the finite and continuous formulations need, for each probe, its attainable
@@ -25,24 +25,16 @@ optimisation, so the family contributes $2K$ such subproblems---cheap relative t
 front enumeration when $K$ is linear in $m$ (\S\ref{sec:probes}) but not free, and
 we account for it explicitly.
 
-\subsection{Sequential minimax-regret formulation}
-For continuous or large discrete $\X$, solve a sequence of minimax problems.
-\emph{Stage 1} minimises the worst regret,
-\begin{equation}
-\rho_1=\min_{x\in\X}\max_{q\in\Q}\reg_q(x),\qquad
-\X_1=\{x:\max_q\reg_q(x)=\rho_1\}.
-\end{equation}
-\emph{Stage $k\!>\!1$} fixes the probes already saturated and minimises the next
-worst regret over the remaining ones, restricted to $\X_{k-1}$, until the optimal
-set is a singleton or all probes are exhausted. This realises the lexicographic
-order \eqref{eq:lur} by construction.
-
 \subsection{Exact sequential cumulative-sum formulation}
-Lexicographic minimisation
-of the sorted vector is exactly equivalent to sequentially minimising the cumulative sums
-of the $p$ largest disappointments, $\sum_{k=1}^{p}\reg_{[k]}(x)$ for
-$p=1,\dots,K$. Each of these is convex when the disappointments are convex and
-admits the standard ordered-value linearisation \citep{ogryczak2006}. By solving $K$ sequential problems, we obtain the exact LUR recommendation without needing to enumerate the Pareto front.
+Lexicographic minimisation of the sorted vector is exactly equivalent to sequentially minimising the cumulative sums of the $p$ largest disappointments. For each $p = 1,\dots,K$, define:
+\begin{equation}
+S_p(x) = \sum_{k=1}^{p} \reg_{[k]}(x),
+\end{equation}
+where $\reg_{[1]}(x)\ge \dots \ge \reg_{[K]}(x)$ are the sorted disappointments. Then solve sequentially:
+\begin{equation}
+\rho_p = \min_{x \in \X_{p-1}} S_p(x), \quad \X_p = \{x\in \X_{p-1}: S_p(x)=\rho_p\},
+\end{equation}
+starting with $\X_0=\X$. Each cumulative sum is convex when the original disappointments are convex and admits the standard ordered-value linearisation \citep{ogryczak2006}. By solving $K$ sequential problems, we obtain the exact LUR recommendation without needing to enumerate the Pareto front.
 
 \subsection{Single-stage heuristic surrogate}
 The stages can be collapsed with a strictly decreasing weight schedule. For a
@@ -76,5 +68,5 @@ least-fragile compromise by the exact procedure above, and in the continuous cas
 the formulations here make a front-free computation \emph{available} in principle.
 We are careful not to overclaim: our experiments operate on candidate sets, so the
 large-scale continuous advantage is argued, not yet demonstrated, and we flag its
-empirical validation as the main piece of future work. We quantify the
-probe-family savings in \S\ref{sec:probes}.
+We quantify the
+probe-family savings in \S\ref{sec:probes}. The direct formulations are empirically exercised in \S\ref{sec:exp} on one continuous linear multiobjective problem and one mixed-integer facility-location problem. These tests demonstrate feasibility for structured cases, but not yet a general large-scale continuous optimisation advantage.

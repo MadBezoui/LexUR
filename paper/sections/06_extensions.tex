@@ -12,17 +12,19 @@ marginal means. We estimate the robust stochastic probe value by its finite samp
 The normalisation anchors $q^\star,q^{\mathrm w}$ are taken on these estimated means. We
 define the \emph{$\alpha$-confidence regret}
 \begin{equation}
-\reg_q^\alpha(x)=\frac{\hat\mu_q(x)+z_\alpha\,\hat\sigma_q(x)-q^\star}{q^{\mathrm w}-
+\reg_q^\alpha(x)=\frac{\mathrm{CVaR}_\alpha(q(r(x,\omega)))-q^\star}{q^{\mathrm w}-
 q^\star+\varepsilon},
 \end{equation}
-with $z_\alpha$ the standard-normal quantile, penalising both expected
-disappointment and its sample uncertainty $\hat\sigma_q(x)$, and apply the tolerance-based leximax order
-to $(\reg_{q_1}^\alpha,\dots,\reg_{q_K}^\alpha)$. We present this as a practical
-risk-adjusted rule; we note that sample-average probes preserve exact Pareto compatibility.
+where $\mathrm{CVaR}_\alpha$ is the empirical Conditional Value-at-Risk at confidence level $\alpha$. This penalises both expected disappointment and its sample uncertainty. Because $\mathrm{CVaR}$ is a monotone risk measure, exact Pareto compatibility is preserved.
 
-\begin{proposition}[Sample-average stochastic consistency]
+\begin{proposition}[Scenario-wise Pareto compatibility]
 \label{thm:stoch}
-For any finite sample size $S$, if $x$ strictly dominates $y$ under all scenarios $\omega^{(s)}$, then $x \prec_{\mathrm{LUR}} y$ under the sample-average probe regrets.
+For finite $A$, finite $\Q$, and sample-average probe means $\hat{\mu}_q(x)=S^{-1}\sum_s q(r(x,\omega^{(s)}))$, if $x$ weakly dominates $y$ in every scenario and strictly dominates it in at least one criterion for at least one scenario, then the sample-average LUR rule does not prefer $y$ to $x$. If $\Q$ separates criteria and the dominance is strict on a separated coordinate, then $x$ is strictly preferred by the exact LUR order.
+\end{proposition}
+
+\begin{proposition}[Sample-average consistency under a margin condition]
+\label{thm:stoch2}
+Let $A$ and $\Q$ be finite. For each $x\in A$ and $q\in\Q$, suppose $q(r(x,\omega))$ is i.i.d.\ across scenarios and has finite variance. Let $\mu_q(x)=\mathbb{E}[q(r(x,\omega))]$, and let $\hat{\mu}_q(x)$ be its sample average. Define population and sample disappointment vectors using their corresponding anchors. If the population tolerance-LUR winner satisfies the margin condition of Theorem~\ref{thm:stab}, then the sample-average LUR winner converges in probability to the population winner as $S\to\infty$.
 \end{proposition}
 \S\ref{sec:exp} gives an empirical confirmation.
 
