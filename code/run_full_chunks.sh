@@ -7,23 +7,23 @@ echo "Wiping old chunks..."
 rm -f ../results/protocol/tmp_v2/bench_*.npz
 
 echo "Running chunks..."
-python3 run_protocol.py --config configs/ejor_final.yaml --stage benchmark --csize 100
-python3 run_protocol.py --config configs/ejor_final.yaml --stage benchmark --csize 300
-python3 run_protocol.py --config configs/ejor_final.yaml --stage benchmark --csize 1000 --crit 3,5,8
-python3 run_protocol.py --config configs/ejor_final.yaml --stage benchmark --csize 1000 --crit 10,15,20
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage benchmark --csize 100 --new-run-id
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage benchmark --csize 300
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage benchmark --csize 1000 --crit 3,5,8
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage benchmark --csize 1000 --crit 10,15,20
 
 echo "Finalizing benchmark..."
-python3 run_protocol.py --config configs/ejor_final.yaml --stage bfinalize
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage bfinalize
 
 echo "Running other stages..."
-python3 run_protocol.py --config configs/ejor_final.yaml --stage redundancy
-python3 run_protocol.py --config configs/ejor_final.yaml --stage probes
-python3 run_protocol.py --config configs/ejor_final.yaml --stage gates
-python3 run_protocol.py --config configs/ejor_final.yaml --stage direct
-python3 run_protocol.py --config configs/ejor_final.yaml --stage stochastic
-python3 run_protocol.py --config configs/ejor_final.yaml --stage multistakeholder
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage redundancy
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage probes
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage gates
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage direct
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage stochastic
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage multistakeholder
 
 echo "Generating final report..."
-python3 run_protocol.py --config configs/ejor_final.yaml --stage report
+.venv/bin/python run_protocol.py --config configs/ejor_final.yaml --stage report
 
 echo "Done!"

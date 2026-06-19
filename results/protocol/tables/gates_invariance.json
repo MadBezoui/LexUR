@@ -34,5 +34,41 @@
     },
     "max_quality_degradation": 0.1533,
     "pass": false
+  },
+  "normalization": {
+    "name": "normalization_stability",
+    "regimes": {
+      "minmax": {
+        "identity_rate": 1.0,
+        "overlap": 1.0,
+        "quality_degradation": 0.0,
+        "cert_gap": 0.0
+      },
+      "quantiles": {
+        "identity_rate": 0.8,
+        "overlap": 0.8,
+        "quality_degradation": 0.0033,
+        "cert_gap": 0.0496
+      },
+      "subset": {
+        "identity_rate": 0.965,
+        "overlap": 0.965,
+        "quality_degradation": 0.0001,
+        "cert_gap": 0.0462
+      },
+      "asymmetric_error": {
+        "identity_rate": 0.84,
+        "overlap": 0.84,
+        "quality_degradation": 0.0016,
+        "cert_gap": 0.0347
+      },
+      "correlated_error": {
+        "identity_rate": 1.0,
+        "overlap": 1.0,
+        "quality_degradation": 0.0,
+        "cert_gap": 0.0061
+      }
+    },
+    "pass": true
   }
 }

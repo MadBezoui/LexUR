@@ -1,11 +1,11 @@
 [
   {
-    "gate": "Dominated selections = 0",
+    "gate": "dominated_injection",
     "result": "PASS",
     "detail": "0/150 violations"
   },
   {
-    "gate": "Positive-affine invariance",
+    "gate": "affine_invariance",
     "result": "PASS",
     "detail": "identical rate 1.0"
   },
@@ -15,29 +15,24 @@
     "detail": "max quality degradation 0.1533"
   },
   {
-    "gate": "Tail non-inferiority vs ASF",
-    "result": "PASS",
-    "detail": "diff 0.0007 CI [-0.0003, 0.0015]"
+    "gate": "tail_noninferiority_asf",
+    "result": "CHECK",
+    "detail": "diff 0.0492 CI [0.0251, 0.0744]"
   },
   {
-    "gate": "Tail non-inferiority vs MMR",
-    "result": "PASS",
-    "detail": "diff 0.0012 CI [0.0002, 0.0021]"
+    "gate": "tail_noninferiority_mmr",
+    "result": "CHECK",
+    "detail": "diff 0.0445 CI [0.022, 0.0683]"
   },
   {
     "gate": "Better than practical baselines (tail)",
-    "result": "PASS",
-    "detail": "TOPSIS:d=+0.17; CP:d=+0.07; Knee:d=+0.26; RW:d=+0.60; SMAA:d=+0.61"
+    "result": "CHECK",
+    "detail": "TOPSIS:d=+0.17; CP:d=+0.14; Knee:d=+0.75; RW:d=+0.97; SMAA:d=+0.97"
   },
   {
-    "gate": "Redundancy: LUR < averaging (grouped)",
+    "gate": "redundancy_grouped_loss",
     "result": "PASS",
     "detail": "LUR 0.256 vs avg 0.359"
-  },
-  {
-    "gate": "Adaptive probes ~ full (tail gap <= 0.01)",
-    "result": "PASS",
-    "detail": "gap +0.0053, agree 0.00"
   },
   {
     "gate": "Direct computation demonstrated (LP+MILP)",
