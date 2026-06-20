@@ -11,6 +11,7 @@ Outputs -> ../results/protocol/{tables,figures}. Acceptance gates are summarised
 in gates_report.{csv,json}.
 """
 import argparse, json, os, sys, time
+from pathlib import Path
 import numpy as np, pandas as pd, yaml
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 
@@ -18,35 +19,54 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from lur import problems, methods, families, stats as st, gates, directopt, extras_validation
 from lur.methods import normalize
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "results", "protocol"))
+DEFAULT_OUTPUT_ROOT = Path(__file__).resolve().parents[1] / "results" / "protocol"
+ROOT = str(DEFAULT_OUTPUT_ROOT)
 TAB = f"{ROOT}/tables"; FIG = f"{ROOT}/figures"
+TMP = f"{ROOT}/tmp_v2"
+
+
+def configure_output_root(output_root, run_id):
+    """Configure all protocol paths for one immutable scientific run."""
+    global ROOT, TAB, FIG, TMP
+    root = Path(output_root).resolve() / "runs" / str(run_id)
+    paths = {
+        "root": root,
+        "tables": root / "tables",
+        "figures": root / "figures",
+        "tmp": root / "tmp",
+    }
+    ROOT = str(paths["root"])
+    TAB = str(paths["tables"])
+    FIG = str(paths["figures"])
+    TMP = str(paths["tmp"])
+    return paths
 
 
 _MCW = [1000]   # Monte-Carlo weight count for randomized methods (set per run)
 
 
 def _select(name, F, rng):
-    fn = methods.METHODS[name]
+    if name == "RW":
+        return methods.select(name, F, rng=rng, n_weights=min(_MCW[0], 200))
     if name in methods.RANDOMIZED:
-        if name == "RW":
-            return fn(F, rng=rng, n_weights=min(_MCW[0], 200))
-        return fn(F, rng=rng, n_weights=_MCW[0])
-    return fn(F)
+        return methods.select(name, F, rng=rng, n_weights=_MCW[0])
+    return methods.select(name, F)
 
 
 def _load_json(p, d=None):
     try:
-        return json.load(open(p))
-    except Exception:
+        with open(p) as f:
+            return json.load(f)
+    except Exception as e:
+        import logging
+        logging.warning(f"Error loading JSON from {p}: {e}")
         return {} if d is None else d
 
 
 def _save_json(p, obj):
     os.makedirs(os.path.dirname(p), exist_ok=True)
-    json.dump(obj, open(p, "w"), indent=2, default=float)
-
-
-TMP = f"{ROOT}/tmp_v2"       # benchmark chunk store (bounded-generator full run)
+    with open(p, "w") as f:
+        json.dump(obj, f, indent=2, default=float)
 
 
 # --------------------------------------------------------------------------- #
@@ -199,44 +219,7 @@ def _benchmark_finalize_from_records(cfg, records):
         _save_json(f"{TAB}/gates_noninferiority.json", noninf)
 
 
-def _benchmark_finalize_from(cfg, Pt, Pm, Pw):
-    M = cfg["methods"]
-    df = pd.DataFrame([dict(method=nm, mean_loss=Pm[:, j].mean(),
-                            tail_loss=Pt[:, j].mean(), worst_family=Pw[:, j].mean())
-                       for j, nm in enumerate(M)])
-    os.makedirs(TAB, exist_ok=True)
-    df.to_csv(f"{TAB}/benchmark.csv", index=False)
-    P = Pt
-    fried = st.friedman(P); ranks = st.average_ranks(P)
-    cd = st.nemenyi_cd(len(M), P.shape[0])
-    wh = st.wilcoxon_holm(P, M, control="LUR")
-    # non-inferiority vs ASF and MMR
-    li = M.index("LUR")
-    noninf = {}
-    for ctrl in ["ASF", "MMR"]:
-        noninf[ctrl] = gates.noninferiority(P[:, li], P[:, M.index(ctrl)],
-                                            margin=cfg["noninferiority_margin"], name=ctrl)
-    summary = dict(n_instances=int(P.shape[0]), friedman=fried, cd=cd,
-                   avg_ranks={nm: float(r) for nm, r in zip(M, ranks)},
-                   wilcoxon_vs_LUR={k: dict(p_raw=v[0], p_holm=v[1], delta=v[2])
-                                    for k, v in wh.items()},
-                   noninferiority=noninf)
-    _save_json(f"{TAB}/benchmark_stats.json", summary)
-    # CD figure
-    order = np.argsort(ranks); names = [M[i] for i in order]; rr = ranks[order]
-    fig, ax = plt.subplots(figsize=(9, 2.6)); ax.axis("off")
-    ax.hlines(0.75, 1, len(M), color="k")
-    for nm, v in zip(names, rr):
-        ax.vlines(v, 0.7, 0.8); ax.text(v, 0.6, f"{nm}\n{v:.2f}", ha="center", va="top", fontsize=7)
-    ax.plot([1, 1 + cd], [0.92, 0.92], lw=3, color="crimson")
-    ax.text(1 + cd / 2, 0.96, f"CD={cd:.2f}", ha="center", color="crimson", fontsize=8)
-    ax.set_ylim(0, 1); ax.set_xlim(0.5, len(M) + 0.5)
-    ax.set_title("Average ranks — tail held-out loss (protocol suite)", fontsize=9)
-    os.makedirs(FIG, exist_ok=True); fig.tight_layout()
-    fig.savefig(f"{FIG}/cd_protocol.pdf"); plt.close(fig)
-    print(f"  instances={P.shape[0]} LUR tail rank={summary['avg_ranks']['LUR']:.2f} "
-          f"NI(ASF)={noninf['ASF']['noninferior']} NI(MMR)={noninf['MMR']['noninferior']}")
-    return summary
+
 
 
 def stage_redundancy(cfg):
@@ -407,16 +390,18 @@ def stage_report(cfg):
         avg = rd.loc[["TOPSIS", "SMAA", "RW"], "grouped_loss"].mean()
         add("redundancy_grouped_loss", rd.loc["LUR", "grouped_loss"] < avg,
             f"LUR {rd.loc['LUR','grouped_loss']:.3f} vs avg {avg:.3f}")
-    except Exception:
-        pass
+    except Exception as e:
+        import logging
+        logging.warning(f"Failed to load run manifest or stats: {e}")
     # probes adaptive vs full
     try:
         pr = pd.read_csv(f"{TAB}/probes.csv").set_index("variant")
         gap = pr.loc["adaptive", "tail_loss"] - pr.loc["full", "tail_loss"]
         add("Adaptive probes ~ full (tail gap <= 0.01)", abs(gap) <= 0.01,
             f"gap {gap:+.4f}, agree {pr.loc['adaptive','agree_with_full']:.2f}")
-    except Exception:
-        pass
+    except Exception as e:
+        import logging
+        logging.warning(f"Failed to load redundancy JSON: {e}")
     # direct
     try:
         dr = _load_json(f"{TAB}/direct.json")
@@ -424,8 +409,9 @@ def stage_report(cfg):
         add("Direct computation demonstrated (LP+MILP)",
             dr.get("milp", {}).get("available", False),
             f"LP direct calls {lin['direct_calls']:.0f} vs enum {lin['enum_calls']:.0f}")
-    except Exception:
-        pass
+    except Exception as e:
+        import logging
+        logging.warning(f"Failed to load direct.json: {e}")
     # stochastic
     try:
         sd = pd.read_csv(f"{TAB}/stochastic.csv").set_index("method")
@@ -433,8 +419,9 @@ def stage_report(cfg):
         add("Stochastic LUR <= deterministic LUR (tail)",
             best_alpha <= sd.loc["det-LUR", "tail_loss"] + 1e-9,
             f"best-alpha {best_alpha:.3f} vs det {sd.loc['det-LUR','tail_loss']:.3f}")
-    except Exception:
-        pass
+    except Exception as e:
+        import logging
+        logging.warning(f"Failed to load multi-stakeholder or stochastic CSV: {e}")
     rep = pd.DataFrame(rows)
     rep.to_csv(f"{TAB}/gates_report.csv", index=False)
     _save_json(f"{TAB}/gates_report.json", rows)
@@ -464,26 +451,29 @@ def main():
     ap.add_argument("--geoms", default=None,
                     help="comma list of geometries to restrict the benchmark chunk")
     ap.add_argument("--new-run-id", action="store_true", help="Force overwrite of manifest if config hashes differ")
+    ap.add_argument("--output-root", default=str(DEFAULT_OUTPUT_ROOT),
+                    help="base directory containing isolated protocol runs")
     args = ap.parse_args()
     if args.mcw:
         _MCW[0] = args.mcw
-    cfg = yaml.safe_load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                           args.config)))
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           args.config)) as f:
+        cfg = yaml.safe_load(f)
     cfg["_csize"] = args.csize
     cfg["_crit"] = [int(x) for x in args.crit.split(",")] if args.crit else None
     cfg["_geoms"] = [x.strip() for x in args.geoms.split(",")] if args.geoms else None
     if args.utils:
         cfg["utilities_per_family"] = args.utils
-    os.makedirs(TAB, exist_ok=True); os.makedirs(FIG, exist_ok=True)
-    
     from lur.provenance import build_manifest
-    manifest_path = os.path.join(ROOT, "run_manifest.json")
     cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.config)
     manifest = build_manifest(cfg_path, seed=cfg.get("seed", 42))
+    configure_output_root(args.output_root, manifest["run_id"])
+    os.makedirs(TAB, exist_ok=True); os.makedirs(FIG, exist_ok=True)
+    manifest_path = os.path.join(ROOT, "run_manifest.json")
     if os.path.exists(manifest_path):
         existing = _load_json(manifest_path)
-        if existing.get("config_sha256") != manifest["config_sha256"] and not args.new_run_id:
-            sys.exit("Error: config_sha256 mismatch with existing run_manifest.json. Use --new-run-id to overwrite.")
+        if existing.get("run_id") != manifest["run_id"] and not args.new_run_id:
+            sys.exit("Error: run_id mismatch with existing run_manifest.json. Use --new-run-id to overwrite.")
     _save_json(manifest_path, manifest)
 
     # 'all' should not silently chunk-skip finalisation
