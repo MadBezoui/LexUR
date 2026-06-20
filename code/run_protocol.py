@@ -42,6 +42,21 @@ def configure_output_root(output_root, run_id):
     return paths
 
 
+def publish_current_run(run_root):
+    """Atomically point <output-root>/current at a completed run directory."""
+    run_root = Path(run_root).resolve()
+    output_root = run_root.parents[1]
+    current = output_root / "current"
+    if current.exists() and not current.is_symlink():
+        raise ValueError(f"refusing to replace non-symlink publication path: {current}")
+    temporary = output_root / ".current.tmp"
+    if temporary.is_symlink() or temporary.exists():
+        temporary.unlink()
+    temporary.symlink_to(Path("runs") / run_root.name, target_is_directory=True)
+    os.replace(temporary, current)
+    return current
+
+
 _MCW = [1000]   # Monte-Carlo weight count for randomized methods (set per run)
 
 
@@ -102,7 +117,10 @@ def _bench_block(cfg, csizes, crits, manifest):
                                                 alpha=a, n_per_family=nU, family_list=fam)
                     for nm in M:
                         idx = _select(nm, F, rng=_method_rng(s + 2, nm))
-                        ml, tl, wf, _ = families.losses_from(cache, idx, q=tailq)
+                        ml, tl, worst_loss, per_family = families.losses_from(
+                            cache, idx, q=tailq
+                        )
+                        worst_family = max(per_family, key=per_family.get)
                         
                         records.append({
                             "run_id": run_id,
@@ -114,10 +132,11 @@ def _bench_block(cfg, csizes, crits, manifest):
                             "replication": rep,
                             "dirichlet_alpha": float(a),
                             "method": nm,
-                            "utility_scope": scopes.get(wf, "unknown"),
+                            "utility_scope": scopes.get(worst_family, "unknown"),
                             "mean_loss": float(ml),
                             "tail_loss": float(tl),
-                            "worst_family": wf,
+                            "worst_family": worst_family,
+                            "worst_family_loss": float(worst_loss),
                             "selected_index": int(idx),
                         })
     return records
@@ -188,7 +207,9 @@ def _benchmark_finalize_from_records(cfg, records):
     pd.DataFrame(df_global).to_csv(f"{TAB}/benchmark.csv", index=False)
 
     # 2. Stratified analysis
-    strat_cols = {"geometry": "geometry", "m": "dimension", "N": "size", "utility_scope": "utility_scope"}
+    # utility_scope describes the selected alternative's worst family and can
+    # differ by method, so it is not a paired experimental factor.
+    strat_cols = {"geometry": "geometry", "m": "dimension", "N": "size"}
     for col, fname in strat_cols.items():
         out = []
         for val in df[col].unique():
@@ -249,11 +270,15 @@ def stage_redundancy(cfg):
                     idx = _select(nm, F, rng=selrng)
                     agg[nm]["grp"].append(families.losses_from(cb, idx)[0])
                     agg[nm]["tail"].append(families.losses_from(cf, idx)[1])
+    manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
+    run_id = manifest.get("run_id", "")
     df = pd.DataFrame([dict(method=nm, grouped_loss=np.mean(agg[nm]["grp"]),
                             tail_loss=np.mean(agg[nm]["tail"])) for nm in M])
+    df.insert(0, "run_id", run_id)
     os.makedirs(TAB, exist_ok=True); df.to_csv(f"{TAB}/redundancy.csv", index=False)
     _save_json(f"{TAB}/redundancy_extra.json",
-               dict(mean_cluster_recovery=float(np.mean(cluster_recovery))))
+               dict(run_id=run_id,
+                    mean_cluster_recovery=float(np.mean(cluster_recovery))))
     print(f"  cluster recovery={np.mean(cluster_recovery):.3f}; "
           f"LUR grp={df.set_index('method').loc['LUR','grouped_loss']:.3f}")
     return df
@@ -269,21 +294,22 @@ def _cluster_match(lab, truth):
 
 
 def stage_probes(cfg):
-    import time
     from lur.probe_validation import compare_probe_families
-    
+
     rng = np.random.default_rng(cfg["seed"] + 2)
-    n_reps = 50
-    m_vals = [2, 3, 4, 5, 6, 8]
-    thetas = [0.3, 0.5, 0.6, 0.7, 0.9]
-    geoms = problems.GEOMETRIES
-    
+    probe_cfg = cfg["probe_validation"]
+    n_reps = int(probe_cfg["replications"])
+    candidate_size = int(probe_cfg["candidate_size"])
+    m_vals = list(probe_cfg["criteria"])
+    thetas = list(probe_cfg["thetas"])
+    geoms = list(probe_cfg.get("geometries", cfg["geometries"]))
+
     records = []
-    
+
     for m in m_vals:
         for g in geoms:
             for rep in range(n_reps):
-                F = problems.make_candidate_set(g, 300, m, rng)
+                F = problems.make_candidate_set(g, candidate_size, m, rng)
                 for th in thetas:
                     res = compare_probe_families(F, tolerance=1e-9, theta=th)
                     res["m"] = m
@@ -300,14 +326,28 @@ def stage_probes(cfg):
     cert_gap_mean = df["certificate_sup_norm_gap"].mean()
     winner_agree = df["winner_agreement"].mean()
     
+    max_regret = float(probe_cfg["max_worst_regret_gap"])
+    max_certificate = float(probe_cfg["max_certificate_gap"])
+    min_agreement = float(probe_cfg["min_winner_agreement"])
+    manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
     gate_res = {
-        "predictive_quality": bool(worst_regret_mean < 0.05),
-        "certificate_approximation": bool(cert_gap_mean < 0.1),
-        "decision_set_agreement": bool(winner_agree > 0.8),
+        "run_id": manifest.get("run_id", ""),
+        "predictive_quality": bool(worst_regret_mean < max_regret),
+        "certificate_approximation": bool(cert_gap_mean < max_certificate),
+        "decision_set_agreement": bool(winner_agree > min_agreement),
         "worst_regret_gap": worst_regret_mean,
         "certificate_sup_norm_gap": cert_gap_mean,
         "winner_agreement": winner_agree,
-        "pass": bool(worst_regret_mean < 0.05 and cert_gap_mean < 0.1 and winner_agree > 0.8)
+        "thresholds": {
+            "max_worst_regret_gap": max_regret,
+            "max_certificate_gap": max_certificate,
+            "min_winner_agreement": min_agreement,
+        },
+        "pass": bool(
+            worst_regret_mean < max_regret
+            and cert_gap_mean < max_certificate
+            and winner_agree > min_agreement
+        ),
     }
     
     _save_json(f"{TAB}/gates_adaptive.json", gate_res)
@@ -317,7 +357,8 @@ def stage_probes(cfg):
 
 def stage_gates(cfg):
     g = cfg["gates"]
-    res = {}
+    manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
+    res = {"run_id": manifest.get("run_id", "")}
     res["dominated"] = gates.gate_dominated_injection(g["dominated_injection"])
     res["affine"] = gates.gate_affine_invariance(tests=g["affine_tests"])
     res["nadir"] = gates.gate_nadir_error(g["nadir_errors"])
@@ -332,7 +373,8 @@ def stage_gates(cfg):
 def stage_direct(cfg):
     lin = directopt.run_linear_case(m=4, reps=10)
     mil = directopt.run_facility_location()
-    out = dict(linear=lin, milp=mil)
+    manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
+    out = dict(run_id=manifest.get("run_id", ""), linear=lin, milp=mil)
     _save_json(f"{TAB}/direct.json", out)
     print("  linear:", {k: round(v, 3) for k, v in lin.items()})
     print("  milp:", mil)
@@ -344,6 +386,8 @@ def stage_stochastic(cfg):
     df = extras_validation.run_stochastic(train_scenarios=sc["train_scenarios"],
                                           test_scenarios=sc["test_scenarios"],
                                           alphas=tuple(sc["alphas"]))
+    manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
+    df.insert(0, "run_id", manifest.get("run_id", ""))
     os.makedirs(TAB, exist_ok=True); df.to_csv(f"{TAB}/stochastic.csv", index=False)
     print(df.to_string(index=False))
     return df
@@ -351,6 +395,8 @@ def stage_stochastic(cfg):
 
 def stage_multistakeholder(cfg):
     df = extras_validation.run_multistakeholder(stakeholders=tuple(cfg["multistakeholder"]["stakeholders"]))
+    manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
+    df.insert(0, "run_id", manifest.get("run_id", ""))
     os.makedirs(TAB, exist_ok=True); df.to_csv(f"{TAB}/multistakeholder.csv", index=False)
     print(df.groupby("method")[["worst_regret", "mean_regret", "gini"]].mean().to_string())
     return df
@@ -358,15 +404,19 @@ def stage_multistakeholder(cfg):
 
 def stage_report(cfg):
     """Assemble the acceptance-gate table from persisted stage outputs."""
-    from lur.reporting import build_gate_report
+    from lur.reporting import build_gate_report, ensure_registered_gates
 
     manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
     run_id = manifest.get("run_id", "")
     analysis = _load_json(f"{TAB}/benchmark_analysis.json")
+    adaptive = _load_json(f"{TAB}/gates_adaptive.json")
     gi = _load_json(f"{TAB}/gates_invariance.json")
-    rows = build_gate_report(
-        {"benchmark_analysis": analysis} if analysis else {}, cfg, run_id
-    )
+    artifacts = {}
+    if analysis:
+        artifacts["benchmark_analysis"] = analysis
+    if adaptive:
+        artifacts["adaptive"] = adaptive
+    rows = build_gate_report(artifacts, cfg, run_id)
 
     def add(gate, passed, detail):
         rows.append(dict(
@@ -378,54 +428,90 @@ def stage_report(cfg):
             detail=detail,
         ))
 
+    def add_check(gate, detail, estimate=None):
+        rows.append(dict(
+            run_id=run_id,
+            gate=gate,
+            result="CHECK",
+            threshold=None,
+            estimate=estimate,
+            detail=detail,
+        ))
+
     if gi:
+        if gi.get("run_id") != run_id:
+            raise ValueError("invariance evidence run_id does not match report")
         d = gi["dominated"]; add("dominated_injection",
             d["pass"], f"{d['violations']}/{d['trials']} violations")
         a = gi["affine"]; add("affine_invariance",
             a["pass"], f"identical rate {a['identical_rate']}")
-        nd = gi["nadir"]; add("Nadir-error stability",
+        nd = gi["nadir"]; add("nadir_sensitivity",
             nd["pass"], f"max quality degradation {nd['max_quality_degradation']}")
     # redundancy
     try:
         rd = pd.read_csv(f"{TAB}/redundancy.csv").set_index("method")
+        if set(rd["run_id"]) != {run_id}:
+            raise ValueError("redundancy evidence run_id does not match report")
         avg = rd.loc[["TOPSIS", "SMAA", "RW"], "grouped_loss"].mean()
         add("redundancy_grouped_loss", rd.loc["LUR", "grouped_loss"] < avg,
             f"LUR {rd.loc['LUR','grouped_loss']:.3f} vs avg {avg:.3f}")
+        extra = _load_json(f"{TAB}/redundancy_extra.json")
+        if extra.get("run_id") != run_id:
+            raise ValueError("cluster evidence run_id does not match report")
+        recovery = float(extra["mean_cluster_recovery"])
+        add("cluster_recovery", recovery >= 0.8,
+            f"mean pairwise group recovery {recovery:.3f}")
     except Exception as e:
         import logging
         logging.warning(f"Failed to load run manifest or stats: {e}")
-    # probes adaptive vs full
-    try:
-        pr = pd.read_csv(f"{TAB}/probes.csv").set_index("variant")
-        gap = pr.loc["adaptive", "tail_loss"] - pr.loc["full", "tail_loss"]
-        add("Adaptive probes ~ full (tail gap <= 0.01)", abs(gap) <= 0.01,
-            f"gap {gap:+.4f}, agree {pr.loc['adaptive','agree_with_full']:.2f}")
-    except Exception as e:
-        import logging
-        logging.warning(f"Failed to load redundancy JSON: {e}")
     # direct
     try:
         dr = _load_json(f"{TAB}/direct.json")
+        if dr.get("run_id") != run_id:
+            raise ValueError("direct evidence run_id does not match report")
         lin = dr["linear"]
-        add("Direct computation demonstrated (LP+MILP)",
-            dr.get("milp", {}).get("available", False),
-            f"LP direct calls {lin['direct_calls']:.0f} vs enum {lin['enum_calls']:.0f}")
+        add_check("direct_lp_exactness",
+            "current LP experiment compares sampled-front tail quality, not exact certificates",
+            {"direct_calls": lin["direct_calls"], "enum_calls": lin["enum_calls"]})
+        milp = dr.get("milp", {})
+        add_check("direct_milp_exactness",
+            "current facility-location method is a four-solve proxy, not an exact direct MILP",
+            {"available": milp.get("available", False),
+             "same_choice": milp.get("chosen_enum") == milp.get("chosen_direct")})
     except Exception as e:
         import logging
         logging.warning(f"Failed to load direct.json: {e}")
     # stochastic
     try:
         sd = pd.read_csv(f"{TAB}/stochastic.csv").set_index("method")
+        if set(sd["run_id"]) != {run_id}:
+            raise ValueError("stochastic evidence run_id does not match report")
         best_alpha = sd.filter(like="LUR-a", axis=0)["tail_loss"].min()
-        add("Stochastic LUR <= deterministic LUR (tail)",
-            best_alpha <= sd.loc["det-LUR", "tail_loss"] + 1e-9,
-            f"best-alpha {best_alpha:.3f} vs det {sd.loc['det-LUR','tail_loss']:.3f}")
+        add_check("stochastic_calibration",
+            "train/test illustration lacks a registered confidence-coverage calibration test",
+            {"best_alpha_tail": best_alpha,
+             "deterministic_tail": sd.loc["det-LUR", "tail_loss"]})
     except Exception as e:
         import logging
         logging.warning(f"Failed to load multi-stakeholder or stochastic CSV: {e}")
+    try:
+        ms = pd.read_csv(f"{TAB}/multistakeholder.csv")
+        if set(ms["run_id"]) != {run_id}:
+            raise ValueError("stakeholder evidence run_id does not match report")
+        add_check("stakeholder_tradeoff",
+            "current metrics overlap the optimized worst-regret objective; independent validation is required")
+    except Exception as e:
+        import logging
+        logging.warning(f"Failed to load multi-stakeholder CSV: {e}")
+
+    claims_path = Path(__file__).resolve().parent / "configs" / "claims.yaml"
+    with claims_path.open() as handle:
+        claims = yaml.safe_load(handle)["claims"]
+    rows = ensure_registered_gates(rows, claims, run_id)
     rep = pd.DataFrame(rows)
     rep.to_csv(f"{TAB}/gates_report.csv", index=False)
     _save_json(f"{TAB}/gates_report.json", rows)
+    publish_current_run(Path(ROOT))
     print(rep.to_string(index=False))
     return rep
 

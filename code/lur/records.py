@@ -9,7 +9,8 @@ import pandas as pd
 REQUIRED_BENCHMARK_COLUMNS = {
     "run_id", "config_sha256", "seed", "N", "m", "geometry",
     "replication", "dirichlet_alpha", "method", "utility_scope",
-    "mean_loss", "tail_loss", "worst_family", "selected_index",
+    "mean_loss", "tail_loss", "worst_family", "worst_family_loss",
+    "selected_index",
 }
 CELL_COLUMNS = ["N", "m", "geometry", "replication"]
 ROW_KEY_COLUMNS = CELL_COLUMNS + ["method"]
@@ -82,7 +83,9 @@ def validate_benchmark_frame(frame, cfg: dict, run_id: str) -> None:
     if expected_scope.isna().any() or not expected_scope.equals(frame["utility_scope"]):
         raise ValueError("utility_scope does not match worst_family")
 
-    metrics = frame[["mean_loss", "tail_loss"]].to_numpy(dtype=float)
+    metrics = frame[
+        ["mean_loss", "tail_loss", "worst_family_loss"]
+    ].to_numpy(dtype=float)
     if not np.isfinite(metrics).all():
         raise ValueError("benchmark loss metrics must be finite")
     if ((metrics < -1e-12) | (metrics > 1.0 + 1e-12)).any():

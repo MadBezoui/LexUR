@@ -127,4 +127,60 @@ def build_gate_report(artifacts: dict, cfg: dict, run_id: str) -> list[dict]:
             "Holm p<0.05 and Cliff delta>0 for every registered baseline",
             {name: comparisons[name] for name in practical},
         ))
+    adaptive = artifacts.get("adaptive")
+    adaptive_specs = (
+        ("probe_tail_gap", "predictive_quality", "worst_regret_gap",
+         "max_worst_regret_gap"),
+        ("probe_certificate_gap", "certificate_approximation",
+         "certificate_sup_norm_gap", "max_certificate_gap"),
+        ("probe_tolerance_overlap", "decision_set_agreement",
+         "winner_agreement", "min_winner_agreement"),
+    )
+    if adaptive is None:
+        rows.extend(
+            _row(run_id, gate, "MISSING", detail="adaptive-probe evidence is missing")
+            for gate, _, _, _ in adaptive_specs
+        )
+    else:
+        if adaptive.get("run_id") != run_id:
+            raise ValueError("adaptive-probe run_id does not match the report run_id")
+        thresholds = adaptive.get("thresholds", {})
+        for gate, pass_key, estimate_key, threshold_key in adaptive_specs:
+            passed = bool(adaptive.get(pass_key, False))
+            estimate = adaptive.get(estimate_key)
+            threshold = thresholds.get(threshold_key)
+            rows.append(_row(
+                run_id,
+                gate,
+                "PASS" if passed else "CHECK",
+                threshold,
+                estimate,
+                f"{estimate_key}={estimate}; threshold={threshold}",
+            ))
     return rows
+
+
+def ensure_registered_gates(
+    rows: list[dict], claims: dict, run_id: str
+) -> list[dict]:
+    completed = list(rows)
+    names = [row["gate"] for row in completed]
+    if len(names) != len(set(names)):
+        raise ValueError("gate report contains duplicate gate names")
+    if any(row.get("run_id") != run_id for row in completed):
+        raise ValueError("gate report contains a mismatched run_id")
+    required = []
+    for claim in claims.values():
+        for gate in claim.get("gates", []):
+            if gate not in required:
+                required.append(gate)
+    present = set(names)
+    for gate in required:
+        if gate not in present:
+            completed.append(_row(
+                run_id,
+                gate,
+                "MISSING",
+                detail="required claim evidence is missing",
+            ))
+    return completed

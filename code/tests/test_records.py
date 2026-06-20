@@ -46,6 +46,7 @@ def _complete_frame():
             "mean_loss": 0.1,
             "tail_loss": 0.2,
             "worst_family": "linear",
+            "worst_family_loss": 0.15,
             "selected_index": index,
         }
         for index, method in enumerate(["A", "B"])

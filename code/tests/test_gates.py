@@ -1,7 +1,8 @@
 import numpy as np
 
 from lur import gates, problems
-from run_protocol import _bench_block
+from lur import probe_validation
+from run_protocol import _bench_block, configure_output_root, stage_probes
 
 
 def test_nadir_gate_reuses_problem_identity_across_error_levels(monkeypatch):
@@ -52,6 +53,46 @@ def test_randomized_method_results_do_not_depend_on_method_order():
     reverse = {key(row): row for row in reverse}
     assert forward.keys() == reverse.keys()
     for cell in forward:
+        assert forward[cell]["worst_family"] == "linear"
+        assert forward[cell]["utility_scope"] == "in_class"
         assert forward[cell]["selected_index"] == reverse[cell]["selected_index"]
         assert np.isclose(forward[cell]["mean_loss"], reverse[cell]["mean_loss"])
         assert np.isclose(forward[cell]["tail_loss"], reverse[cell]["tail_loss"])
+
+
+def test_probe_stage_uses_registered_scale(tmp_path, monkeypatch):
+    calls = []
+
+    def fake_compare(F, tolerance, theta):
+        calls.append((F.shape, theta))
+        return {
+            "winner_agreement": 1.0,
+            "tolerance_jaccard": 1.0,
+            "worst_regret_gap": 0.0,
+            "certificate_sup_norm_gap": 0.0,
+            "probes_adaptive": 1,
+            "probes_full": 1,
+            "time_adaptive": 0.0,
+            "time_full": 0.0,
+        }
+
+    monkeypatch.setattr(probe_validation, "compare_probe_families", fake_compare)
+    configure_output_root(tmp_path, "run-a")
+    cfg = {
+        "seed": 3,
+        "geometries": ["linear", "convex"],
+        "probe_validation": {
+            "replications": 2,
+            "candidate_size": 20,
+            "criteria": [3],
+            "thetas": [0.5, 0.7],
+            "max_worst_regret_gap": 0.05,
+            "max_certificate_gap": 0.1,
+            "min_winner_agreement": 0.8,
+        },
+    }
+
+    stage_probes(cfg)
+
+    assert len(calls) == 2 * 2 * 1 * 2
+    assert {shape for shape, _ in calls} == {(20, 3)}

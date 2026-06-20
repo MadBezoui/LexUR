@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from lur.provenance import build_manifest, sha256_file, source_fingerprint
-from run_protocol import configure_output_root
+from run_protocol import configure_output_root, publish_current_run
 
 
 def test_manifest_contains_reproducibility_fields(tmp_path: Path):
@@ -60,3 +60,14 @@ def test_protocol_output_is_isolated_by_run_id(tmp_path: Path):
     assert paths["tables"] == paths["root"] / "tables"
     assert paths["figures"] == paths["root"] / "figures"
     assert paths["tmp"] == paths["root"] / "tmp"
+
+
+def test_only_completed_run_is_published_as_current(tmp_path: Path):
+    run_root = tmp_path / "runs" / "run-a"
+    run_root.mkdir(parents=True)
+    (run_root / "run_manifest.json").write_text("{}", encoding="utf-8")
+
+    current = publish_current_run(run_root)
+
+    assert current.is_symlink()
+    assert current.resolve() == run_root.resolve()

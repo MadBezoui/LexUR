@@ -113,3 +113,11 @@ family_scopes:
   choquet: out_of_class
   satisfice: out_of_class
   group_regret: adversarial
+probe_validation:
+  replications: 12
+  candidate_size: 300
+  criteria: [3, 5, 8]
+  thetas: [0.3, 0.6, 0.9]
+  max_worst_regret_gap: 0.05
+  max_certificate_gap: 0.1
+  min_winner_agreement: 0.8

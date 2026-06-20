@@ -7,6 +7,8 @@
     cliffs_delta        : non-parametric effect size
 """
 from __future__ import annotations
+import warnings
+
 import numpy as np
 from scipy import stats
 
@@ -65,7 +67,13 @@ def wilcoxon_holm(loss_matrix: np.ndarray, names, control: str):
     for j in others:
         x, y = loss_matrix[:, j_ctrl], loss_matrix[:, j]
         try:
-            _, p = stats.wilcoxon(x, y)
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message="Sample size too small for normal approximation.",
+                    category=UserWarning,
+                )
+                _, p = stats.wilcoxon(x, y)
         except ValueError:
             p = 1.0
         raw_ps.append(p)
