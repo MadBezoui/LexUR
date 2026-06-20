@@ -110,6 +110,8 @@ def build_candidates(n_candidates=250, n_scenarios=20, seed=2024):
     from .problems import non_dominated
     # keep non-dominated for a clean efficient candidate set
     keep_mask = _nd_mask(F)
+    if not keep_mask.any():
+        raise RuntimeError("smart-grid model produced no non-dominated candidates")
     return F[keep_mask], prefs[keep_mask]
 
 

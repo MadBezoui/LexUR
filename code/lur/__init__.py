@@ -8,5 +8,24 @@ Modules:
     experiments : benchmark orchestration
     smartgrid   : 6-objective stochastic dispatch decision case study
 """
-__all__ = ["problems", "methods", "metrics", "stats", "experiments", "smartgrid"]
+__all__ = [
+    "analysis",
+    "claim_gate",
+    "directopt",
+    "experiments",
+    "extras_validation",
+    "families",
+    "gates",
+    "manuscript",
+    "methods",
+    "metrics",
+    "normalization",
+    "probe_validation",
+    "problems",
+    "provenance",
+    "records",
+    "reporting",
+    "smartgrid",
+    "stats",
+]
 __version__ = "1.0.0"

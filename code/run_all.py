@@ -27,14 +27,16 @@ NUM = f"{OUT}/tables/numbers.json"
 
 def _load():
     try:
-        return json.load(open(NUM))
+        with open(NUM) as f:
+            return json.load(f)
     except Exception:
         return {}
 
 
 def _save(d):
     os.makedirs(f"{OUT}/tables", exist_ok=True)
-    json.dump(d, open(NUM, "w"), indent=2, default=float)
+    with open(NUM, "w") as f:
+        json.dump(d, f, indent=2, default=float)
 
 
 def stage_benchmark(reps, ntest):

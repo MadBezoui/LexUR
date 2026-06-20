@@ -1,14 +1,11 @@
 """Direct computation of LUR without enumerating the efficient set.
 
-Two settings:
-  (A) Continuous convex (linear) MOP: LUR over linear probes is computed by a
-      sequence of LPs (stage-1 minimax regret; ties broken by later stages),
-      and compared against the two-stage pipeline `generate Pareto approximation
-      then post-process'. We report solver calls, points generated, runtime and
-      the held-out quality of the resulting decision.
-  (B) Mixed-integer (facility location) MOP: LUR over linear probes via repeated
-      MILPs (CBC through PuLP), compared with enumerating many weighted-sum
-      solutions then post-processing.
+Two exploratory settings:
+  (A) Continuous linear MOP: the first, minimax-regret coordinate of LUR over
+      linear probes is solved by LP and compared with generate-then-select.
+      Later lexicographic coordinates are not implemented here.
+  (B) Mixed-integer facility location: a four-solve anchor proxy is compared
+      with a sampled weighted-sum front. This is not an exact direct LUR MILP.
 
 For linear probes q_k(r)=w_k^T r the regret D_k(x) is affine in x up to the
 constant anchors q_k^*, q_k^w, so stage-1 LUR is the LP
@@ -43,7 +40,10 @@ def random_linear_mop(m, n=8, n_constr=5, rng=None):
 
 
 def _solve_lp(c, A_ub, b_ub, bounds):
-    return linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, method="highs")
+    res = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, method="highs")
+    if not res.success:
+        raise RuntimeError(f"LP solve failed: {res.message}")
+    return res
 
 
 def direct_lur_linear(C, A, b, probe_weights, tol=1e-6):

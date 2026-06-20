@@ -17,10 +17,7 @@ METHOD_ORDER = ["TOPSIS", "CP", "Knee", "RW", "ASF", "SMAA", "MMR", "LUR"]
 
 # --------------------------------------------------------------------------- #
 def _select(name, F, rng):
-    fn = methods.METHODS[name]
-    if name in ("RW", "SMAA", "MMR"):
-        return fn(F, rng=rng)
-    return fn(F)
+    return methods.select(name, F, rng=rng)
 
 
 def run_benchmark_clean(reps=30, n=300, n_test=250, seed=20240601, outdir="results"):

@@ -70,13 +70,12 @@ def precompute_utilities(F, rng, n_per_family=250):
     m = r.shape[1]
     fams = sample_test_utilities(m, n_per_family, rng)
     cache = {}
-    allU = []
     for name, fn in fams.items():
         U = fn(r)                      # (N x T)
         best, worst = U.max(axis=0), U.min(axis=0)
         cache[name] = (U, best, worst)
-        allU.append((U - best) / (worst - best - EPS) * -1)  # loss per utility
-    # stack per-utility losses for the tail metric
+    # stack per-utility normalised losses for the tail metric
+    # loss = (best - U) / (best - worst + EPS), in [0, 1], consistent with loss_from_cache
     cache["_all_loss"] = np.concatenate(
         [((cache[n][1] - cache[n][0][:, :]) / (cache[n][1] - cache[n][2] + EPS))
          for n in fams], axis=1)       # (N x 4T) losses, >=0

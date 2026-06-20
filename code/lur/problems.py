@@ -16,7 +16,8 @@ Geometries follow the families used by the DTLZ test suite:
 from __future__ import annotations
 import numpy as np
 
-GEOMETRIES = ("linear", "concave", "convex", "disconnected")
+GEOMETRIES = ("linear", "concave", "convex", "disconnected",
+              "asymmetric", "manyknee", "degenerate", "irregular")
 
 
 def _dirichlet_simplex(n: int, m: int, rng: np.random.Generator) -> np.ndarray:
@@ -134,4 +135,29 @@ def make_candidate_set(geometry: str, n: int, m: int, rng: np.random.Generator,
         anchors = F[rng.integers(0, F.shape[0], size=n_dominated)]
         dom = anchors + rng.uniform(0.05, 0.25, size=anchors.shape)
         F = np.vstack([F, dom])
+    return F
+
+
+def sample_continuous_dtlz2(
+    n_samples: int, m: int, rng: np.random.Generator, k: int = 10
+) -> np.ndarray:
+    """Sample candidates from the continuous non-linear DTLZ2 benchmark.
+    Returns (n_samples, m) objective matrix (minimisation)."""
+    n_vars = m + k - 1
+    X = rng.uniform(0, 1, size=(n_samples, n_vars))
+    # Distance function g(X_M)
+    X_M = X[:, m - 1:]
+    g = np.sum((X_M - 0.5) ** 2, axis=1)
+
+    F = np.zeros((n_samples, m))
+    for i in range(m):
+        # The base is (1 + g)
+        fi = 1.0 + g
+        # Multiply by cos(x_j * pi / 2) for j < m - 1 - i
+        for j in range(m - 1 - i):
+            fi *= np.cos(X[:, j] * np.pi / 2.0)
+        # Multiply by sin(x_{m - 1 - i} * pi / 2) if i > 0
+        if i > 0:
+            fi *= np.sin(X[:, m - 1 - i] * np.pi / 2.0)
+        F[:, i] = fi
     return F

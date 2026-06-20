@@ -1,7 +1,7 @@
 import numpy as np
 from dataclasses import dataclass
 from typing import Literal
-from lur.methods import lur_variant
+from .methods import lur_variant
 
 @dataclass
 class StabilityResult:
@@ -43,10 +43,16 @@ def generate_bounds(F: np.ndarray, n_samples: int, mode: str, rng: np.random.Gen
     bounds = []
     obs_min = F.min(axis=0)
     obs_max = F.max(axis=0)
+    obs_range = obs_max - obs_min
     
     for _ in range(n_samples):
         if mode == "minmax":
-            bounds.append((obs_min, obs_max))
+            jitter_nadir = rng.uniform(0.0, 0.05, size=m)
+            jitter_ideal = rng.uniform(0.0, 0.02, size=m)
+            bounds.append((
+                obs_min - jitter_ideal * obs_range,
+                obs_max + jitter_nadir * obs_range,
+            ))
         elif mode == "quantiles":
             bounds.append((np.percentile(F, 1, axis=0), np.percentile(F, 99, axis=0)))
         elif mode == "subset":
@@ -56,15 +62,15 @@ def generate_bounds(F: np.ndarray, n_samples: int, mode: str, rng: np.random.Gen
         elif mode == "asymmetric_error":
             err_nadir = rng.uniform(0.0, 0.2, size=m)
             err_ideal = rng.uniform(0.0, 0.1, size=m)
-            nadir = obs_max * (1 + err_nadir)
-            ideal = np.maximum(obs_min * (1 - err_ideal), 0)
+            nadir = obs_max + err_nadir * obs_range
+            ideal = obs_min - err_ideal * obs_range
             bounds.append((ideal, nadir))
         elif mode == "correlated_error":
             common = rng.uniform(0.0, 0.15)
             err_nadir = rng.uniform(0.0, 0.05, size=m) + common
             err_ideal = rng.uniform(0.0, 0.05, size=m) + common
-            nadir = obs_max * (1 + err_nadir)
-            ideal = np.maximum(obs_min * (1 - err_ideal), 0)
+            nadir = obs_max + err_nadir * obs_range
+            ideal = obs_min - err_ideal * obs_range
             bounds.append((ideal, nadir))
         else:
             bounds.append((obs_min, obs_max))
