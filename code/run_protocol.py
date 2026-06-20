@@ -81,7 +81,7 @@ def _bench_block(cfg, csizes, crits, manifest):
     scopes = cfg.get("family_scopes", {})
     records = []
     
-    run_id = manifest.get("config_sha256", "unknown")
+    run_id = manifest.get("run_id", "unknown")
     
     for N in csizes:
         for m in crits:
@@ -142,29 +142,29 @@ def stage_benchmark(cfg):
 def stage_bfinalize(cfg):
     """Concatenate all persisted benchmark chunks and compute final stats."""
     import glob
-    import pandas as pd
     files = sorted(glob.glob(f"{TMP}/bench_*.parquet"))
     if not files:
         raise SystemExit("no benchmark chunks found in tmp/")
-    
-    dfs = [pd.read_parquet(f) for f in files]
-    combined = pd.concat(dfs, ignore_index=True)
-    records = combined.to_dict('records')
-    print(f"  combined {len(files)} chunks -> {len(records)} records")
-    _benchmark_finalize_from_records(cfg, records)
+
+    from lur.records import load_validated_chunks
+    manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
+    combined = load_validated_chunks(files, cfg, manifest.get("run_id", ""))
+    print(f"  combined {len(files)} chunks -> {len(combined)} records")
+    _benchmark_finalize_from_records(cfg, combined)
 
 def _benchmark_finalize_from_records(cfg, records):
     import pandas as pd
     from lur.records import validate_benchmark_frame
     from lur.analysis import cluster_bootstrap_difference
     
-    df = pd.DataFrame(records)
+    df = records.copy() if isinstance(records, pd.DataFrame) else pd.DataFrame(records)
     
     raw_dir = os.path.join(ROOT, "raw")
     os.makedirs(raw_dir, exist_ok=True)
     df.to_parquet(os.path.join(raw_dir, "benchmark.parquet"))
     
-    validate_benchmark_frame(df, cfg)
+    manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
+    validate_benchmark_frame(df, cfg, manifest.get("run_id", ""))
     
     M = cfg["methods"]
     
