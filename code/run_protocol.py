@@ -156,6 +156,7 @@ def _benchmark_finalize_from_records(cfg, records):
     import pandas as pd
     from lur.records import validate_benchmark_frame
     from lur.analysis import cluster_bootstrap_difference
+    from lur.reporting import analyze_benchmark
     
     df = records.copy() if isinstance(records, pd.DataFrame) else pd.DataFrame(records)
     
@@ -207,16 +208,8 @@ def _benchmark_finalize_from_records(cfg, records):
                 })
         pd.DataFrame(out).to_csv(f"{TAB}/benchmark_by_{fname}.csv", index=False)
         
-    # 3. Non-inferiority
-    from lur.gates import noninferiority_cluster
-    ni_cfg = cfg.get("noninferiority")
-    if ni_cfg:
-        noninf = {}
-        for ctrl in ni_cfg["controls"]:
-            noninf[ctrl] = noninferiority_cluster(
-                df, ctrl_name=ctrl, lur_name="LUR", ni_cfg=ni_cfg, seed=cfg.get("seed", 42)
-            )
-        _save_json(f"{TAB}/gates_noninferiority.json", noninf)
+    analysis = analyze_benchmark(df, cfg)
+    _save_json(f"{TAB}/benchmark_analysis.json", analysis)
 
 
 
@@ -359,12 +352,25 @@ def stage_multistakeholder(cfg):
 
 def stage_report(cfg):
     """Assemble the acceptance-gate table from persisted stage outputs."""
-    bs = _load_json(f"{TAB}/benchmark_stats.json")
+    from lur.reporting import build_gate_report
+
+    manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
+    run_id = manifest.get("run_id", "")
+    analysis = _load_json(f"{TAB}/benchmark_analysis.json")
     gi = _load_json(f"{TAB}/gates_invariance.json")
-    rows = []
+    rows = build_gate_report(
+        {"benchmark_analysis": analysis} if analysis else {}, cfg, run_id
+    )
 
     def add(gate, passed, detail):
-        rows.append(dict(gate=gate, result="PASS" if passed else "CHECK", detail=detail))
+        rows.append(dict(
+            run_id=run_id,
+            gate=gate,
+            result="PASS" if passed else "CHECK",
+            threshold=None,
+            estimate=None,
+            detail=detail,
+        ))
 
     if gi:
         d = gi["dominated"]; add("dominated_injection",
@@ -373,17 +379,6 @@ def stage_report(cfg):
             a["pass"], f"identical rate {a['identical_rate']}")
         nd = gi["nadir"]; add("Nadir-error stability",
             nd["pass"], f"max quality degradation {nd['max_quality_degradation']}")
-    if bs:
-        ni = bs["noninferiority"]
-        add("tail_noninferiority_asf", ni["ASF"]["noninferior"],
-            f"diff {ni['ASF']['mean_diff']} CI {ni['ASF']['ci95']}")
-        add("tail_noninferiority_mmr", ni["MMR"]["noninferior"],
-            f"diff {ni['MMR']['mean_diff']} CI {ni['MMR']['ci95']}")
-        wh = bs["wilcoxon_vs_LUR"]
-        practical = ["TOPSIS", "CP", "Knee", "RW", "SMAA"]
-        beat = all(wh[p]["p_holm"] < 0.05 and wh[p]["delta"] > 0 for p in practical if p in wh)
-        add("Better than practical baselines (tail)", beat,
-            "; ".join(f"{p}:d={wh[p]['delta']:+.2f}" for p in practical if p in wh))
     # redundancy
     try:
         rd = pd.read_csv(f"{TAB}/redundancy.csv").set_index("method")
