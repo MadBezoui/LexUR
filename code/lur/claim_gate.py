@@ -11,10 +11,13 @@ def summarize_claim(claim, gates):
             
         res = gates[g].get("result")
         
+        if res == "MISSING":
+            return "exploratory"
+
         if res == "FAIL":
             return "unsupported"
             
-        if res == "CHECK" or not gates[g].get("pass", True):
+        if res != "PASS" or not gates[g].get("pass", False):
             has_check = True
             
     if has_check:

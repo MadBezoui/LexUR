@@ -2,13 +2,17 @@
 PY=python3
 CFG?=configs/ejor_pilot.yaml      # use configs/ejor_final.yaml for full scale
 
-.PHONY: reproduce_all protocol paper clean test smoke
+.PHONY: reproduce_all protocol paper clean test smoke manuscript-check
 
 test:
 	python -m pytest -q
 
 smoke:
 	python run_protocol.py --config configs/_smoke.yaml --stage all
+
+manuscript-check:
+	$(PY) scripts/check_manuscript_numbers.py \
+		--paper ../paper --results ../results/protocol/current
 
 ## Regenerate the original manuscript experiments + the full validation protocol
 reproduce_all: protocol
