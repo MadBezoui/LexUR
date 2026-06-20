@@ -10,7 +10,7 @@ Stage-by-stage (recommended in constrained environments):
 Outputs -> ../results/protocol/{tables,figures}. Acceptance gates are summarised
 in gates_report.{csv,json}.
 """
-import argparse, json, os, sys, time
+import argparse, hashlib, json, os, sys, time
 from pathlib import Path
 import numpy as np, pandas as pd, yaml
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
@@ -53,6 +53,13 @@ def _select(name, F, rng):
     return methods.select(name, F)
 
 
+def _method_rng(seed, method):
+    method_id = int.from_bytes(
+        hashlib.sha256(method.encode("utf-8")).digest()[:8], "big"
+    )
+    return np.random.default_rng(np.random.SeedSequence([int(seed), method_id]))
+
+
 def _load_json(p, d=None):
     try:
         with open(p) as f:
@@ -93,9 +100,8 @@ def _bench_block(cfg, csizes, crits, manifest):
                     F = problems.make_candidate_set(g, N, m, rr)
                     cache = families.loss_cache(F, normalize, np.random.default_rng(s + 1),
                                                 alpha=a, n_per_family=nU, family_list=fam)
-                    selrng = np.random.default_rng(s + 2)
                     for nm in M:
-                        idx = _select(nm, F, rng=selrng)
+                        idx = _select(nm, F, rng=_method_rng(s + 2, nm))
                         ml, tl, wf, _ = families.losses_from(cache, idx, q=tailq)
                         
                         records.append({

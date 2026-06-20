@@ -9,7 +9,7 @@ Gates (each returns a dict with a boolean `pass` and the supporting numbers):
 from __future__ import annotations
 import numpy as np
 from scipy import stats as sps
-from . import problems, methods, families
+from . import problems, methods, families, stats
 from .methods import normalize
 
 
@@ -74,41 +74,69 @@ def gate_affine_invariance(tests=3000, n=150, seed=9, tol=0):
 
 
 def gate_nadir_error(errors, reps=30, n=250, m=8, seed=37, n_test=300):
-    """Quality (held-out loss) and choice-change vs relative nadir error."""
+    """Paired quality and choice-change diagnostics under relative nadir error."""
     rng = np.random.default_rng(seed)
-    out = {}
-    for e in errors:
-        losses, flips = [], []
-        for _ in range(reps):
-            g = problems.GEOMETRIES[int(rng.integers(0, 4))]
-            F = problems.make_candidate_set(g, n, m, rng)
-            ideal = F.min(0); nad0 = F.max(0)
-            i0 = methods.lur(F, ideal=ideal, nadir=nad0)
-            pert = np.maximum(nad0 * (1 + e * rng.standard_normal(m)), ideal + 1e-3)
-            ie = methods.lur(F, ideal=ideal, nadir=pert)
-            cache = families.loss_cache(F, normalize, np.random.default_rng(1),
-                                        n_per_family=n_test)
-            losses.append(families.losses_from(cache, ie)[1])     # tail
-            flips.append(float(ie != i0))
-        out[e] = (float(np.mean(losses)), float(np.mean(flips)))
-    base = out[errors[0]][0]
-    worst = max(v[0] for v in out.values())
+    aggregates = {float(error): {"loss": [], "flip": [], "degradation": []}
+                  for error in errors}
+    records = []
+    for replication in range(reps):
+        geometry = problems.GEOMETRIES[int(rng.integers(0, 4))]
+        F = problems.make_candidate_set(geometry, n, m, rng)
+        ideal = F.min(0)
+        nadir = F.max(0)
+        baseline_index = methods.lur(F, ideal=ideal, nadir=nadir)
+        cache_seed = int(rng.integers(0, 2**31))
+        cache = families.loss_cache(
+            F, normalize, np.random.default_rng(cache_seed), n_per_family=n_test
+        )
+        baseline_loss = families.losses_from(cache, baseline_index)[1]
+        perturbation = rng.standard_normal(m)
+        for error_value in errors:
+            error = float(error_value)
+            perturbed_nadir = np.maximum(
+                nadir * (1 + error * perturbation), ideal + 1e-3
+            )
+            index = methods.lur(F, ideal=ideal, nadir=perturbed_nadir)
+            loss = families.losses_from(cache, index)[1]
+            flip = float(index != baseline_index)
+            degradation = float(loss - baseline_loss)
+            aggregates[error]["loss"].append(loss)
+            aggregates[error]["flip"].append(flip)
+            aggregates[error]["degradation"].append(degradation)
+            records.append({
+                "replication": replication,
+                "geometry": geometry,
+                "error": error,
+                "baseline_index": int(baseline_index),
+                "selected_index": int(index),
+                "baseline_loss": float(baseline_loss),
+                "tail_loss": float(loss),
+                "loss_degradation": degradation,
+                "flipped": bool(flip),
+            })
+    out = {
+        error: {
+            "loss": float(np.mean(values["loss"])),
+            "flip": float(np.mean(values["flip"])),
+            "degradation": float(np.mean(values["degradation"])),
+        }
+        for error, values in aggregates.items()
+    }
+    worst_degradation = max(value["degradation"] for value in out.values())
     return dict(name="nadir_error",
-                loss_by_error={str(e): round(v[0], 4) for e, v in out.items()},
-                flip_by_error={str(e): round(v[1], 3) for e, v in out.items()},
-                max_quality_degradation=round(worst - base, 4),
-                **{"pass": (worst - base) <= 0.05})
+                loss_by_error={str(e): round(v["loss"], 4) for e, v in out.items()},
+                flip_by_error={str(e): round(v["flip"], 3) for e, v in out.items()},
+                degradation_by_error={
+                    str(e): round(v["degradation"], 4) for e, v in out.items()
+                },
+                max_quality_degradation=round(worst_degradation, 4),
+                records=records,
+                **{"pass": worst_degradation <= 0.05})
 
 
 # --------------------------------------------------------------------------- #
 # paired statistics
 # --------------------------------------------------------------------------- #
-def cliffs_delta(a, b):
-    a, b = np.asarray(a), np.asarray(b)
-    gt = (a[:, None] > b[None, :]).sum()
-    lt = (a[:, None] < b[None, :]).sum()
-    return float((gt - lt) / (len(a) * len(b)))
-
 
 def bootstrap_ci(diff, B=5000, seed=0):
     rng = np.random.default_rng(seed)
@@ -133,7 +161,7 @@ def noninferiority(lur_loss, ctrl_loss, margin=0.01, margin_rel=0.02, name="ctrl
     eff_margin = max(margin, rel_margin)
     return dict(control=name, mean_diff=round(float(diff.mean()), 4),
                 ci95=[round(lo, 4), round(hi, 4)], wilcoxon_p=float(p),
-                delta=round(cliffs_delta(lur_loss, ctrl_loss), 3),
+                delta=round(stats.cliffs_delta(lur_loss, ctrl_loss), 3),
                 margin_abs=margin, margin_rel2pct=round(rel_margin, 4),
                 noninferior_abs=bool(hi < margin),
                 noninferior=bool(hi < eff_margin))
