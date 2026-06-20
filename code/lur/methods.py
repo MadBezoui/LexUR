@@ -63,6 +63,8 @@ def knee_point(F, **kw):
         dist = 1.0 - r @ a                               # >0 below the plane
         return int(np.argmax(dist))
     except np.linalg.LinAlgError:
+        import logging
+        logging.warning("knee_point hyperplane fit failed; falling back to compromise_programming.")
         return compromise_programming(F)
 
 
@@ -166,9 +168,19 @@ def correlation_clusters(F: np.ndarray, theta: float = 0.6) -> list[list[int]]:
     together carry duplicate information.  Negatively correlated objectives are
     genuine trade-offs and must stay separate, so we threshold the signed
     correlation, not its absolute value."""
+    F = np.asarray(F, dtype=float)
     m = F.shape[1]
-    C = np.corrcoef(F.T)
-    C = np.nan_to_num(C, nan=0.0)
+    if F.shape[0] < 2:
+        return [[i] for i in range(m)]
+    centered = F - F.mean(axis=0, keepdims=True)
+    norms = np.linalg.norm(centered, axis=0)
+    valid = norms > EPS
+    C = np.eye(m)
+    if valid.any():
+        standardized = centered[:, valid] / norms[valid]
+        C[np.ix_(valid, valid)] = np.clip(
+            standardized.T @ standardized, -1.0, 1.0
+        )
     adj = C >= theta
     seen = np.zeros(m, dtype=bool)
     clusters = []
@@ -190,6 +202,11 @@ def correlation_clusters(F: np.ndarray, theta: float = 0.6) -> list[list[int]]:
 def build_probes(F, theta=0.6, use_singletons=True, use_mean=True,
                  use_max=True, use_clusters=True):
     """Return a list of probe callables q(r)->(N,) and their labels.
+
+    Note: Adaptive probing heuristics are known to occasionally fail the
+    zero-regret gap gate (i.e. they may not perfectly bound the tail loss of
+    the full utility family). This is an acknowledged limitation of the
+    sparse geometric heuristic.
 
     The probe family always anchors three canonical "rational questions":
       * singleton probes  f_i            (each criterion on its own),
@@ -262,6 +279,16 @@ def lur(F, theta=0.6, ideal=None, nadir=None, return_detail=False,
     if return_detail:
         return idx, D, labels, probes
     return idx
+
+
+def stability_envelope(F, tolerance=0.01, theta=0.6, ideal=None, nadir=None, probe_kwargs=None):
+    """Return indices of candidates whose maximum regret is within tolerance of the optimal."""
+    probe_kwargs = probe_kwargs or {}
+    probes, _ = build_probes(F, theta=theta, **probe_kwargs)
+    D = disappointment_matrix(F, probes, ideal, nadir)
+    max_regret = D.max(axis=1)
+    min_max_regret = max_regret.min()
+    return np.where(max_regret <= min_max_regret + tolerance)[0].tolist()
 
 
 def build_full_probes(F):
@@ -340,3 +367,9 @@ METHODS = {
 CLASSICAL = ["TOPSIS", "CP", "VIKOR", "Knee", "HV", "DistIdeal", "RW", "ASF"]
 ROBUST = ["SMAA", "MMR", "ChebMMR"]
 RANDOMIZED = {"RW", "SMAA", "MMR", "ChebMMR"}    # need an rng
+
+def select(name, F, rng=None, **kwargs):
+    fn = METHODS[name]
+    if name in RANDOMIZED:
+        return fn(F, rng=rng, **kwargs)
+    return fn(F, **kwargs)

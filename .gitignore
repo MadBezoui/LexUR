@@ -1,5 +1,10 @@
 .DS_Store
 Trash/
+.venv/
+*.egg-info/
+.coverage
+.coverage.*
+.pytest_cache/
 __pycache__/
 *.pyc
 *.log
@@ -10,3 +15,9 @@ __pycache__/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+paper/generated/
+results/protocol/runs/
+results/protocol-smoke/
+results/protocol-pilot/
+results/protocol/tmp/
+results/protocol/tmp_*/
