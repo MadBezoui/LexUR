@@ -10,7 +10,7 @@ The broadened benchmark in Figure 7 consumes only the immutable run directory un
 
 The controlled mechanistic study in Figures 8-15 remains separate from the broadened protocol. Its corrected data products live under `results/tables/` and are regenerated deterministically from the existing fixed seeds. Captions must identify which study each figure uses.
 
-No figure may read through the mutable `results/protocol/current` symlink during publication generation. Generated artifacts must include the source run ID in sidecar metadata so provenance can be checked without inspecting the plot visually.
+No figure may read through the mutable `results/protocol/current` symlink during publication generation. Figure 7 reads the immutable `results/protocol/runs/33e81af5a748796ef2103fc0dd280bb7cb3aff6758e86ac49877cc632f036749/` directory directly, and its data contract asserts that every loaded artifact carries that run ID. Generated artifacts include the source run ID, source Git commit, dirty-worktree flag, and configuration/parameter hash in sidecar metadata so provenance can be checked without inspecting the plot visually.
 
 ## Figure Architecture
 
@@ -78,7 +78,7 @@ Regression tests must fail before implementation for these conditions:
 
 - Figure 7 evidence does not match run `33e81af5a748...` exactly.
 - Figure 9 caption groups methods whose rank gap exceeds CD.
-- A manuscript caption contains a stale hard-coded protocol count or CD.
+- A manuscript caption or `main.tex` fallback contains a stale hard-coded protocol count or CD.
 - Choice distance is dimension-dependent for a repeated coordinate difference.
 - Nadir sensitivity does not reuse the same problem at every error level.
 - Stochastic confidence penalties omit division by `sqrt(n)`.
@@ -86,7 +86,7 @@ Regression tests must fail before implementation for these conditions:
 - Registered ablations are omitted from Figure 12.
 - Publication PDFs contain Type 3 fonts, raster heatmaps below 300 ppi, or unexpected page/figure counts.
 
-The full verification sequence is unit tests, manuscript consistency checks, deterministic figure regeneration, LaTeX rebuild, `pdfinfo`, `pdffonts`, `pdfimages -list`, text extraction of all 17 captions, and visual inspection of every figure page.
+Fast CI runs unit tests, manuscript consistency checks, immutable-run provenance checks, deterministic figure-data contracts, and a LaTeX compilation smoke test. The publication acceptance audit additionally performs deterministic regeneration of every figure, a full LaTeX/bibliography rebuild, `pdfinfo`, `pdffonts`, `pdfimages -list`, text extraction of all 17 captions, 200 ppi overview rendering, 300 ppi detailed figure rendering, and visual inspection of every figure page. The expensive rendering audit is a release gate rather than a per-change CI step.
 
 ## Scope Boundaries
 
