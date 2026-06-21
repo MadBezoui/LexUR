@@ -1,92 +1,14 @@
-\section{Discussion and limitations}
+\section{Discussion and Conclusion}
 \label{sec:disc}
+\label{sec:conc}
 
-\paragraph{What LexUR is, and is not.}
-LexUR is a robust, certifiable decision rule. LexUR is competitive with the strongest robust scalarisations on tail held-out loss---non-inferior to achievement
-scalarisation and sampled linear minimax regret (negligible effect sizes)---while on average-case loss the classical averaging
-methods do better. LexUR's distinctive value is the \emph{combination} it offers
-that no single competitor matches: worst-case robustness competitive with the
-strongest robust scalarisations across additive \emph{and} non-additive
-preferences (within one Nemenyi CD of MMR, VIKOR and ASF, though behind
-the single-point hypervolume score on average rank), reduced sensitivity to redundant
-criteria, an interpretable certificate, and natural stochastic and multi-stakeholder
-extensions (the latter currently exploratory, \ref{app:rawlsian}). Where a DM cares only about average-case linear performance, a
-weighted sum or SMAA is appropriate; where the DM cannot state preferences and
-must defend a single robust, explainable choice, LexUR is designed for exactly that
-situation. Table~\ref{tab:claims} provides a concise summary mapping the central claims of the paper to their theoretical or empirical evidence.
+LexUR provides a robust, certifiable decision rule for multicriteria analysis. While average-case methods like the weighted sum or SMAA excel when decision makers seek typical performance across assumed probability distributions, LexUR is designed for scenarios where the decision maker cannot state precise trade-offs and must defend a single robust choice against the worst-case disappointment over a declared family of rational interpretations. 
 
-\begin{table}[h]
-\centering\small
-\caption{Claim-evidence matrix mapping theoretical properties and empirical findings to their supporting evidence.}
-\label{tab:claims}
-\begin{tabular}{p{5cm}p{7cm}}
-\toprule
-Claim & Evidence \\
-\midrule
-Pareto compatibility & Theorem~\ref{thm:pareto} (general) and Theorem~\ref{thm:nonneg} (non-negative probes) \\
-Existence and completeness & Theorem~\ref{thm:exist} \\
-Tolerance-rule stability & Theorem~\ref{thm:stab} (margin condition) \\
-Reduced redundancy bias & Table~\ref{tab:redund} (grouped loss) \\
-Robustness on tail held-out loss & Figure~\ref{fig:cd} and Table~\ref{tab:main} \\
-Stochastic consistency & Proposition~\ref{thm:stoch2} and Figure~\ref{fig:stoch} \\
-Smart-grid applicability & \ref{app:smartgrid} and Figure~\ref{fig:cert} \\
-\bottomrule
-\end{tabular}
-\end{table}
+It accomplishes this by turning the candidate set into a lexicographically optimal compromise, accompanied by an auditable certificate that explicitly names the most severely binding probes. The empirical evidence across extensive benchmark geometries, preference families, and noisy configurations demonstrates that LexUR matches the tail-loss robustness of the strongest scalarizations (like Savage minimax regret) while dramatically reducing bias from redundant criteria.
 
-\paragraph{Relationship to existing rules.}
-LexUR generalises rather than replaces. A single grand-maximum probe recovers the
-Chebyshev/ASF rule; a single weighted-mean probe recovers a weighted sum, and the
-grand mean recovers its equal-weight case; the
-singleton family recovers lexicographic maximin of normalised regret. The
-empirical question is whether the richer adaptive family helps, and the answer is
-that it does on redundant and asymmetric problems while not materially hurting on
-the tested standard geometries.
+However, the framework has clear, declared limitations. Because LexUR normalises based on the empirical extremes of the candidate set, it violates Independence of Irrelevant Alternatives. Adding or removing unselected points can shift the active nadir, causing rank reversal in the final recommendation. Therefore, if the true normalisation bounds are uncertain, practitioners must employ interval estimates and report the resulting stability classes rather than relying on point-estimate selections. Additionally, LexUR trades average-case performance for its worst-case robustness.
 
-\paragraph{Independence of Irrelevant Alternatives (IIA) and Set-Dependence.}
-Because both the normalisation bounds ($\ideal, \nadir$) and the probe anchors ($q^\star, q^w$) are computed empirically over the active candidate set $A$, LexUR does not satisfy Independence of Irrelevant Alternatives (IIA). Adding or removing a non-selected, non-dominated alternative that defines an extremum shifts the normalisation for \emph{all} alternatives, which can change the sorted disappointment vectors and cause rank reversal. This is structurally the same vulnerability identified in TOPSIS (\S\ref{sec:intro}). This set-dependence explains the high winner-flip rates observed in our nadir-sensitivity experiments (Table~\ref{tab:gates}). We must therefore unequivocally state: unless normalisation bounds are fixed \emph{a priori} by the decision maker, point-estimate normalisation should be avoided in favour of the interval/stability analysis (Option B) defined in \S\ref{sec:core}. Deploying LexUR with conservative interval bounds is mandatory when stability against candidate-set perturbations is required.
+Ultimately, LexUR replaces the traditional efficient set—a mere safety filter—with a certified recommendation. By relocating modelling choices into an explicit family of monotone questions, it gives decision makers an explainable, low-disappointment compromise that transparently reports its own fragility.
 
-\paragraph{The Certificate's Decision Value.}
-While robust scalarisations like ASF provide similar worst-case guarantees, LexUR's distinct value lies in its auditable certificate. A standard sensitivity sweep over ASF reference points or a SMAA acceptability index reveals \emph{how often} an alternative wins, but does not explain \emph{why} it loses in specific contexts. In contrast, the LexUR certificate explicitly isolates the binding constraints: it names the specific declared probe (e.g., ``the average of cost and emissions'') that forces the maximum disappointment, giving the decision maker a direct semantic justification for the compromise that opaque distributional indices omit. Figure~\ref{fig:certconcept} shows the anatomy of such a certificate.
-
-\input{tikz/fig_cert_concept}
-
-\paragraph{Scope, Parameters, and Limitations.}
-LexUR is a lexicographic minimax regret selector. It complements exploratory tools like SMAA by providing a single, auditable point recommendation when the DM must defend a robust choice. The framework relies on several explicit choices, summarised in Table~\ref{tab:params}. LexUR's contribution is that these choices are declared and separated from the final recommendation.
-
-\begin{table}[h]
-\centering\small
-\caption{Consolidated list of LexUR parameters, their roles, and recommended defaults.}
-\label{tab:params}
-\begin{tabular}{lllp{6cm}}
-\toprule
-Param & Role & Default & Note \\
-\midrule
-$\ideal, \nadir$ & Normalisation bounds & Empirical over $A$ & Must use fixed \emph{a priori} bounds if IIA/stability is required. \\
-$\Q$ & Probe family & Adaptive family & Defines the semantic interpretations of preference. \\
-$\theta$ & Clustering threshold & $0.6$ & Empirically insensitive over $[0.4, 0.8]$. \\
-$\tau$ & Leximax tolerance & $10^{-4}$ & Set to the scale of the disappointment estimation error. \\
-$\varepsilon_q$ & Degeneracy / range floor & $10^{-6}$ & Minimum admissible probe/criterion active range; below it the probe/criterion is flagged degenerate. The empirical stability margin $\Delta$ of Theorem~\ref{thm:stab} is an instance property, not a tunable parameter. \\
-$\alpha$ & Stochastic confidence & $0.95$ & Used only in the stochastic extension (\S\ref{sec:ext}). \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Threats to validity.}
-The held-out families, though disjoint from the probes, are themselves a modelling
-choice; we mitigate this by spanning linear, Chebyshev, ASF and CES forms and by
-reporting per-family results. Candidate sets are synthetic but cover eight
-audit geometries, with four canonical geometries used in the mechanistic study,
-and the dispatch illustration is also synthetic; extending to a wider
-library of real MCDA datasets is future work.
-
-\paragraph{Interactive elicitation using certificates.}
-The certificate could support a future interactive workflow in which the DM
-reviews the binding probes and revises the declared family. For example, a DM
-might relax a cost-focused probe after seeing its effect on the recommendation,
-after which LexUR can be recomputed. This possibility has not been evaluated here:
-removing a separating singleton can weaken Pareto-exclusion guarantees, so an
-interactive protocol would require explicit safeguards and user validation.
-
-\paragraph{Future work.}
-Natural next steps include large-scale empirical validation of the continuous direct formulations (\S\ref{sec:direct}) on high-dimensional problems; and full development and evaluation of the exploratory Rawlsian multi-stakeholder variant. Finally, extending the family to include non-linear probes would significantly broaden LexUR's expressive power. For instance, capturing Cobb-Douglas structures (constant elasticity of substitution) could be achieved by evaluating linear probes in log-transformed criterion space, while modelling threshold-based satisficing preferences with interaction terms would require explicitly incorporating boolean conditionals into the anchor computations.
+\paragraph{Reproducibility.}
+All code, generated data, and scripts required to reproduce the protocol, the statistical tests, and the case study are released in an open-source repository. (URL withheld to preserve anonymity during review. It will be provided in the camera-ready version.)

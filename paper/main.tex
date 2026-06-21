@@ -75,27 +75,11 @@ for Robust Multicriteria Selection}}
 \author{Madani Bezoui}
 \address{CESI LINEACT, UR 7527}
 \begin{abstract}
-\noindent
-Pareto efficiency is necessary but not sufficient for a unique recommendation. An
-efficient set tells a decision maker (DM) which alternatives are not obviously
-bad, but offers no principled way to choose one. Practice fills this gap with
-\emph{post hoc} devices---weighted sums, TOPSIS, compromise programming,
-reference points, acceptability indices---each injecting implicit or stochastic
-preference judgements.
+The efficient set is a safety filter, not a complete decision rule. To provide a principled recommendation when the decision maker cannot state precise weights, we propose the Leximax Universal-Regret (LexUR) core. LexUR evaluates alternatives over a declared family of monotone questions (probes). It ranks candidates by the lexicographically sorted vector of their dimensionless regrets, returning a robust stability class accompanied by an interpretable certificate listing the binding questions.
 
-We propose the \textbf{Leximax Universal-Regret (LexUR) core}, a lexicographic minimax regret selection rule operating over a structured, declared, monotone scalarisation family. The
-DM defines an explicit family of rational questions (probes) and supplies normalisation bounds. 
-LexUR treats each probe's evaluation as an achievement function, calculating how far each alternative
-falls from the best attainable outcome under each probe, and sorts the resulting
-dimensionless regrets. The method returns either a singleton recommendation or, when margins or bounds are insufficient, a certified stability class, always accompanied by an interpretable certificate listing the binding questions. 
+We prove existence and completeness, Pareto compatibility, tolerance-rule stability under bounded perturbations, and a probe perturbation bound. We also provide an adaptive correlation-clustering construction that reduces sensitivity to redundant criteria.
 
-We prove existence and completeness, Pareto compatibility, stability of the
-tolerance-based leximax rule under bounded perturbations, and a probe
-perturbation bound with explicit constants. We also give an adaptive
-correlation-clustering construction empirically reducing, without eliminating,
-sensitivity to redundant criteria.
-
-In a replicated benchmark and a broadened frozen audit protocol covering 11 methods, 10 held-out preference families, 8 front geometries, and $m$ up to 20, LexUR is competitive with robust scalarisation baselines on tail held-out loss and non-inferior to ASF and sampled minimax regret under paired tests, while a single-point hypervolume score obtains the best average rank. LexUR's distinct contributions are its labelled regret certificate and empirically reduced redundancy sensitivity relative to averaging methods. Because point-bound LexUR can be sensitive to normalisation estimates, robust deployment should report a tolerance or interval stability class; a unique recommendation is returned only when margin conditions hold. The method is robust with respect to the declared probe family, not with respect to all possible preferences. We formulate an exploratory stochastic extension illustrated on a synthetic smart-grid economic dispatch model.
+In a comprehensive audit protocol spanning 11 methods, 10 preference families, and 8 front geometries, LexUR is competitive with the strongest robust scalarisation baselines on tail held-out loss. It remains non-inferior to ASF and sampled minimax regret under paired tests, while a single-point hypervolume score obtains the best average rank. LexUR's distinct contributions are its auditable regret certificate and reduced redundancy bias relative to averaging methods. Because point-estimate normalisation can be sensitive, robust deployment should report an interval stability class. A unique recommendation is returned only when margin conditions hold. LexUR is robust with respect to the declared probe family, not all possible preferences. We also outline an exploratory stochastic extension illustrated on a synthetic smart-grid economic dispatch model.
 \end{abstract}
 
 \begin{keyword}

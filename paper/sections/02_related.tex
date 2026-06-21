@@ -1,124 +1,28 @@
 \section{Background and related work}
 \label{sec:related}
 
-\subsection{Pareto efficiency and \emph{post hoc} selection}
-For a vector objective $F(x)=(f_1(x),\dots,f_m(x))$ (minimisation), $x$
-Pareto-dominates $y$ if $f_i(x)\le f_i(y)$ for all $i$ with at least one strict
-inequality; the efficient set is the non-dominated set. Because it is typically
-large, a single recommendation is obtained by \emph{post hoc} selection. The
-weighted sum, TOPSIS \citep{hwang1981}, compromise programming
-\citep{zeleny1982}, knee selection \citep{branke2008}, ELECTRE \citep{roy1968,roy1991},
-PROMETHEE \citep{brans2016} and hypervolume selection \citep{zitzler1999} are the
-standard tools; each requires weights, thresholds, a metric, or an already
-generated front. LexUR does not eliminate modelling choices. It relocates them into a declared family of admissible monotone probes and, on finite candidate sets, computes the resulting recommendation exactly while returning a labelled regret certificate.
+Table~\ref{tab:positioning} compactly maps LexUR against the standard families of multicriteria decision analysis. Broadly, existing selection devices fall into four categories: utility aggregation (e.g., weighted sum, OWA \citep{yager1988,torra1997}), distance to reference rules (e.g., TOPSIS \citep{hwang1981}, CP \citep{zeleny1982}, ASF \citep{wierzbicki1980}), regret-based rules \citep{savage1951,kouvelis1997}, and stochastic acceptability or robustness frameworks. The classical methods are robust but typically require elicited weights, thresholds, metrics, or explicit reference points, as detailed in the comparative table.
 
-\subsection{Achievement scalarising functions and ordered aggregation}
-Achievement scalarising functions (ASF) project a reference point onto the
-efficient set through a parameterised metric interpolating between $L_1$ and
-$L_\infty$ \citep{wierzbicki1980,miettinen2002}. Ordered weighted averaging
-(OWA) \citep{yager1988} and its extensions (WOWA) \citep{torra1997}
-connect ordered aggregation to lexicographic maximin. 
+LexUR aligns most closely with robust decision analysis, particularly SMAA \citep{lahdelma1998,tervonen2007}, robust ordinal regression (ROR) \citep{greco2008,figueira2009}, and preference robust optimisation (PRO) \citep{armbruster2015,hu2015}. However, LexUR's operational mechanics and outputs are distinct. Rather than returning an acceptability index over a weight distribution (SMAA), reasoning over elicited value functions (ROR), or optimising a worst-case expected utility (PRO), LexUR optimises the lexicographically sorted vector of normalised regrets. Crucially, it operates over an explicit, declared family of monotone questions (probes) and outputs an auditable certificate that names the binding coalitions without requiring elicited preferences or sampling assumptions. 
 
-\begin{remark}[Recovery of standard scalarisations]
-\label{rem:special}
-The LexUR core recovers standard aggregation methods as exact special cases under specific, restricted probe families:
-\begin{itemize}
-\item \textbf{Weighted sum:} If $\Q=\{q_w(r)=w^\top r\}$, LexUR exactly minimises the weighted sum of normalised criteria.
-\item \textbf{Chebyshev / ASF:} If $\Q=\{q_w(r)=\max_i w_i r_i\}$, LexUR exactly minimises the Chebyshev distance to the ideal point.
-\item \textbf{Lexicographic minimax:} If $\Q=\{r_1,\dots,r_m\}$ (the singleton family), LexUR performs a lexicographic minimax optimisation over the normalised regrets.
-\end{itemize}
-\end{remark}
-
-We do not claim
-LexUR subsumes these methods with its full adaptive family---there it is a
-\emph{different} aggregation paradigm. Its distinguishing features are that it
-sorts \emph{normalised regrets} (dimensionless disappointments relative to each
-probe's own attainable best and worst) over a \emph{declared family of probes}
-and breaks ties through the whole sorted vector, and that it emits a certificate.
-
-\subsection{Robust MCDA: SMAA, robust ordinal regression, preference robust
-optimisation}
-The work closest to LexUR lies in \emph{robust} multicriteria decision analysis and minimax regret optimisation \citep{kouvelis1997}.
-\textbf{SMAA} \citep{lahdelma1998,tervonen2007} computes, by Monte-Carlo
-integration over a distribution of admissible weights (and possibly criterion
-values), acceptability indices describing how strongly each alternative is
-supported. \textbf{Robust ordinal regression} \citep{greco2008,figueira2009}
-reasons over the entire set of additive value functions compatible with a DM's
-holistic pairwise judgements, producing necessary and possible preference
-relations, sharing goals with inverse MCDA and the UTA family \citep{jacquetlagreze1982}. \textbf{Preference robust optimisation} \citep{armbruster2015,hu2015,delage2015,vayanos2020}
-optimises the worst-case expected utility over an ambiguity set of utility
-functions. LexUR shares the robust philosophy---perform well across a whole class of
-admissible preferences rather than commit to one---but differs in three ways.
-First, its admissible class is an explicit family of \emph{monotone probes}, not a
-weight distribution or an elicited polyhedron. Second, its criterion is the
-\emph{lexicographic minimax of normalised regret}, not an expected acceptability,
-a necessary/possible relation, or a single worst-case utility. Third, its output
-is an interpretable \emph{certificate} naming the binding coalitions. We note that
-SMAA is inherently an \emph{exploratory} framework designed to visualise the robustness of alternatives across weight spaces, rather than a single-choice prescriptive rule. By forcing it to recommend the alternative with the highest first-rank acceptability index (ties broken by expected value), we create a comparable baseline for \S\ref{sec:exp}; however, we emphasise that LexUR's single-shot default recommendation is meant to \emph{complement} rather than compete with SMAA's rich exploratory indices. We likewise compare against a Savage minimax-regret (MMR)
-recommender over a sampled linear weight set (\S\ref{sec:exp}). More broadly, LexUR
-is complementary to data-driven preference disaggregation and inverse MCDA
-\citep{doumpos2011}, which infer preference parameters from holistic judgements:
-LexUR instead dispenses with a fitted preference model and reasons over a declared
-class of questions, and could take an elicited probe family as input where such
-data exist.
-
-\subsection{Minimax regret and robust optimisation}
-Regret-based choice originates with \citet{savage1951} and \citet{loomes1982};
-minimax regret seeks alternatives minimising the largest shortfall from the best
-attainable value. Robust optimisation \citep{bental2002} and stochastic
-programming \citep{birge2011} address parameter uncertainty in the model rather
-than preference uncertainty in the DM. LexUR extends minimax regret in three
-directions: it is \emph{lexicographic} (after the worst regret, minimise the
-second worst, and so on), \emph{probe-based} (regret is computed over rational
-coalitions of criteria, not raw criteria), and \emph{direct on a given candidate
-set} (computed without an additional scalarisation sweep, and front-free only in
-the structured continuous cases of \S\ref{sec:direct}).
-
-\subsection{Social choice and fairness}
-Aggregating criteria resembles social choice, but treating criteria as voters
-invites Condorcet cycles; LexUR avoids this by aggregating \emph{regrets over
-declared questions}, not votes over criteria. For multi-stakeholder settings we
-draw on the maximin principle of \citet{rawls1971} and the bargaining viewpoint
-of \citet{nash1950}; we claim natural fairness properties (anonymity, monotonicity,
-worst-stakeholder protection), not a uniqueness theorem.
-
-\subsection{What is new relative to existing regret and robust-MCDA rules}
-\label{sec:novelty}
-
-While LexUR shares motivation with several robust approaches, its mathematical object and output differ fundamentally:
-\begin{itemize}
-\item \textbf{Versus minimax regret:} LexUR minimises a sorted vector of normalised probe regrets, not a single maximum regret over raw utilities or sampled weights.
-\item \textbf{Versus ASF/Chebyshev:} ASF commits to one scalarising function or one reference structure; LexUR evaluates a declared family and certifies binding probes.
-\item \textbf{Versus SMAA:} SMAA integrates over a preference distribution and reports acceptability; LexUR does not require a probability distribution and returns a leximax regret certificate.
-\item \textbf{Versus robust ordinal regression (ROR):} ROR reasons over compatible value functions after elicited comparisons; LexUR can operate without holistic preference judgements.
-\item \textbf{Versus preference robust optimisation (PRO):} PRO optimises worst-case utility over an ambiguity set; LexUR optimises lexicographically sorted normalised disappointments over interpretable monotone probes.
-\item \textbf{Versus ordered weighted aggregation (OWA):} LexUR sorts regrets
-across declared questions, not criterion values themselves. OWA specifies an
-ordered weight vector, whereas LexUR specifies a probe family; both therefore
-encode modelling choices in different forms. We include OWA utilities as a
-held-out evaluation family, not as evidence that LexUR subsumes OWA.
-\end{itemize}
-
-The novelty is not minimax regret alone, but lexicographic minimax over normalised disappointments induced by a declared monotone probe family, with an auditable certificate and an adaptive redundancy-aware probe construction.
-
-Table~\ref{tab:positioning} summarises where LexUR sits relative to representative MCDA and robust methods.
+LexUR does not subsume or replace Pareto analysis. It is a prescriptive rule that turns a feasible candidate set into a robust, explainable recommendation under declared monotone probes. It recovers specific methods like minimax regret or ASF only under restricted, singleton probe families. Ultimately, its distinguishing contribution is formulating decision-making as a lexicographic minimax over normalised disappointments, supplemented by an adaptive redundancy-aware probe construction and an interpretable regret certificate.
 
 \begin{table}[t]
 \centering\small
-\caption{Comparison of LexUR with representative selection and robust-MCDA methods.}
+\caption{Comparison of LexUR with representative MCDA and robust selection methods.}
 \label{tab:positioning}
 \begin{tabular}{p{2.2cm}p{3.2cm}p{1.3cm}p{2.6cm}p{3.7cm}}
 \toprule
 Method & Required Input & Pareto Comp. & Output / Explanation & Key Limitation \\
 \midrule
 Weighted sum & Weight vector & Yes ($w>0$) & Single choice (Low) & Misses non-supported points in non-convex fronts \\
-TOPSIS & Weights, distance metric & Not strictly & Single choice (Low) & Rank reversal; distance to non-feasible ideal \\
+TOPSIS & Weights, distance metric & Not strictly & Single choice (Low) & Rank reversal, distance to non-feasible ideal \\
 CP & Weights, $L_p$ exponent & Yes ($p<\infty$) & Single choice (Low) & Non-linear scaling effects \\
 ASF / Chebyshev & Reference point, scaling & Yes & Single choice (Low) & Requires an arbitrary reference point \\
 MMR (sampled) & Linear weight distribution & Yes & Worst-case regret & Limited to linear aggregations \\
-SMAA & Preference distribution & Usually & Acceptability indices & Exploratory; single-choice depends on post-processing \\
+SMAA & Preference distribution & Usually & Acceptability indices & Exploratory, single-choice depends on post-processing \\
 VIKOR & Weights, majority threshold & Not strictly & Single choice (Low) & Complex parameter interaction \\
-Single-point HV & Reference point & Yes & Single choice (Low) & Box-volume score; sensitive to reference point \\
+Single-point HV & Reference point & Yes & Single choice (Low) & Box-volume score, sensitive to reference point \\
 \textbf{LexUR (ours)} & Monotone probe family & Yes\textsuperscript{*} & Leximax certificate & Sensitive to normalisation bounds \\
 \bottomrule
 \multicolumn{5}{l}{\footnotesize \textsuperscript{*} Strict Pareto compatibility holds if probes separate criteria (Theorem~\ref{thm:pareto}).}

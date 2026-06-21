@@ -1,0 +1,83 @@
+\section{Proofs}
+\label{app:proofs}
+This appendix collects the proofs of the results stated in
+\S\ref{sec:core}, \S\ref{sec:probes}, and \S\ref{sec:ext}.
+
+\begin{proof}[Proof of Theorem~\ref{thm:exist}]
+For finite $A$ and finite $\Q$, each $\reg^{\downarrow}(x)\in[0,1]^K$ is a
+well-defined real vector. The lexicographic order on $\R^K$ is reflexive,
+transitive and total, hence a complete preorder. Since $A$ is finite the
+lexicographic minimum exists.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:pareto}]
+Let $x\prec_P y$, so $r_i(x)\le r_i(y)$ for all $i$ with strict inequality for
+some $j$. For any monotone non-decreasing probe $q$, $q(r(x))\le q(r(y))$. As
+$q^\star,q^{\mathrm w}$ are constants independent of the alternative,
+$\reg_q(x)\le\reg_q(y)$ for every $q\in\Q$. We now invoke the monotonicity of
+order statistics: if $a_q\le b_q$ for every probe $q$, then the descending
+rearrangements satisfy $a^{\downarrow}_k\le b^{\downarrow}_k$ for all $k$ (the
+$k$-th largest of a componentwise-smaller vector cannot exceed the $k$-th largest
+of the larger one). Applying this to $a_q=\reg_q(x)$ and $b_q=\reg_q(y)$ gives
+$\reg^{\downarrow}_k(x)\le\reg^{\downarrow}_k(y)$ for all $k$, hence
+$x\preceq_{\mathrm{LexUR}}y$ (weak compatibility, monotonicity only). If $\Q$
+separates criteria there is a probe $q$ strictly increasing in $r_j$. Provided
+this separating probe is non-degenerate over $A$ (active range $q^{\mathrm
+w}-q^\star\ge\varepsilon_q>0$, which holds automatically whenever $q$ strictly
+separates two alternatives of $A$), $q(r(x))<q(r(y))$ gives $\reg_q(x)<\reg_q(y)$.
+The disappointment vector of $x$ is then componentwise $\le$ that of $y$ with at
+least one strict drop, so by the same order-statistic monotonicity (now with one
+strict inequality) the descending-sorted vectors satisfy
+$\reg^{\downarrow}(x)\lex\reg^{\downarrow}(y)$ strictly and
+$x\prec_{\mathrm{LexUR}}y$. The counterexample in the main text shows the
+separation hypothesis cannot be dropped.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:dom}]
+If $x \in A$ is dominated by some $y \in A$ and $\Q$ separates criteria,
+Theorem~\ref{thm:pareto} gives $y\prec_{\mathrm{LexUR}}x$, so $x$ is not a
+lexicographic minimiser over $A$. Without separation only $y\preceq_{\mathrm{LexUR}}x$ holds
+and a dominated alternative may tie its dominator.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:stab}]
+Write $\hat\reg_q(x)=\reg_q(x)+\xi_q(x)$, $|\xi_q(x)|\le\eta$. Sorting is
+$1$-Lipschitz in $\|\cdot\|_\infty$, so each sorted coordinate moves by at most
+$\eta$. Fix a rival $y$ and the deciding coordinate $k=k(y)$ with true margin
+$\reg_{[k]}(y)-\reg_{[k]}(x^{\mathrm{LexUR}})\ge\Delta$. Under perturbation this
+margin is at least $\Delta-2\eta$. Since $2\eta<\Delta-\tau$ it stays above
+$\tau$, so the $\tau$-tolerance rule still decides coordinate $k$ in favour of
+$x^{\mathrm{LexUR}}$. For the earlier coordinates $j<k$, which agree within
+$\tau-2\eta$ by hypothesis, the perturbed gaps stay within $\tau$ and are treated
+as ties, so the decision is not pre-empted before $k$. As $2\eta<\tau$ no spurious
+strict difference is created earlier. Hence $x^{\mathrm{LexUR}}$ still beats every
+rival and the winner is unchanged. (Exact comparison, $\tau=0$, is excluded
+precisely because the second condition $2\eta<\tau$ then fails.)
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:nonneg}]
+If a probe $q$ is a non-negative-weighted sum $q(r)=\sum_{i=1}^m w_i r_i$ with $w_i\ge 0$, then $r\le r'$ componentwise implies $q(r)\le q(r')$. Likewise, a maximum probe $q_{\max}(r)=\max_{i} w_i r_i$ satisfies $q_{\max}(r)\le q_{\max}(r')$. Since all such probes are monotone non-decreasing, weak Pareto compatibility holds. The inclusion of singleton probes $q_i(r)=r_i$ ensures the family separates criteria, establishing strict Pareto compatibility as shown in Theorem~\ref{thm:pareto}.
+\end{proof}
+
+\begin{proof}[Proof of Lemma~\ref{thm:approx}]
+Fix $q$ and its approximant $q'$ with $\sup_r|q(r)-q'(r)|\le\eta$. Then also
+$|q^\star-q'^\star|\le\eta$ and $|q^{\mathrm w}-q'^{\mathrm w}|\le\eta$. Write the
+ranges $N=q^{\mathrm w}-q^\star$ and $N'=q'^{\mathrm w}-q'^\star$, both
+$\ge\beta>0$. Using $\reg_q(x)\in[0,1]$,
+\[
+|\reg_q(x)-\reg_{q'}(x)|
+=\left|\frac{q(x)-q^\star}{N}-\frac{q'(x)-q'^\star}{N'}\right|
+\le\frac{|q(x)-q'(x)|+|q^\star-q'^\star|}{N'}+\reg_q(x)\frac{|N-N'|}{N'}
+\le\frac{2\eta}{\beta}+1\cdot\frac{2\eta}{\beta}=\frac{4\eta}{\beta}.
+\]
+The constant is explicit and the dependence on the range floor $\beta$ (worst
+case $\varepsilon$) is exhibited, making clear when the bound is informative.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{thm:stoch}]
+If $x$ weakly dominates $y$ under all scenarios, then $r(x, \omega^{(s)}) \le r(y, \omega^{(s)})$ for all $s$, and for any monotone probe $q$, $q(r(x, \omega^{(s)})) \le q(r(y, \omega^{(s)}))$ for all $s$. Monotonicity of $\rho$ then gives $\rho_q(x)\le\rho_q(y)$. Since the normalisation anchors $\rho_q^\star,\rho_q^{\mathrm w}$ are fixed across alternatives, $\reg_q^\rho(x)\le\reg_q^\rho(y)$ for every $q$, and by the order-statistic monotonicity used in Theorem~\ref{thm:pareto} the sorted vectors are componentwise ordered, giving weak compatibility. If $\Q$ separates criteria and the dominance is strict on a separated coordinate in some scenario with $\rho$ strictly monotone there (as for the sample average), that probe satisfies $\rho_q(x)<\rho_q(y)$, hence $\reg_q^\rho(x)<\reg_q^\rho(y)$, and a single strict drop in a componentwise-ordered vector gives $x\prec_{\mathrm{LexUR}}y$. Note $\mathrm{CVaR}_\alpha$ is monotone but not strictly so, so it yields the weak conclusion in general.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{thm:stoch2}]
+Since $A$ and $\Q$ are finite, the weak law of large numbers gives uniform convergence in probability of $\hat{\mu}_q(x)$ to $\mu_q(x)$. Because the minima and maxima over finite sets are continuous operations, the estimated anchors $\hat{q}^\star$ and $\hat{q}^{\mathrm w}$ converge in probability to the population anchors. Since the population range satisfies $\rho_q^{\mathrm w}-\rho_q^\star\ge\beta>0$, the denominator is bounded away from zero, so the disappointment ratio is a continuous function of the (converging) numerator and denominator. Therefore the sample disappointment vectors converge uniformly in probability to the population disappointment vectors. Under the margin condition of Theorem~\ref{thm:stab}, there exists an $\eta > 0$ such that perturbations strictly within $\eta$ do not change the tolerance-LexUR winner. Since the probability of the maximum estimation error exceeding $\eta$ vanishes as $S\to\infty$, the sample-average LexUR winner converges in probability to the population winner.
+\end{proof}

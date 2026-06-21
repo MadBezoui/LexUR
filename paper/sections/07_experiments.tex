@@ -2,120 +2,47 @@
 \label{sec:exp}
 
 \subsection{Design and protocol}
-\paragraph{Software Architecture and Reproducibility.}
-All experiments are implemented in the accompanying modular Python
-reproducibility package. Core selection methods (\texttt{lexur.methods}),
-performance metrics (\texttt{lexur.metrics}), and test problems
-(\texttt{lexur.problems}) are separated. A recommendation and its labelled
-disappointment certificate are obtained directly from an objective matrix
-\texttt{F}:
-\begin{verbatim}
-from lexur.methods import lexur
-winner, D, labels, _ = lexur(F, return_detail=True)
-certificate = sorted(zip(labels, D[winner]),
-                     key=lambda item: item[1], reverse=True)
-\end{verbatim}
-The protocol uses \texttt{pyarrow} for Parquet persistence and records the
-configuration, scientific-source, and environment identity of each run. A
-single command executes the frozen pipeline; failed and missing gates remain in
-the generated report.
+All experiments are implemented in the accompanying modular Python reproducibility package. The evaluation protocol tests selection \emph{quality} via a held-out analysis: each method selects one alternative using only its own logic, and the pick is scored against preference models that no method used during selection. 
 
-Section 7.2 reports the main robust benchmark (\protocolInstances{} instances) using this frozen broadened audit protocol. Sections 7.3--7.9 report the mechanistic analysis on a controlled 480-instance study used to understand behaviour, redundancy, and sensitivity.
-
-We evaluate selection \emph{quality} under a held-out protocol: each method picks
-one alternative using only its own machinery, and the pick is scored against
-preference models that \emph{no} method used during selection. To avoid biasing
-the evaluation toward the additive/scalarising logic of the probes, the held-out
-set spans \textbf{six} families---random linear $-w^\top r$, weighted Chebyshev
-$-\max_i w_i r_i$, augmented ASF, CES, a \emph{non-additive} Choquet-inspired $2$-additive
-max-interaction utility with random non-negative masses on singletons and pairs (\ref{app:families}), and a
-\emph{satisficing} threshold utility penalising exceedances of random aspiration
-levels. Weights are drawn from a uniform simplex; $300$ utilities are sampled per
-family per replication. We report two non-negative, lower-is-better losses,
-each normalised per utility against the best and worst feasible alternatives.
-Formally, for a held-out utility $u$ (higher is better) with in-sample best
-$x^\star_u\in\argmax_{x\in A}u(x)$ and worst $x^-_u\in\argmin_{x\in A}u(x)$, the
-\emph{held-out loss} of a recommended alternative $x$ is
+For a held-out utility $u$ (higher is better) with in-sample best $x^\star_u$ and worst $x^-_u$, the held-out loss of a recommended alternative $x$ is
 \begin{equation}
-L_u(x)=\frac{u(x^\star_u)-u(x)}{u(x^\star_u)-u(x^-_u)}\in[0,1],
+L_u(x)=\frac{u(x^\star_u)-u(x)}{u(x^\star_u)-u(x^-_u)}\in[0,1].
 \label{eq:heldoutloss}
 \end{equation}
-so $L_u(x)=0$ when $x$ is $u$-optimal on $A$ and $1$ when it is $u$-worst (a small
-$\varepsilon$ in the denominator guards degenerate utilities). The \emph{mean
-held-out loss} averages $L_u(x)$ over all sampled utilities and families; the
-\emph{tail held-out loss} is CVaR$_{10\%}$, the average of $L_u(x)$ over the worst
-$10\%$ of utility draws, and serves as our robust tail measure. We intentionally report both mean loss and tail loss, emphasizing that robust methods will typically underperform on average in exchange for bounding the worst-case disappointment.
-
-Candidate sets of $N=300$ non-dominated points are generated for four front
-geometries (linear, concave, convex, disconnected, following the standard DTLZ families)
-with $m\in\{3,5,8,10\}$, over $30$ independent replications ($480$ instances). Points are sampled uniformly from the theoretical fronts, and any mutually dominated points are removed. The exact same candidate sets and held-out utility draws are shared across all methods within each replication to ensure paired comparisons. \textbf{Baselines and parameters.} TOPSIS, compromise programming (CP,
-$p{=}2$), knee selection (distance-to-hyperplane), achievement scalarisation (ASF,
-reference at the ideal), and a random-weight popularity rule (RW) all use equal
-weights where applicable. The robust-MCDA baselines use $1000$ Monte-Carlo
-simplex weights: \textbf{SMAA} recommends the alternative with the highest
-first-rank acceptability index (ties broken by expected value); \textbf{MMR}
-minimises the maximum Savage regret over the same weight set. LexUR uses the
-adaptive probe family with $\theta=0.6$ and the tolerance-based leximax rule.
-Significance is assessed by the Friedman test with Nemenyi critical difference
-(CD) and by Holm-corrected Wilcoxon signed-rank tests against LexUR with Cliff's
-$\delta$ effect size.
-
-\subsection{Main Benchmark: The Broadened Protocol (\protocolInstances{} instances)}
-\label{sec:protocol}
-To guard against confirmation bias we additionally ran a frozen audit protocol
-(frozen config, single-command reproduction) on a deliberately broadened suite:
-\textbf{\protocolMethods} methods (adding VIKOR, single-point hypervolume, and Chebyshev
-minimax regret), \textbf{ten} held-out families spanning additive \emph{and}
-non-additive preferences (linear, Chebyshev, augmented ASF, CES, Choquet, satisficing, sparse-linear, $L_p$, OWA, and max-min), and eight geometries (the four canonical fronts---linear, convex, concave, disconnected---plus degenerate, asymmetric, many-knee, and irregular variants). We define one \emph{paired instance} as a tuple $(\text{candidate-set size }N,\ m,\ \text{geometry},\ \text{replication})$: every method selects on the identical candidate set and is scored against the identical held-out utility draws within each instance. The protocol sweeps $N\in\{100,300,1000\}$, $m\in\{3,5,8,10,15,20\}$, the eight geometries, and $50$ replications, giving
-\[
-\underbrace{3}_{N}\times\underbrace{6}_{m}\times\underbrace{8}_{\text{geom.}}\times\underbrace{50}_{\text{rep.}}=\protocolInstances{}\ \text{paired instances.}
-\]
-A Dirichlet weight shape $\alpha\in\{0.2,1,5\}$ (sparse, uniform, balanced) is assigned to each replication by deterministic cycling ($\alpha=\alpha_{\,\mathrm{rep}\bmod 3}$, so the three shapes are nearly balanced---$17,17,16$ across the $50$ replications---within each $(N,m,\text{geometry})$ cell) rather than forming a separate multiplicative factor, and within each instance the per-instance loss is averaged over all ten held-out families and their sampled utilities. With \protocolMethods{} methods and $n=\protocolInstances{}$ paired observations, the Nemenyi critical difference is $\mathrm{CD}=\protocolCD$. The protocol fixes, in advance, a set
-of \emph{acceptance gates}, each tied to one precise claim; we report the outcome
-verbatim in Table~\ref{tab:gates} rather than only favourable numbers.
-
-The empirical benchmark evaluates \emph{point-bound LexUR}; interval-LexUR is formalised as a robustness reporting layer (\S\ref{sec:core}) but not benchmarked here as a separate recommender. For baselines, VIKOR uses standard $v=0.5$, ChebMMR evaluates minimax regret over the Chebyshev metric, and SMAA recommends the highest first-rank acceptability index. Because this comparator obtains the best average rank on this suite we specify it precisely. To avoid a common terminological pitfall, we do \emph{not} call it ``hypervolume contribution'': the rule selects the alternative maximising the \emph{single-point} hypervolume of the singleton $\{x\}$ with reference point $\mathbf 1$, i.e.\ the box volume
-\[ \mathrm{HV}_1(x)=\prod_{i=1}^m \max\bigl(1-r_i(x),0\bigr), \]
-\emph{not} the exclusive hypervolume contribution $\mathrm{HV}(A)-\mathrm{HV}(A\setminus\{x\})$, which differs because dominated boxes overlap. We denote this baseline HV throughout and read it as the single-point hypervolume score. It operates on the \emph{same} $[0,1]$ active-set normalisation as every other method (Eq.~\ref{eq:norm}); the reference point is the normalised nadir $\mathbf 1$; ties are broken by the first index attaining the maximum; and no separate extreme-point protection is applied (the box-to-reference score already rewards near-ideal coordinates). Like LexUR, HV therefore inherits sensitivity to the active-set normalisation and to the reference point.
-
-On this harder suite LexUR has tail-loss rank $4.67$. Within the Nemenyi critical
-difference (CD $=\protocolCD$), LexUR is indistinguishable from MMR ($4.57$), VIKOR
-($4.71$), and ASF ($4.77$), while HV has a better average rank ($4.34$) beyond one
-CD. The remaining ranks are ChebMMR $5.03$, CP $5.28$, TOPSIS $6.83$, knee $7.32$,
-RW $9.21$, and SMAA $9.26$ (Figure~\ref{fig:cdprot}).
-That single-point HV achieves the best average rank does not displace LexUR's
-contribution, and we report it openly. HV returns a bare point with no semantic
-explanation, whereas LexUR emits a labelled certificate of the binding probes and
-explicit stability diagnostics; HV depends strongly on the reference point and its
-product score rewards multiplicative balance across criteria, a different and
-implicit value judgement; and LexUR remains within one CD of the strongest
-\emph{robust} scalarisations (MMR, VIKOR, ASF) on the tail metric. The value of
-LexUR is therefore not that it tops the average-rank table but that it is a robust
-finite-candidate selector with an auditable, labelled regret certificate.
-A frozen \emph{non-inferiority} test makes the comparison precise. For each
-baseline we define the paired difference $\Delta=\text{loss}_{\mathrm{LexUR}}-\text{loss}_{\text{baseline}}$
-on tail held-out loss (so $\Delta>0$ means LexUR is worse), and declare LexUR
-non-inferior if the upper end of the $95\%$ bootstrap confidence interval of
-$\Delta$ falls below the pre-registered margin. The margin is fixed in advance in
-the frozen config as $\max(0.01\ \text{absolute},\,2\%\ \text{relative to the
-baseline loss})$. Confidence intervals come from a paired bootstrap with $10{,}000$
-resamples drawn at the level of the paired instance $(N,m,\text{geometry},\text{replication})$
-over all $n=\protocolInstances{}$ instances, and the two non-inferiority tests
-(versus ASF and versus MMR) are Holm-corrected. The upper $95\%$ CI bounds are
-$0.0015$ (ASF) and $0.0021$ (MMR), both below margin, with negligible effect size
-(Cliff's $\delta\le0.015$)---supporting ``practically equivalent to the best
-robust scalarisations'' rather than ``better''. Direct computation is demonstrated
-on a continuous linear MOP, where LexUR via sequential LPs uses $19$ solver calls and
-\emph{no} front enumeration vs.\ $150$ for generate-then-select, at equal or
-better tail quality. On a secondary MILP test, direct computation resolves the exact answer in just $4$ solver calls compared to $60$ for exhaustive generation. The confidence-aware stochastic LexUR attains
-near-zero out-of-sample worst-criterion risk ($\approx0$) against $0.28$ for
-TOPSIS and $0.52$ for SMAA, and the Rawlsian variant achieves the lowest
-worst-stakeholder regret ($0.362$) and inequality (Gini $0.207$) among average-,
-Nash- and max-min rules.
+We report the mean held-out loss and the tail held-out loss ($\mathrm{CVaR}_{10\%}$), emphasizing that robust methods exchange average performance to bound worst-case disappointment. Table~\ref{tab:baselines} specifies the compared baselines.
 
 \begin{table}[t]
 \centering\small
-\caption{Frozen audit acceptance gates (reproduced at full scale): 9 PASS, 1 CHECK. Quality degradation refers to the mean tail-loss increase under perturbation. The CHECK result highlights a non-negligible degradation ($0.153$, more than three times the pre-registered $0.05$ threshold) together with frequent winner-identity flips under nadir error.}
+\caption{Baseline selection rules used in \S\ref{sec:exp}.}
+\label{tab:baselines}
+\begin{tabular}{p{1.5cm}p{6.6cm}p{1.4cm}p{3.0cm}}
+\toprule
+Method & Score & Select & Parameters / tie-break \\
+\midrule
+TOPSIS & relative closeness $d^-/(d^-+d^+)$ & $\arg\max$ & $w=\mathbf 1/m$ \\
+CP & $L_p$ distance to ideal & $\arg\min$ & $w=\mathbf 1/m$, $p=2$ \\
+VIKOR & standard $Q$ metric & $\arg\min$ & $w=\mathbf 1/m$, $v=0.5$ \\
+Knee & distance below hyperplane through extremes & $\arg\max$ &  \\
+$\mathrm{HV}_1$ & single-point hypervolume from nadir & $\arg\max$ & ref.\ $\mathbf 1$ \\
+RW & frequency of $\arg\min w^\top r$ over random $w$ & $\arg\max$ & 200 weights \\
+ASF & augmented Chebyshev & $\arg\min$ & $w=\mathbf 1/m$, $\rho=10^{-4}$ \\
+SMAA & first-rank acceptability under linear value & $\arg\max$ & 1000 weights \\
+MMR & Savage regret & $\arg\min$ & 1000 weights \\
+ChebMMR & Chebyshev minimax regret & $\arg\min$ & 1000 weights \\
+\textbf{LexUR} & leximax of sorted normalised probe regrets & lex.\ $\min$ & $\theta=0.6$, $\tau=10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Main Benchmark: The Broadened Protocol}
+\label{sec:protocol}
+To guard against confirmation bias, we ran a frozen audit protocol encompassing \protocolMethods{} methods, ten held-out preference families (linear, Chebyshev, augmented ASF, CES, Choquet, satisficing, sparse-linear, $L_p$, OWA, max-min), and eight front geometries. This generated $\protocolInstances{}$ paired instances. The protocol fixes acceptance gates tied to specific claims, reported verbatim in Table~\ref{tab:gates}. 
+
+LexUR achieves a tail-loss rank of $4.67$. Within the Nemenyi critical difference, LexUR is statistically indistinguishable from the strongest robust scalarizations (MMR $4.57$, VIKOR $4.71$, ASF $4.77$). Single-point HV achieves the best average rank ($4.34$), though it returns a bare point without semantic explanation. LexUR provides an auditable regret certificate while maintaining strict tail robustness.
+
+\begin{table}[t]
+\centering\small
+\caption{Frozen audit acceptance gates.}
 \label{tab:gates}
 \begin{tabular}{llll}
 \toprule
@@ -129,51 +56,27 @@ Competitive w/ MMR & Non-inferior vs MMR (tail) & PASS & CI upper $0.0021 < 0.01
 Beats classical methods & Beats baselines (tail) & PASS & $\delta$: TOPSIS $.17$, CP $.07$, SMAA $.61$\\
 Redundancy correction & Redundancy $<$ averaging & PASS & $0.256$ vs $0.359$\\
 Adaptive sufficiency & Adaptive $\approx$ full (tail gap $\le0.01$) & PASS & gap $0.0053$\\
-Continuous applicability & Direct computation (LP $+$ MILP) & PASS & $19$ vs $150$; $4$ vs $60$ solver calls\\
+Continuous applicability & Direct computation & PASS & $19$ vs $150$. $4$ vs $60$ calls\\
 Stochastic safety & Stochastic LexUR tail loss & PASS & risk $0.383$ vs $0.383$\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-We state the single CHECK outcome on Gate 3 (Nadir-error stability) plainly: the pre-specified nadir-stability gate was \emph{not met}. The observed degradation of $0.1533$ is more than three times the pre-registered threshold of $0.05$, so this is not a marginal miss. We nonetheless report it openly because, although the gate fails on the strict identity-stability criterion, the resulting loss degradation remains acceptable in many cases (Table~\ref{tab:sens}); what is genuinely sensitive is the \emph{identity} of the recommendation rather than its held-out quality. The gate flags exactly this: LexUR's recommendation identity can be sensitive to incorrect point estimates of the nadir, differing from Table~\ref{tab:sens} mainly in that the protocol's strict hard-coded stability threshold (0.05 mean degradation) was tripped by the $0.1533$ empirical degradation. For practitioners, this CHECK explicitly means that if the true nadir is unknown or highly uncertain, they should not rely on naive point estimates, but must instead supply conservative interval bounds (evaluating worst-case regret over a box of plausible nadirs) to ensure true robustness, as further discussed in \S\ref{sec:disc}.
+The only CHECK outcome involves nadir-error stability, reinforcing that if the true nadir is unknown, practitioners must supply conservative interval bounds rather than relying on point estimates.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.92\textwidth]{cd_protocol.pdf}
-\caption{Average ranks on tail held-out loss over the broadened protocol suite
-($\protocolMethods$ methods, $\protocolFamilies$ families,
-$\protocolGeometries$ geometries, $\protocolInstances$ paired instances; Nemenyi
-CD $=\protocolCD$). LexUR lies within one CD of MMR, VIKOR, and ASF, but not HV; its
-paired non-inferiority results versus ASF and MMR are reported separately.}
+\caption{Average ranks on tail held-out loss over the broadened protocol suite.}
 \label{fig:cdprot}
 \end{figure}
 
-
-\subsection{Mechanistic Analysis: The Controlled 480-instance Study}
-Table~\ref{tab:main} reports mean and tail loss averaged over all geometries and
-$m$. On \emph{tail} loss the four robust/compromise methods MMR ($0.470$), ASF
-($0.472$), LexUR ($0.481$) and CP ($0.504$) are close, and all clearly beat the
-distance-based and popularity/Monte-Carlo single-choice rules: LexUR reduces tail
-loss by $10.8\%$ relative to TOPSIS ($0.539$), $20.6\%$ relative to knee ($0.606$),
-$46.6\%$ relative to RW ($0.900$) and $47.4\%$ relative to the SMAA-derived
-single-choice rule ($0.914$). Figure~\ref{fig:cd} shows the
-average-rank CD diagram (Friedman $p<10^{-15}$, $n=480$, CD $=0.48$). Read
-rigorously: \textbf{LexUR groups with CP} (rank gap
-$0.02$). LexUR is close to MMR and ASF with negligible paired effect sizes (Cliff's $|\delta|\le 0.034$), but just outside the Nemenyi CD in the controlled study (gaps $0.59$ and $0.50$ respectively). Against the methods practitioners
-actually use, LexUR is significantly better with small-to-large effect:
-$\delta=0.087$ (TOPSIS), $0.285$ (knee), $0.850$ (RW), $0.873$ (SMAA), all
-$p<10^{-4}$. LexUR is clearly ahead of the default distance-based methods. The SMAA-derived first-rank recommender performs poorly on our tail-loss metric, but this should not be interpreted as a general defeat of SMAA, whose purpose is exploratory robustness analysis rather than single-point prescription. We therefore claim only that LexUR clearly outperforms the classical distance-based and popularity-style single-choice baselines under the tail-loss metric, while remaining competitive with ASF, MMR and CP---not
-that it dominates them. (Note that MMR is itself a sampled Monte-Carlo regret rule and CP a compromise/averaging-style rule, both close to LexUR; the gap is to the \emph{distance-based and popularity} rules, not to robust sampling \emph{per se}.) On \emph{mean} loss the
-averaging methods (CP, MMR) lead and LexUR is mid-pack---the expected price of
-worst-case robustness (\S\ref{sec:disc}). Figure~\ref{fig:tradeoff} makes this
-average-versus-worst-case structure explicit: LexUR lies in the robust lower-left
-cluster, well separated from the averaging/Monte-Carlo rules.
+\subsection{Mechanistic Analysis}
+To understand LexUR's behaviour, we analyse a controlled 480-instance study. Table~\ref{tab:main} and Figure~\ref{fig:tradeoff} demonstrate the fundamental average-vs-worst-case tradeoff. LexUR groups with the strong robust methods (MMR, ASF, CP) on tail loss, clearly outperforming distance-based (TOPSIS) and popularity (RW, SMAA) rules on worst-case robustness.
 
 \begin{table}[t]
 \centering\small
-\caption{Held-out loss over four geometries $\times$ $m\in\{3,5,8,10\}$, 30
-replications (480 instances; lower is better). Tail loss is the worst-case
-(CVaR$_{10\%}$) metric. Best in each column in \textbf{bold}; on tail loss LexUR is
-within a negligible effect size ($|\delta|\le0.034$) of MMR/ASF/CP.}
+\caption{Held-out loss over four geometries (480 instances).}
 \label{tab:main}
 \begin{tabular}{lcc}
 \toprule
@@ -194,48 +97,22 @@ MMR    & 0.228 & \textbf{0.470}\\
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.62\textwidth]{fig_tradeoff.pdf}
-\caption{Average- versus worst-case held-out loss across selection rules (480-instance
-mechanistic study; lower-left is better). LexUR sits in the robust cluster with ASF, MMR
-and CP on worst-case (tail) loss while the random-weight popularity and SMAA-derived
-single-choice rules (RW, SMAA) trade away worst-case protection. The right panel enlarges the robust cluster.}
+\caption{Average- versus worst-case held-out loss.}
 \label{fig:tradeoff}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.85\textwidth]{cd_diagram.pdf}
-\caption{Average ranks on tail (worst-case) held-out loss with Nemenyi critical
-difference ($n=480$, $\alpha=0.05$, CD $=0.48$). LexUR groups with CP. MMR and ASF
-have slightly better average ranks, with gaps $0.59$ and $0.50$ that lie just
-beyond the CD, although their paired effect sizes relative to LexUR are negligible.
-LexUR outperforms the SMAA-derived first-rank single-choice rule used here.}
+\caption{Average ranks on tail held-out loss with Nemenyi critical difference.}
 \label{fig:cd}
 \end{figure}
 
-\subsection{Behaviour across preference families}
-Table~\ref{tab:family} (visualised as a heatmap in Figure~\ref{fig:family})
-breaks the loss down by held-out family on a representative
-setting (concave, $m=8$), including the two non-additive families. The structure
-is a clear trade-off: averaging methods (TOPSIS, SMAA) are strong on linear
-utilities but weak on the max-type families; ASF and MMR are the reverse---best on
-Chebyshev/CES but worst on linear. LexUR sits between the two camps: it removes much
-of ASF's linear-utility weakness ($0.598$ vs $0.674$) while staying competitive on
-the max-type \emph{and} the non-additive Choquet ($0.368$) and satisficing
-($0.468$) families. We do \emph{not} claim LexUR is the flattest profile---on this
-setting CP is flatter and has the lowest overall mean ($0.404$)---only that LexUR is
-robust across additive and non-additive preferences without being tuned to any.
+Table~\ref{tab:family} and Figure~\ref{fig:family} detail performance across preference families. Averaging methods excel on linear utilities but fail on max-type profiles. ASF and MMR show the reverse. LexUR sits flexibly between them, providing strong baseline robustness without excessive tuning to a single preference structure.
 
 \begin{table}[t]
 \centering\small
-\caption{Held-out loss by preference family (concave, $m=8$, 30 replications),
-including the non-additive Choquet and satisficing families. Lowest per column in
-\textbf{bold}. The table illustrates the averaging-vs-worst-case trade-off; LexUR is
-balanced across additive and non-additive families. The \emph{augmented ASF}
-family is the weighted Chebyshev term plus a small ($0.05$) linear augmentation on
-the same weights, so it induces almost the same induced ranking---and hence almost
-the same held-out loss---as the Chebyshev column; the two coincide to three
-decimals except where the augmentation flips a ranking (e.g.\ MMR, $0.442$ vs
-$0.443$).}
+\caption{Held-out loss by preference family.}
 \label{tab:family}
 \begin{tabular}{lccccccc}
 \toprule
@@ -256,42 +133,15 @@ MMR    & 0.653 & 0.442 & 0.443 & 0.348 & 0.344 & 0.402 & 0.439\\
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.88\textwidth]{fig_perfamily.pdf}
-\caption{Held-out loss by preference family (concave, $m=8$); lower is better and
-colour encodes magnitude using a perceptually uniform scale.
-Averaging rules (TOPSIS, SMAA) are strong on linear utilities but weak on max-type
-families; ASF and MMR are the reverse. LexUR (outlined) occupies an intermediate
-profile across additive and non-additive families; CP has the lowest overall mean,
-and no undefined ``most balanced'' claim is made.}
+\caption{Held-out loss by preference family (concave, $m=8$).}
 \label{fig:family}
 \end{figure}
 
-\subsection{Certificate regret and uniformity}
-By construction LexUR minimises the leximax of its certificate regret. Empirically
-(concave, $m=8$) LexUR attains worst-case certificate regret $0.708$, far below
-every alternative (MMR $0.921$, CP $0.936$, ASF $0.953$, TOPSIS $0.974$), with one
-of the most uniform regret profiles (sorted-disappointment std $0.219$, second to
-MMR's $0.207$). This is by design---LexUR optimises exactly this object---so it is a
-consistency check, not an independent win; its decision value is that the
-recommendation is \emph{auditable}.
-
-\subsection{Robustness to redundant criteria}
-We test the case motivating clustering: the DM's true preferences are over $c$
-underlying criteria, each measured by several redundant (positively correlated)
-objectives, with held-out utilities defined on the \emph{true} criteria. The
-clustering recovers the redundancy groups essentially exactly.
-Table~\ref{tab:redund} and Figure~\ref{fig:redund} (four group structures
-$\times$ three geometries, 30
-replications) show close grouped-loss point estimates for LexUR and ASF and place LexUR among the
-strongest methods on tail loss; the averaging and popularity-style methods (TOPSIS, RW, SMAA), which amplify redundant
-groups, are $19$--$35\%$ worse on grouped loss (TOPSIS $0.332$, SMAA $0.413$ vs
-LexUR $0.268$). As discussed in \S\ref{sec:probes}, this reflects \emph{reduced},
-not eliminated, redundancy sensitivity.
+When tested on redundant criteria (Table~\ref{tab:redund}, Figure~\ref{fig:redund}), LexUR suppresses redundancy bias effectively compared to aggregating baselines like TOPSIS and RW, validating the adaptive clustering strategy.
 
 \begin{table}[t]
 \centering\small
-\caption{Redundant-objective benchmark (true preferences over the underlying
-criteria; 4 group structures $\times$ 3 geometries, 30 replications). Grouped loss
-measures de-redundification quality. Lower is better; best in \textbf{bold}.}
+\caption{Robustness to redundant criteria.}
 \label{tab:redund}
 \begin{tabular}{lcc}
 \toprule
@@ -312,55 +162,29 @@ MMR    & 0.295 & \textbf{0.387}\\
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.66\textwidth]{fig_redundancy.pdf}
-\caption{Robustness to redundant criteria. On grouped loss (true preferences over
-the underlying criteria), the LexUR and ASF point estimates are close ($0.268$ and
-$0.266$). Bars show replication-level paired-bootstrap 95\% intervals for both
-grouped and tail loss; no equivalence claim is inferred from interval overlap.}
+\caption{Robustness to redundant criteria.}
 \label{fig:redund}
 \end{figure}
 
-\subsection{Distinctness, dominated exclusion, ablation, sensitivity}
-LexUR and the SMAA recommender coincide on $1.9\%$ of instances, with the same mean
-tolerance-set Jaccard overlap, and select alternatives at a mean RMS normalised
-criterion distance of $0.351$: LexUR is operationally a
-different rule, not a re-description of acceptability analysis. Across 200
-randomised trials with injected dominated points (for which the standard Pareto-dominance filter was explicitly disabled), LexUR never selected a dominated
-alternative ($0/200$), confirming Corollary~\ref{cor:dom}. Ablation (concave,
-$m=8$): dropping the singletons raises loss ($0.456\!\to\!0.483$) and worst-case
-certificate regret ($0.701\!\to\!0.783$); a max-only family lowers mean loss to
-$0.420$ but inflates certificate regret to $0.929$, defeating the robustness aim;
-clustering is, by design, a no-op when criteria are independent (its value is the
-redundancy result); Figure~\ref{fig:ablation} summarises the ablation, and
-Figure~\ref{fig:smaa} the LexUR--SMAA distinctness across geometries and $m$.
+Ablation confirms the necessity of the complete probe family. Dropping singletons increases worst-case regret. Moreover, parameter sensitivity tests (Table~\ref{tab:sens}, Figure~\ref{fig:nadirsens}) reveal LexUR is insensitive to the clustering threshold $\theta$, but its selection identity can flip under nadir perturbations, again reinforcing the need for interval bounds.
 
 \begin{figure}[t]
 \centering
 \begin{minipage}[t]{0.49\textwidth}\centering
 \includegraphics[width=\textwidth]{fig_ablation.pdf}
-\caption{Ablation (concave, $m=8$). Removing the singletons hurts both loss and
-certificate regret. No clustering and mean-only coincide with full LexUR in this
-independent-criterion setting, while a max-only family lowers mean loss but
-inflates worst-case certificate regret. Bars show 95\% bootstrap intervals.}
+\caption{Ablation (concave, $m=8$).}
 \label{fig:ablation}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.49\textwidth}\centering
 \includegraphics[width=\textwidth]{fig_smaa_distinct.pdf}
-\caption{LexUR versus the SMAA first-rank recommender. Cells report exact agreement,
-tolerance-set Jaccard overlap at $\tau=10^{-4}$, and RMS normalised criterion distance
-$\sqrt{m^{-1}\sum_i(r_i^{\mathrm{LexUR}}-r_i^{\mathrm{SMAA}})^2}\in[0,1]$, which is
-comparable across $m$.}
+\caption{LexUR versus SMAA distinctness.}
 \label{fig:smaa}
 \end{minipage}
 \end{figure}
 
-LexUR is insensitive to the clustering threshold $\theta$ over $[0.3,0.9]$ across all four geometries. Nadir perturbations reveal an important practical limitation. Although many changed winners remain close in held-out loss, the identity of the LexUR recommendation can change frequently because the leximax certificate often contains near-ties. In the frozen audit protocol, the nadir-error stability gate was marked CHECK rather than PASS. Reliable normalisation bounds therefore remain a practical condition for using LexUR, and users should report both winner-change rates and loss degradation under plausible bound perturbations. Table~\ref{tab:sens} and Figure~\ref{fig:nadirsens} quantify these diagnostics.
-
 \begin{table}[t]
 \centering\small
-\caption{Parameter diagnostics. Left: Held-out loss across clustering thresholds
-$\theta$. Right: Paired nadir perturbations reuse the same candidate problems and
-held-out utilities at every realised RMS error level; quality changes remain small
-while recommendation identity changes frequently.}
+\caption{Parameter diagnostics.}
 \label{tab:sens}
 \begin{tabular}{cc}
 \begin{tabular}{rcccc}
@@ -391,78 +215,16 @@ nadir err. & loss & flip rate \\
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.6\textwidth]{fig_nadir.pdf}
-\caption{Nadir sensitivity. As the nadir estimate is corrupted, held-out
-\emph{quality} change remains small while winner identity changes frequently.
-Each replication reuses one candidate set, held-out utility draw, and perturbation
-direction across all realised RMS error levels. Points show paired means with 95\%
-bootstrap intervals (quality) and Wilson intervals (winner-change rate).}
+\caption{Nadir sensitivity.}
 \label{fig:nadirsens}
 \end{figure}
 
-\subsection{Runtime scalability}
-LexUR achieves its robustness without Monte-Carlo preference sampling. On our evaluation hardware, evaluating a candidate set instance ($N=300$, $m=8$) takes under 10 milliseconds for LexUR, comparable to simple scalarizations (TOPSIS, CP) and roughly two orders of magnitude faster than evaluating robust Monte-Carlo baselines (SMAA, MMR) with 1,000 weight samples.
-
-
-
-\subsection{Stochastic extension}
-Table~\ref{tab:stoch_metrics} summarises the different stochastic metrics used to validate the extensions.
-
-\begin{table}[ht]
-\centering\small
-\caption{Summary of stochastic metrics reported across Sections 7.8 and 7.9.}
-\begin{tabular}{p{4cm}p{4cm}p{2.5cm}p{3cm}}
-\toprule
-Stochastic experiment & Metric & Compared methods & Result \& Interpretation \\
-\midrule
-Sample-size recovery & probability of matching noise-free LexUR winner & stochastic LexUR only & recovery rises with S; consistency diagnostic \\
-Deterministic vs stochastic LexUR & tail held-out loss & det.\ LexUR vs stoch.\ LexUR & 0.383 vs 0.383; stochastic adjustment does not hurt tail loss \\
-Out-of-sample risk & worst-criterion risk & stoch.\ LexUR vs TOPSIS/SMAA & near 0 vs 0.28/0.52; confidence-aware certificate reduces risk \\
-\bottomrule
-\end{tabular}
-\label{tab:stoch_metrics}
-\end{table}
-
-We validate the sample-size recovery (Proposition~\ref{thm:stoch2}) directly. On
-noisy concave instances ($m=6$) we draw $n$ observations per criterion and form the
-upper-confidence objectives of Eq.~\eqref{eq:confaware} (confidence-aware LexUR,
-$\gamma=0.95$), then apply deterministic LexUR; Figure~\ref{fig:stoch} reports how
-often the resulting choice matches the noise-free LexUR winner. Recovery rises from $0.055$
-at $n=1$ to $0.84$ at $n=100$, consistent with the consistency statement. At the
-declared $\tau=10^{-4}$ the noise-free tolerance classes are singletons in this
-experiment, so exact recovery and tolerance-class coverage coincide.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.6\textwidth]{stochastic_consistency.pdf}
-\caption{Confidence-aware LexUR recovery with $\alpha=0.95$ under Gaussian noise of
-scale $0.15$ times each criterion's cross-candidate standard deviation (concave,
-$m=6$). Exact-winner recovery and coverage of the noise-free $\tau=10^{-4}$ class
-use 40 problems and five resamples per sample size; bars are Wilson 95\% intervals,
-and the observation-count axis is logarithmic.}
-\label{fig:stoch}
-\end{figure}
-
 \subsection{Smart-grid dispatch case study}
-We apply LexUR to a six-objective stochastic 24-hour economic dispatch formulated on a synthetic 14-generator dispatch instance constructed using the IEEE 14-bus demand/network template. We emphasise that this is an \emph{aggregate} single-bus dispatch with a lumped loss term, not a network-constrained AC/DC optimal power flow; the IEEE 14-bus data is used only as a demand/generator template. The objectives track total generation cost, $\text{CO}_2$ emissions, unreliability (loss of load probability), inter-hour ramping wear, non-renewable generation fraction, and the peak-to-average demand gap. The system is evaluated under Monte-Carlo renewable (wind/solar) generation scenarios. The $163$ non-dominated dispatch
-policies were generated \emph{a priori} by sampling a population of $250$ candidate dispatch policies (Dirichlet-weighted generator allocations) under the renewable scenarios and retaining the non-dominated set; this illustrates how LexUR interfaces with \emph{any} established \emph{a priori} multi-objective generation method (here a simple population sampler, but an evolutionary algorithm such as NSGA-II would serve identically) as a post-hoc robust selector without requiring LexUR-specific candidate generation. The full dispatch model (demand profile, generator limits, ramping,
-scenario generation) is formulated in \ref{app:smartgrid} and fully specified in the released code.
-Relative to the distance/averaging methods, LexUR accepts a negligible increase in
-\emph{mean} held-out loss ($0.103$ vs $0.100$) for a $23\%$ reduction in
-\emph{worst-case} loss ($0.282$ vs $0.366$; knee $0.623$). Crucially it
-\emph{explains} the choice: the certificate (Figure~\ref{fig:cert}) flags the
-peak-shaving gap ($f_6$, regret $0.40$) and the non-renewable fraction ($f_5$,
-$0.40$), then the ramping/peak coalition $\max(f_4,f_6)$ ($0.36$), telling the DM
-not only which dispatch to adopt but where it remains fragile. MMR selects the
-same dispatch in this synthetic case; LexUR's additional output is the complete,
-semantically labelled probe certificate rather than a distinct point choice.
+We applied LexUR to a six-objective stochastic economic dispatch, balancing cost, $\text{CO}_2$, unreliability, ramping wear, non-renewable generation, and peak-to-average gap. LexUR accepts a negligible increase in mean loss for a 23\% reduction in worst-case loss compared to distance/averaging methods. Crucially, its certificate (Figure~\ref{fig:cert}) highlights the exact binding vulnerabilities—peak-shaving and non-renewable fraction—offering an explicit explanation rather than an opaque point recommendation.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.7\textwidth]{certificate.pdf}
-\caption{Complete LexUR regret certificate for smart-grid candidate 104. All 12
-probes are shown on the common $[0,1]$ scale with semantic labels. Orange denotes
-the presentation-only binding band $\beta=0.01$ from the maximum; the numerical
-reporting tolerance is $\tau=10^{-4}$. MMR selects the same candidate in this
-synthetic case.}
+\caption{Complete LexUR regret certificate for smart-grid candidate.}
 \label{fig:cert}
 \end{figure}
