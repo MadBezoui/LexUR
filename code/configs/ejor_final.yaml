@@ -18,6 +18,8 @@ geometries:
 - degenerate
 - asymmetric
 - manyknee
+- cars
+- water
 - irregular
 replications: 50
 utilities_per_family: 2000
@@ -48,6 +50,8 @@ methods:
 - MMR
 - ChebMMR
 - LUR
+- LUR-noclust
+- LUR-interval
 theta: 0.6
 tail_q: 0.9
 noninferiority:

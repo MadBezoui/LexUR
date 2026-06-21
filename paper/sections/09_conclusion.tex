@@ -3,9 +3,9 @@
 
 We have presented the Leximax Universal-Regret core, a Pareto-compatible decision
 rule that replaces the efficient set as the final object of multicriteria analysis
-with an auditable regret certificate. LUR ranks alternatives by the
-lexicographically sorted vector of normalised regrets over a declared family of
-monotone probes, and returns a single robust recommendation together with an
+with an auditable certificate. LUR operates as a leximin-refined preference-robust selection rule: it ranks alternatives by the
+lexicographically sorted vector of normalised achievement shortfalls over a declared family of
+monotone probes, and returns a robust stability class (often a singleton recommendation) together with an
 explanation of where it remains fragile. We proved existence and completeness,
 Pareto compatibility \emph{under a separation condition}, dominated-solution
 exclusion, stability of the tolerance-based rule under bounded perturbations, and
@@ -13,18 +13,19 @@ a disappointment-perturbation bound with explicit constants, and we gave a
 redundancy-aware, correlation-clustering probe construction that keeps the family
 linear in the number of criteria. A replicated held-out study over ten preference
 families and a stochastic smart-grid case showed that LUR attains best-group
-worst-case robustness---practically equivalent to the strongest robust
-scalarisations and outperforms the SMAA single-choice baseline
-used in practice---while reducing sensitivity to redundant criteria, certifying
-its choice, and extending naturally to noisy criteria and multiple stakeholders.
+worst-case robustness---performing non-inferiorly to the strongest robust
+scalarisations---while reducing sensitivity to redundant criteria, certifying
+its choices, and extending naturally to noisy criteria.
 
-The central message is that robust selection need not rely on exhaustive front generation or eliciting scalarisation weights. By relocating preference choices into a declared class of questions, LUR turns a candidate set into a defensible,
+The central message is that robust selection need not rely on exhaustive front generation or eliciting scalarisation weights. However, this robustness relies entirely on the reliability of the supplied normalisation bounds; if true nadirs are uncertain, the framework must be deployed conservatively using interval estimates. By relocating preference choices into a declared class of questions, LUR turns a candidate set into a defensible,
 explainable recommendation---a low-disappointment compromise across the declared
 interpretations of the criteria, accompanied by a certificate that reports which
 questions remain most binding.
 
 \paragraph{Reproducibility.}
 All code, generated data, and scripts that regenerate every table and figure in
-this paper are released in an open-source repository at \url{https://github.com/MadBezoui/LexUR}, including the four-geometry benchmark, the redundancy
+this paper are released in an open-source repository (URL withheld to preserve
+anonymity during review; it will be provided in the camera-ready version),
+including the four-geometry benchmark, the redundancy
 benchmark, the statistical tests, the sensitivity analyses, and the smart-grid
 case study.

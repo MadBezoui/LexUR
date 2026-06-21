@@ -30,22 +30,24 @@ alternatives are efficient?'' we ask
 interpretations of the criteria?}
 \end{quote}
 This turns the output of the analysis from a \emph{set} into a \emph{certified
-recommendation}: a single alternative (or small indifference class) accompanied
-by an explanation of which questions are most disappointed and by how much.
+stability class}: a robust set of alternatives (often a singleton, if bounds are verified and margins hold) accompanied
+by an explanation of which questions remain most severely binding.
 
-It is crucial to note what this approach does and does not do. LUR is not parameter-free; preferences are represented by an explicit auditable probe family, and it requires normalisation bounds and tolerance settings for numerical implementation. Its contribution is that these choices are declared, auditable, and separated from the final recommendation, not that they disappear.
+It is crucial to note what this approach does and does not do. LUR is not parameter-free; preferences are represented by an explicit auditable probe family, and it requires normalisation bounds and tolerance settings for numerical implementation. Its contribution is that these choices are declared, auditable, and separated from the final recommendation, not that they disappear. Figure~\ref{fig:paretocert} contrasts the efficient set as a safety filter with the regret certificate as the decision object.
+
+\input{tikz/fig_pareto_cert}
 
 \subsection{The Leximax Universal-Regret core}
-We formalise this as the \textbf{Leximax Universal-Regret (LUR) core}. Given a
+We formalise this as the \textbf{Leximax Universal-Regret (LUR) core}. At its core, LUR is a \emph{leximin-refined preference-robust selection rule} operating over a structured, declared, monotone scalarisation family. Given a
 feasible set and a \emph{declared} class $\Q$ of admissible monotone probes
-(scalar ``rational questions'' over the normalised criteria), LUR ranks
-alternatives by the lexicographically sorted vector of their normalised regrets
+(scalar ``rational questions'' over the normalised criteria), LUR treats each probe as an achievement function, ranks
+alternatives by the lexicographically sorted vector of their normalised disappointments
 across $\Q$, and returns the lexicographic minimiser together with its
 certificate. The construction rests on three principles: (i) \emph{declared
 admissibility}---$\Q$ is part of the problem statement, not hidden inside a
 scalarisation; (ii) \emph{Pareto compatibility}---under monotone probes a
 dominated alternative is never preferred to its dominator; and (iii) \emph{direct
-finite computation}---the recommendation is obtained exactly on a finite candidate set without further \emph{post hoc} preference search; for structured continuous cases, \S\ref{sec:direct} gives conditional front-free formulations whose large-scale validation remains future work.
+finite computation}---the method is primarily a \emph{post hoc} robust selection rule operating exactly on a finite candidate set, though we also provide exact front-free formulations for structured continuous cases (\S\ref{sec:direct}).
 
 \subsection{Positioning and contribution}
 LUR belongs to \emph{robust} multicriteria decision analysis. Its closest
@@ -56,16 +58,16 @@ preference distribution; robust ordinal regression
 compatible with elicited holistic judgements; and preference robust optimisation
 \citep{armbruster2015,hu2015}, which optimises against an ambiguity set of utility
 functions. LUR differs from all three in object and output: it computes the
-\emph{lexicographic minimax of normalised regret} over an explicit, monotone
+\emph{lexicographic minimax} (leximin) of normalised achievement shortfalls over an explicit, monotone
 probe family and returns an interpretable certificate; it requires no preference
 distribution, no elicited judgements, and no single scalarisation. We show that
 achievement scalarisation \citep{wierzbicki1980}, the weighted sum, and the
 lexicographic maximin \citep{ogryczak1997} are recovered as special cases of the
-probe family, so LUR is a \emph{unifying} as well as a new rule.
+probe family. Ultimately, LUR provides a concrete synthesis of these established aggregation mechanisms into a single, auditable robust selection rule equipped with a linear-size probe family.
 
 Our contributions are:
 \begin{itemize}
-\item \textbf{Core theoretical contribution:} We define the LUR order and its auditable certificate, proving existence, completeness, Pareto compatibility \emph{under an explicit separation condition}, dominated-solution exclusion, and stability of the tolerance-based rule under bounded perturbations (\S\ref{sec:core}, Appendix~A).
+\item \textbf{Core theoretical contribution:} We define the LUR order and its auditable certificate, proving existence, completeness, Pareto compatibility \emph{under an explicit separation condition}, dominated-solution exclusion, and stability of the tolerance-based rule under bounded perturbations (\S\ref{sec:core}).
 \item \textbf{Computational contribution:} We present an exact candidate-set algorithm based on sequential lexicographic sorts, and outline a conditional formulation for structured continuous cases (\S\ref{sec:direct}).
 \item \textbf{Probe construction:} We propose an adaptive, redundancy-aware correlation-clustering probe family with empirical redundancy tests and a perturbation bound (\S\ref{sec:probes}).
 \item \textbf{Empirical validation:} We validate LUR on a broadened benchmark suite with held-out additive and non-additive preferences, and apply it to a stochastic smart-grid dispatch case study (\S\ref{sec:exp}).
@@ -76,5 +78,4 @@ The remainder of the paper reviews related work (\S\ref{sec:related}), develops
 the core and its guarantees (\S\ref{sec:core}), the direct formulation
 (\S\ref{sec:direct}), the adaptive probes (\S\ref{sec:probes}) and the extensions
 (\S\ref{sec:ext}), reports the computational study (\S\ref{sec:exp}), discusses
-limitations (\S\ref{sec:disc}) and concludes (\S\ref{sec:conc}). All proofs are
-in Appendix~A.
+limitations (\S\ref{sec:disc}) and concludes (\S\ref{sec:conc}).

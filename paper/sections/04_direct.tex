@@ -48,52 +48,15 @@ The worst-case complexity is straightforward. With naive probe evaluation, winne
 Both the finite and continuous formulations need, for each probe, its attainable
 best $q^\star=\min_x q(r(x))$ and worst $q^{\mathrm w}=\max_x q(r(x))$. On a
 candidate set these are $O(N)$ scans; on a continuous $\X$ each is a scalar global
-optimisation, so the family contributes $2K$ such subproblems---cheap relative to
-front enumeration when $K$ is linear in $m$ (\S\ref{sec:probes}) but not free, and
-we account for it explicitly.
+optimisation, so the family contributes $2K$ such subproblems. Linear probes on
+a polyhedral feasible set yield linear anchor problems. For a general convex
+probe, minimising the probe may remain tractable, but maximising it over a convex
+set is not generally a convex optimisation problem. Non-convex feasible sets or
+probes may require global optimisation. Anchor computation can therefore be a
+substantial bottleneck and is not assumed cheaper than front approximation in
+all continuous cases.
 
-\subsection{Exact sequential cumulative-sum formulation}
-Lexicographic minimisation of the sorted vector is exactly equivalent to sequentially minimising the cumulative sums of the $p$ largest disappointments. For each $p = 1,\dots,K$, the sum of the $p$ largest disappointments admits the exact ordered-value linearisation \citep{ogryczak2006}:
-\begin{equation}
-S_p(x) = \min_{t_p, d_{pq}} \left( p t_p + \sum_{q=1}^K d_{pq} \right) \quad \text{s.t.} \quad t_p + d_{pq} \ge \reg_q(x), \; d_{pq} \ge 0, \quad \forall q,
-\end{equation}
-where $\reg_q(x)$ are the unordered disappointments. Then solve sequentially:
-\begin{equation}
-\rho_p = \min_{x \in \X_{p-1}} S_p(x), \quad \X_p = \{x\in \X_{p-1}: S_p(x)=\rho_p\},
-\end{equation}
-starting with $\X_0=\X$. Each cumulative sum is convex when the original disappointments are convex and admits the standard ordered-value linearisation \citep{ogryczak2006}. By solving $K$ sequential problems, we obtain the exact LUR recommendation without needing to enumerate the Pareto front.
+\subsection{Front-free formulation for structured cases}
+Lexicographic minimisation of the sorted vector over a continuous set $\X$ is exactly equivalent to sequentially minimising the cumulative sums of the $p$ largest disappointments ($p = 1,\dots,K$), which admits an exact ordered-value linearisation \citep{ogryczak2006}. Alternatively, the nested maximum can be handled via a single-stage heuristic surrogate using a strictly decreasing weight schedule $M^{-(k-1)}$, or via a smoothed log-sum-exp approximation for continuous gradients.
 
-\subsection{Single-stage heuristic surrogate}
-The stages can be collapsed with a strictly decreasing weight schedule. For a
-large constant $M>1$,
-\begin{equation}
-\min_{x\in\X,\;\rho_1\ge\dots\ge\rho_K\ge 0}\;\sum_{k=1}^{K}M^{-(k-1)}\rho_k
-\quad\text{s.t.}\quad
-\reg_{(k)}(x)\le \rho_k,
-\end{equation}
-where $\reg_{(k)}(x)$ denotes the $k$-th largest disappointment at $x$. This is an
-\emph{exact} surrogate for the lexicographic order only under finite-gap
-assumptions. For general continuous values no
-finite $M$ reproduces the exact order, so this single-stage form is primarily a heuristic approximation.
-
-\subsection{Smoothed continuous optimisation}
-For continuous $\X\subseteq\R^n$ the inner maximum is non-smooth; a log-sum-exp
-surrogate
-\begin{equation}
-\max_{q\in\Q}\reg_q(x)\approx \tfrac1\tau\log\!\Big(\textstyle\sum_{q\in\Q}
-\exp\!\big(\tau\,\reg_q(x)\big)\Big)
-\end{equation}
-is smooth and approaches the maximum as $\tau\to\infty$. A probe-active-set
-sequential convex program---linearise the active probes
-$\Q_k=\{q:\reg_q(x_k)\ge\rho_1-\varepsilon\}$ at the current iterate, solve the
-resulting convex subproblem, update, and repeat---then converges to a local LUR
-solution under standard convexity assumptions, analogously to SQP.
-
-\subsection{Why this matters, and what we do not yet show}
-The DM specifies the probe family once; in the finite case LUR returns the
-least-fragile compromise by the exact procedure above, and in the continuous case
-the formulations here make a front-free computation \emph{available} in principle.
-We are careful not to overclaim: our experiments operate on candidate sets, so the
-large-scale continuous advantage is argued, not yet demonstrated, and we flag its
-We quantify the
-probe-family savings in \S\ref{sec:probes}. The direct formulations are empirically exercised in \S\ref{sec:exp} on one continuous linear multiobjective problem. These tests demonstrate feasibility for structured cases, but not yet a general large-scale continuous optimisation advantage.
+By formulating LUR directly on $\X$, a front-free computation is theoretically \emph{available} for structured cases (e.g., linear multiobjective problems), as we demonstrate empirically in \S\ref{sec:exp}. However, because computing the per-probe anchor $q^{\mathrm w} = \max_{x \in \X} q(r(x))$ requires maximising a convex function over a convex set, these $2K$ global anchor subproblems may be no cheaper than front generation in the general case. We are careful not to overclaim: the core contribution of this paper remains the finite-set \emph{post hoc} selection rule, and we do not claim LUR as a general front-free mixed-integer solver.

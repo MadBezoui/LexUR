@@ -1,0 +1,18 @@
+{
+  "seed": 20260618,
+  "config_path": "/Users/madanibezoui/Documents/Projects/ALUR/code/configs/ejor_final.yaml",
+  "config_sha256": "bafee650bec69ed08bee20a76c9ce12b351316f8969c49939c704d87a4bcf9aa",
+  "git_commit": "2ae04ea8f356f90e8cd69f15e3f4e0579b75703f",
+  "python": "3.11.7",
+  "platform": "macOS-15.5-arm64-arm-64bit",
+  "packages": {
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "pandas": "2.2.3",
+    "scikit-learn": "1.5.2",
+    "matplotlib": "3.9.4",
+    "PyYAML": "6.0.3",
+    "PuLP": "2.9.0",
+    "statsmodels": "0.14.6"
+  }
+}

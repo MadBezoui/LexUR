@@ -64,8 +64,9 @@ def gate_affine_invariance(tests=3000, n=150, seed=9, tol=0):
         g = geoms[int(rng.integers(0, len(geoms)))]
         F = problems.make_candidate_set(g, n, m, rng)
         i0 = methods.lur(F)
-        a = rng.uniform(0.2, 5.0, size=m)
-        b = rng.uniform(-2.0, 2.0, size=m)
+        actual_m = F.shape[1]
+        a = rng.uniform(0.2, 5.0, size=actual_m)
+        b = rng.uniform(-2.0, 2.0, size=actual_m)
         i1 = methods.lur(F * a + b)
         same += int(i0 == i1)
     rate = same / tests
@@ -90,7 +91,7 @@ def gate_nadir_error(errors, reps=30, n=250, m=8, seed=37, n_test=300):
             F, normalize, np.random.default_rng(cache_seed), n_per_family=n_test
         )
         baseline_loss = families.losses_from(cache, baseline_index)[1]
-        perturbation = rng.standard_normal(m)
+        perturbation = rng.standard_normal(F.shape[1])
         for error_value in errors:
             error = float(error_value)
             perturbed_nadir = np.maximum(

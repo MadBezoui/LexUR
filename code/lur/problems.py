@@ -17,7 +17,7 @@ from __future__ import annotations
 import numpy as np
 
 GEOMETRIES = ("linear", "concave", "convex", "disconnected",
-              "asymmetric", "manyknee", "degenerate", "irregular")
+              "asymmetric", "manyknee", "degenerate", "irregular", "cars", "water")
 
 
 def _dirichlet_simplex(n: int, m: int, rng: np.random.Generator) -> np.ndarray:
@@ -63,6 +63,24 @@ def sample_front(geometry: str, n: int, m: int, rng: np.random.Generator) -> np.
         F = d / np.linalg.norm(d, axis=1, keepdims=True)
         F = F * (1.0 + 0.1 * rng.standard_normal((n, m)))
         F = np.clip(F, 1e-3, None)
+    elif geometry == "cars":
+        # Classic electric vehicle selection MCDA dataset (minimisation)
+        # 10 cars, 5 criteria (cost, -range, -top_speed, charge_time, -battery)
+        F = np.array([
+            [30000, -250, -150, 8.0, -40], [35000, -300, -160, 7.5, -50],
+            [25000, -200, -140, 9.0, -35], [40000, -350, -180, 6.0, -60],
+            [45000, -400, -200, 5.5, -70], [28000, -220, -145, 8.5, -38],
+            [32000, -280, -155, 7.8, -45], [38000, -320, -170, 6.5, -55],
+            [50000, -450, -220, 5.0, -80], [22000, -180, -130, 10.0, -30]
+        ], dtype=float)
+    elif geometry == "water":
+        # Water management MCDA dataset (minimisation)
+        # 6 alts, 5 criteria (cost, env_impact, -reliability, -social_acc, time)
+        F = np.array([
+            [100, 5, -80, -70, 24], [150, 3, -90, -80, 36],
+            [80, 7, -60, -50, 12], [200, 2, -95, -85, 48],
+            [120, 6, -75, -65, 18], [180, 4, -85, -75, 30]
+        ], dtype=float)
     else:
         raise ValueError(f"unknown geometry {geometry!r}")
     return non_dominated(F)

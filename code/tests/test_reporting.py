@@ -93,6 +93,7 @@ def test_gate_report_preserves_failed_adaptive_probe_evidence():
     assert _gate(rows, "probe_tolerance_overlap")["result"] == "CHECK"
 
 
+
 def test_registered_gate_without_evidence_is_explicitly_missing():
     claims = {"C1": {"gates": ["present", "absent"]}}
     rows = [{

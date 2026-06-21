@@ -1,7 +1,5 @@
-\section{Extensions: stochastic and multi-stakeholder variants}
+\section{Extension: stochastic regret certificates}
 \label{sec:ext}
-
-\subsection{Stochastic regret certificates}
 When criteria are noisy, model $f_i(x)$ as drawn from a joint distribution $P(x)$. Each probe value is then a
 random variable; for non-linear probes (e.g.\ $q_{\max}$) its mean $\mu_q(x)$ is
 \emph{not} a simple function of the criterion
@@ -13,7 +11,7 @@ assuming the active range is non-degenerate ($ \ge \varepsilon_q$). Using $\math
 
 \begin{proposition}[Scenario-wise Pareto compatibility]
 \label{thm:stoch}
-For finite $A$, finite $\Q$, and sample-average probe means $\hat{\mu}_q(x)=S^{-1}\sum_s q(r(x,\omega^{(s)}))$, if $x$ weakly dominates $y$ in every scenario and strictly dominates it in at least one criterion for at least one scenario, then the sample-average LUR rule does not prefer $y$ to $x$. If $\Q$ separates criteria and the dominance is strict on a separated coordinate, then $x$ is strictly preferred by the exact LUR order.
+For finite $A$, finite $\Q$, and sample-average probe means $\hat{\mu}_q(x)=S^{-1}\sum_s q(r(x,\omega^{(s)}))$, if $x$ weakly dominates $y$ in every scenario and strictly dominates it in at least one criterion for at least one scenario, then the sample-average LUR rule does not prefer $y$ to $x$. If $\Q$ separates criteria and the dominance is strict on a separated coordinate, then $x$ is strictly preferred by the exact LUR order. We caution that this requires strict stochastic dominance across \emph{all} scenarios, which is a very strong assumption as real stochastic problems often exhibit crossing dominance (where an alternative dominates in one scenario but is dominated in another).
 \end{proposition}
 \begin{proof}
 If $x$ weakly dominates $y$ under all scenarios and strictly dominates it in at least one criterion for at least one scenario, then $r(x, \omega^{(s)}) \le r(y, \omega^{(s)})$ for all $s$, with strict inequality on at least one coordinate for some scenario. For any monotone probe $q$, $q(r(x, \omega^{(s)})) \le q(r(y, \omega^{(s)}))$ for all scenarios. The functional $\rho_q(x) = \frac{1}{S}\sum_{s} q(r(x, \omega^{(s)}))$ preserves this weak inequality, meaning weak Pareto compatibility is preserved. If $\Q$ separates criteria and dominance is strict on a separated coordinate, then $\rho_q(x) < \rho_q(y)$ for that probe. Since the normalisation constants $\rho_q^\star$ and $\rho_q^{\mathrm w}$ are fixed across alternatives, the corresponding regret is strictly lower for $x$, giving $x \prec_{\mathrm{LUR}} y$ by the logic of Theorem~\ref{thm:pareto}.
@@ -27,10 +25,3 @@ Let $A$ and $\Q$ be finite. For each $x\in A$ and $q\in\Q$, suppose $q(r(x,\omeg
 Since $A$ and $\Q$ are finite, the weak law of large numbers gives uniform convergence in probability of $\hat{\mu}_q(x)$ to $\mu_q(x)$. Because the minima and maxima over finite sets are continuous operations, the estimated anchors $\hat{q}^\star$ and $\hat{q}^{\mathrm w}$ converge in probability to the population anchors. Therefore, the sample disappointment vectors converge uniformly in probability to the population disappointment vectors. Under the margin condition of Theorem~\ref{thm:stab}, there exists an $\eta > 0$ such that perturbations strictly within $\eta$ do not change the tolerance-LUR winner. Since the probability of the maximum estimation error exceeding $\eta$ vanishes as $S\to\infty$, the sample-average LUR winner converges in probability to the population winner.
 \end{proof}
 \S\ref{sec:exp} gives an empirical confirmation.
-
-\subsection{Multi-stakeholder (Rawlsian) exploratory variant}
-Let $\mathcal U=\{1,\dots,U\}$ index stakeholders, each with importance weights
-$w_u\in\Delta^m$ inducing a stakeholder-specific disappointment $\reg_q^u(x)$.
-An exploratory \emph{Rawlsian LUR} applies the leximax order to the worst-stakeholder
-disappointments, $\max_{u}\reg_{q}^u(x)$.
-It maintains natural fairness properties such as anonymity and worst-stakeholder protection. A full treatment of this extension is beyond the scope of this paper, but we include it in our empirical evaluation to demonstrate the flexibility of the regret-certificate framework.

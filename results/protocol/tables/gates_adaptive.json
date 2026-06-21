@@ -1,0 +1,9 @@
+{
+  "predictive_quality": false,
+  "certificate_approximation": false,
+  "decision_set_agreement": false,
+  "worst_regret_gap": 0.05886824349313283,
+  "certificate_sup_norm_gap": 0.4253188707995879,
+  "winner_agreement": 0.36833333333333335,
+  "pass": false
+}

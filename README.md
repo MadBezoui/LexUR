@@ -47,7 +47,7 @@ python run_protocol.py --config configs/ejor_pilot.yaml --stage benchmark
 
 Outputs land in `results/protocol/`; the acceptance-gate summary is
 `results/protocol/tables/gates_report.csv`. See `PROTOCOL_COMPLIANCE.md` for the
-gate-by-gate outcome (12 methods, 10 additive/non-additive families, 6 geometries,
+gate-by-gate outcome (11 methods, 10 additive/non-additive families, 8 geometries,
 direct LP/MILP computation, stochastic and multi-stakeholder validation).
 
 ## Reproduce the original experiments

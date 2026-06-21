@@ -1,6 +1,6 @@
 \section{Smart-grid economic dispatch formulation}
 \label{app:smartgrid}
-The case study in \S\ref{sec:exp} formulates a 24-hour stochastic economic dispatch with recourse as a ten-generator heuristic illustration. The first-stage decision variables are the day-ahead unit commitment status $u_{gt}$. The second-stage (recourse) variables under scenario $\omega$ are the scheduled power $p_{gt}(\omega)$, renewable curtailment $c_t^{\mathrm{ren}}(\omega)$, and load shedding $s_t^{\mathrm{shed}}(\omega)$. The uncertain parameters are the demand $d_t(\omega)$, non-dispatchable renewable generation $w_t(\omega)$ (wind) and $s_t(\omega)$ (solar) under scenario $\omega$, and line losses $\ell_t(\omega)$.
+The case study in \S\ref{sec:exp} formulates a 24-hour stochastic economic dispatch with recourse on a 14-generator test case (derived from the IEEE 14-bus structure). The first-stage decision variables are the day-ahead unit commitment status $u_{gt}$. The second-stage (recourse) variables under scenario $\omega$ are the scheduled power $p_{gt}(\omega)$, renewable curtailment $c_t^{\mathrm{ren}}(\omega)$, and load shedding $s_t^{\mathrm{shed}}(\omega)$. The uncertain parameters are the demand $d_t(\omega)$, non-dispatchable renewable generation $w_t(\omega)$ (wind) and $s_t(\omega)$ (solar) under scenario $\omega$, and line losses $\ell_t(\omega)$.
 
 The power-balance constraint ensures that total generation meets demand and losses:
 \begin{equation}
@@ -20,4 +20,4 @@ The six objectives to be minimised are:
     \item \textbf{Peak stress:} Expected difference between the maximum and average dispatch-dependent net load on the thermal fleet.
 \end{enumerate}
 
-The model is evaluated using sample-average approximation over 100 scenarios. All parameter values (generator data, costs, emissions, ramp limits, and scenario bounds) are available in the open-source repository. This formulation serves as an illustrative application of the robust certificate framework.
+The model is evaluated using a Monte-Carlo sample-average approximation over 100 scenarios. All parameter values (generator data, costs, emissions, ramp limits, and scenario bounds) are available in the open-source repository. This formulation serves as an illustrative application of the robust certificate framework.

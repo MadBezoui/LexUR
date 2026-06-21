@@ -1,0 +1,50 @@
+% Adaptive, redundancy-aware probe construction
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[crit/.style={circle, draw=lurslate, fill=lurslate!8,
+   minimum size=8mm, font=\small, inner sep=0pt}]
+% ---------- left: correlation graph + clusters ----------
+\node[crit] (f1) at (0,0) {$f_1$};
+\node[crit] (f2) at (1.6,0.9) {$f_2$};
+\node[crit] (f3) at (2.5,-0.2) {$f_3$};
+\node[crit] (f4) at (1.1,-1.5) {$f_4$};
+\node[crit] (f5) at (2.9,-1.7) {$f_5$};
+% redundant (positively correlated) edges, weight >= theta
+\draw[lurblue, line width=1.1pt] (f2) -- (f3);
+\draw[lurblue, line width=1.1pt] (f4) -- (f5);
+\node[lurblue, font=\scriptsize] at (2.15,0.55) {$\Corr\!\ge\!\theta$};
+% cluster ellipses
+\begin{scope}[on background layer]
+\draw[dashed, lurblue, rounded corners=10pt]
+   ($(f2)+(-0.6,0.6)$) rectangle ($(f3)+(0.6,-0.6)$);
+\draw[dashed, lurblue, rounded corners=10pt]
+   ($(f4)+(-0.6,0.6)$) rectangle ($(f5)+(0.6,-0.6)$);
+\end{scope}
+\node[font=\scriptsize\bfseries, lurslate] at (1.4,-2.7) {correlation graph};
+\node[lurblue, font=\scriptsize] at (1.9,1.75) {clusters $C_1,C_2$};
+
+% ---------- arrow ----------
+\node[single arrow, draw=lurslate, fill=lurslate!10, minimum height=10mm,
+      inner sep=2pt, font=\scriptsize] at (4.5,-0.4) {build};
+
+% ---------- right: resulting probe family ----------
+\begin{scope}[xshift=5.9cm, yshift=0.9cm,
+      pr/.style={rounded corners=2pt, inner sep=3pt, font=\scriptsize, align=left}]
+\node[pr, draw=lurslate, fill=lurslate!6] (s1) at (0,0)
+   {$m$ singletons $q_i=r_i$ \scriptsize(separation)};
+\node[pr, draw=lurblue, fill=lurblue!8, below=2mm of s1.west, anchor=west] (s2)
+   {per cluster: $q_{C_k,\mathrm{mean}},\,q_{C_k,\max}$};
+\node[pr, draw=lurslate, fill=lurslate!6, below=2mm of s2.west, anchor=west] (s3)
+   {grand mean $q_\mu$, grand max $q_{\max}$};
+\node[pr, draw=lurcrimson, fill=lurcrimson!8, below=3mm of s3.west, anchor=west] (s4)
+   {$|\Q|=O(m+c)$ \scriptsize— linear, not exponential};
+\node[font=\scriptsize\bfseries, lurslate, above=1mm of s1] {declared probe family $\Q$};
+\end{scope}
+\end{tikzpicture}
+\caption{Adaptive probe construction. Positively correlated (redundant) criteria
+are grouped into clusters by thresholding the signed correlation at $\theta$; each
+cluster contributes a single mean and max probe instead of one per member. With
+the singletons (kept for separation) and the two grand probes, the family stays
+linear in $m$ while curbing the over-weighting of redundant groups.}
+\label{fig:probes}
+\end{figure}

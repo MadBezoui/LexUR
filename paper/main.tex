@@ -8,7 +8,7 @@
 % and move the abstract/keywords into the elsarticle frontmatter; the body,
 % theorems, tables and figures below transfer unchanged.
 % ============================================================================
-\documentclass[11pt]{article}
+\documentclass[review]{elsarticle}
 
 \usepackage[a4paper,margin=1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm,mathtools}
@@ -18,12 +18,28 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{pifont}
-\usepackage[round]{natbib}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,shapes.geometric,shapes.arrows,calc,matrix}
 \usepackage[hidelinks]{hyperref}
 \usepackage{setspace}
 \onehalfspacing
 
 \graphicspath{{./}{./figures/}}
+
+% ---- shared TikZ styles for the schematic figures ----
+\definecolor{lurcrimson}{HTML}{C0392B}
+\definecolor{lurslate}{HTML}{34495E}
+\definecolor{lurblue}{HTML}{2980B9}
+\definecolor{lurgreen}{HTML}{27AE60}
+\tikzset{
+  stage/.style={rounded corners=2pt, draw=lurslate, line width=0.6pt,
+    fill=lurslate!6, align=center, inner sep=5pt, font=\small},
+  accent/.style={rounded corners=2pt, draw=lurblue, line width=0.7pt,
+    fill=lurblue!8, align=center, inner sep=5pt, font=\small},
+  win/.style={rounded corners=2pt, draw=lurcrimson, line width=0.9pt,
+    fill=lurcrimson!8, align=center, inner sep=5pt, font=\small},
+  flow/.style={-{Stealth[length=2.4mm]}, line width=0.7pt, draw=lurslate},
+}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}
@@ -38,7 +54,7 @@
 \newcommand{\X}{\mathcal{X}}
 \newcommand{\reg}{D}
 \newcommand{\ideal}{z^{\star}}
-\newcommand{\nadir}{z^{N}}
+\newcommand{\nadir}{z^{nad}}
 \newcommand{\lex}{\leq_{\mathrm{lex}}}
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
@@ -50,14 +66,12 @@
   \newcommand{\protocolCD}{0.31}
 }
 
+\begin{document}
+\begin{frontmatter}
 \title{\textbf{Beyond Pareto Fronts: A Leximax Universal-Regret Core\\
 for Robust Multicriteria Decision Support}}
-\author{Madani Bezoui\\[2pt]\small CESI LINEACT, UR 7527, Nancy, France\\\small mbezoui@cesi.fr}
-\date{}
-
-\begin{document}
-\maketitle
-
+\author{Madani Bezoui}
+\address{CESI LINEACT, UR 7527}
 \begin{abstract}
 \noindent
 Pareto efficiency is necessary but not sufficient for a unique recommendation. An
@@ -65,33 +79,32 @@ efficient set tells a decision maker (DM) which alternatives are not obviously
 bad, but offers no principled way to choose one. Practice fills this gap with
 \emph{post hoc} devices---weighted sums, TOPSIS, compromise programming,
 reference points, acceptability indices---each injecting implicit or stochastic
-preference judgements. We propose the
-\textbf{Leximax Universal-Regret (LUR) core}, a declared-probe robust MCDA rule
-minimising the lexicographically sorted vector of maximum disappointments. The
+preference judgements.
+
+We propose the \textbf{Leximax Universal-Regret (LUR) core}, a leximin-refined preference-robust selection rule operating over a structured, declared, monotone scalarisation family. The
 DM defines an explicit family of rational questions (probes) and supplies normalisation bounds. 
-LUR evaluates how far each alternative
+LUR treats each probe's evaluation as an achievement function, calculating how far each alternative
 falls from the best attainable outcome under each probe, and sorts the resulting
 dimensionless regrets. The alternative whose worst performance is best is
 recommended, with an interpretable certificate listing the binding questions. 
 
 We prove existence and completeness, Pareto compatibility, stability of the
 tolerance-based leximax rule under bounded perturbations, and a probe
-perturbation bound with explicit constants, and we give an adaptive
+perturbation bound with explicit constants. We also give an adaptive
 correlation-clustering construction empirically reducing, without eliminating,
-sensitivity to redundant criteria. In a replicated benchmark and a frozen audit
+sensitivity to redundant criteria.
+
+In a replicated benchmark and a frozen audit
 broadened protocol covering 11 methods, 10 held-out preference families, 8 front
-geometries, and $m$ up to 20, LUR is practically equivalent to the best robust
-scalarisations on tail held-out loss, while remaining clearly ahead of
-the averaging and Monte-Carlo methods. We show how to collapse LUR's
-lexicographic cascade into a sequential scalarisation that does not require
-enumerating the efficient set, enabling scaling to mixed-integer optimisation,
-and we provide stochastic and Rawlsian multi-stakeholder extensions applied to a
-smart-grid economic dispatch case.
+geometries, and $m$ up to 20, LUR sits in the best-performing group on tail held-out loss. Its distinct empirical advantages over averaging methods are its interpretable certificate and reduced redundancy bias. Because the exact identity of the lexicographic minimiser can be highly sensitive to estimated normalisation bounds, the framework's primary robust deliverable is a \emph{stability set} (or indifference class) evaluated over conservative interval bounds, with a unique point recommendation returning as a special case when verified margin conditions hold. We formulate an exploratory stochastic extension illustrated on a synthetic smart-grid economic dispatch model.
 \end{abstract}
 
-\noindent\textbf{Keywords:} Decision support; Multicriteria decision analysis;
-Robust decision making; Minimax regret; Achievement scalarising functions;
-Pareto efficiency.
+\begin{keyword}
+Decision support \sep Multicriteria decision analysis \sep
+Robust decision making \sep Minimax regret \sep Achievement scalarising functions \sep
+Pareto efficiency
+\end{keyword}
+\end{frontmatter}
 
 % ---------------------------------------------------------------------------
 \input{sections/01_intro}
@@ -109,5 +122,6 @@ Pareto efficiency.
 
 \appendix
 \input{sections/B_smartgrid}
+\input{sections/C_rawlsian}
 
 \end{document}

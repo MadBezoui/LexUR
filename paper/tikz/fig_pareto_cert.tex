@@ -1,0 +1,48 @@
+% From a Pareto front (safety filter) to a regret certificate (decision)
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+% ---------- left panel: efficient front ----------
+\begin{scope}
+\draw[->, line width=0.6pt] (0,0) -- (4.2,0) node[right, font=\scriptsize] {$f_1$};
+\draw[->, line width=0.6pt] (0,0) -- (0,4.0) node[above, font=\scriptsize] {$f_2$};
+% convex-ish front of points
+\foreach \x/\y in {0.4/3.5, 0.7/2.7, 1.1/2.1, 1.6/1.6, 2.2/1.2, 3.0/0.85, 3.6/0.6}{
+  \fill[lurslate] (\x,\y) circle (2.0pt);
+}
+\node[lurslate, font=\scriptsize, align=center] at (2.4,3.2) {efficient set:\\\emph{which one?}};
+\node[font=\scriptsize\bfseries, lurslate] at (2.1,-0.55) {safety filter};
+% highlight chosen point
+\fill[lurcrimson] (1.6,1.6) circle (3.0pt);
+\draw[lurcrimson, line width=0.7pt] (1.6,1.6) circle (5.5pt);
+\end{scope}
+
+% ---------- arrow ----------
+\node[flow, single arrow, draw=lurcrimson, fill=lurcrimson!10, minimum height=12mm,
+      single arrow head extend=1.4mm, inner sep=3pt, font=\scriptsize, align=center]
+      at (5.2,2.0) {LUR};
+
+% ---------- right panel: certificate ----------
+\begin{scope}[xshift=6.6cm, yshift=0.2cm]
+\draw[->, line width=0.6pt] (0,0) -- (0,3.6) node[above, font=\scriptsize] {};
+\node[font=\scriptsize, rotate=90] at (-0.45,1.7) {sorted disappointment};
+\foreach \i/\h/\lab in {0/2.9/$q_{[1]}$, 1/2.0/$q_{[2]}$, 2/1.3/$q_{[3]}$, 3/0.8/$q_{[4]}$, 4/0.4/$q_{[5]}$}{
+  \pgfmathsetmacro\xx{0.35+\i*0.65}
+  \ifnum\i<2
+    \fill[lurcrimson] (\xx,0) rectangle ++(0.45,\h);
+  \else
+    \fill[lurslate!55] (\xx,0) rectangle ++(0.45,\h);
+  \fi
+  \node[font=\scriptsize] at (\xx+0.22,-0.28) {\lab};
+}
+\draw[line width=0.6pt] (0,0) -- (3.7,0);
+\node[lurcrimson, font=\scriptsize\bfseries, align=center] at (1.9,3.3) {binding probes};
+\node[font=\scriptsize\bfseries, lurslate] at (1.9,-0.75) {decision certificate};
+\end{scope}
+\end{tikzpicture}
+\caption{From a front to a certificate. The efficient set (left) removes dominated
+options but leaves the choice open. LUR returns one alternative together with its
+sorted regret certificate (right), whose largest entries---the \emph{binding
+probes}---explain where the recommendation remains most fragile.}
+\label{fig:paretocert}
+\end{figure}

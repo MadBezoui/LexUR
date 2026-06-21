@@ -1,0 +1,24 @@
+{
+  "ASF": {
+    "control": "ASF",
+    "mean_diff": 0.0007,
+    "ci": [
+      -0.0002,
+      0.0016
+    ],
+    "margin_abs": 0.01,
+    "noninferior_abs": true,
+    "noninferior": true
+  },
+  "MMR": {
+    "control": "MMR",
+    "mean_diff": 0.0012,
+    "ci": [
+      0.0002,
+      0.0022
+    ],
+    "margin_abs": 0.01,
+    "noninferior_abs": true,
+    "noninferior": true
+  }
+}

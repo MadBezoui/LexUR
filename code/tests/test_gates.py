@@ -24,6 +24,16 @@ def test_nadir_gate_reuses_problem_identity_across_error_levels(monkeypatch):
     assert len(result["records"]) == 12
 
 
+def test_normalization_gate_has_explicit_evidence_and_thresholds():
+    result = gates.gate_normalization_stability(reps=2, n_samples=4, n=20, m=3, seed=42, n_test=10)
+    assert result["name"] == "normalization_stability"
+    assert "regimes" in result
+    assert "minmax" in result["regimes"]
+    assert "quality_degradation" in result["regimes"]["minmax"]
+    for evidence in result["regimes"].values():
+        assert "quality_degradation" in evidence
+
+
 def _benchmark_config(methods):
     return {
         "geometries": ["linear"],

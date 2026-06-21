@@ -15,7 +15,9 @@ from scipy import stats
 # Studentised range / sqrt(2) constants q_alpha for Nemenyi at alpha=0.05
 # indexed by number of methods k (2..12). Source: Demsar (2006), Table 5.
 _Q05 = {2: 1.960, 3: 2.343, 4: 2.569, 5: 2.728, 6: 2.850, 7: 2.949,
-        8: 3.031, 9: 3.102, 10: 3.164, 11: 3.219, 12: 3.268}
+        8: 3.031, 9: 3.102, 10: 3.164, 11: 3.219, 12: 3.268,
+        13: 3.313, 14: 3.354, 15: 3.391, 16: 3.426, 17: 3.458,
+        18: 3.489, 19: 3.517, 20: 3.544}
 
 
 def average_ranks(loss_matrix: np.ndarray) -> np.ndarray:

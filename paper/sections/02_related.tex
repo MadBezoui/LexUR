@@ -7,7 +7,7 @@ Pareto-dominates $y$ if $f_i(x)\le f_i(y)$ for all $i$ with at least one strict
 inequality; the efficient set is the non-dominated set. Because it is typically
 large, a single recommendation is obtained by \emph{post hoc} selection. The
 weighted sum, TOPSIS \citep{hwang1981}, compromise programming
-\citep{zeleny1982}, knee selection \citep{branke2008}, ELECTRE \citep{roy1991},
+\citep{zeleny1982}, knee selection \citep{branke2008}, ELECTRE \citep{roy1968,roy1991},
 PROMETHEE \citep{brans2016} and hypervolume selection \citep{zitzler1999} are the
 standard tools; each requires weights, thresholds, a metric, or an already
 generated front. LUR does not eliminate modelling choices. It relocates them into a declared family of admissible monotone probes and, on finite candidate sets, computes the resulting recommendation exactly while returning a labelled regret certificate.
@@ -16,17 +16,18 @@ generated front. LUR does not eliminate modelling choices. It relocates them int
 Achievement scalarising functions (ASF) project a reference point onto the
 efficient set through a parameterised metric interpolating between $L_1$ and
 $L_\infty$ \citep{wierzbicki1980,miettinen2002}. Ordered weighted averaging
+(OWA) \citep{yager1988} and its extensions (WOWA) \citep{torra1997}
 connect ordered aggregation to lexicographic maximin. 
 
-\begin{proposition}[Recovery of standard scalarisations]
-\label{prop:special}
+\begin{remark}[Recovery of standard scalarisations]
+\label{rem:special}
 The LUR core recovers standard aggregation methods as exact special cases under specific, restricted probe families:
 \begin{itemize}
 \item \textbf{Weighted sum:} If $\Q=\{q_w(r)=w^\top r\}$, LUR exactly minimises the weighted sum of normalised criteria.
 \item \textbf{Chebyshev / ASF:} If $\Q=\{q_w(r)=\max_i w_i r_i\}$, LUR exactly minimises the Chebyshev distance to the ideal point.
 \item \textbf{Lexicographic minimax:} If $\Q=\{r_1,\dots,r_m\}$ (the singleton family), LUR performs a lexicographic minimax optimisation over the normalised regrets.
 \end{itemize}
-\end{proposition}
+\end{remark}
 
 We do not claim
 LUR subsumes these methods with its full adaptive family---there it is a
@@ -37,14 +38,14 @@ and breaks ties through the whole sorted vector, and that it emits a certificate
 
 \subsection{Robust MCDA: SMAA, robust ordinal regression, preference robust
 optimisation}
-The work closest to LUR lies in \emph{robust} multicriteria decision analysis.
+The work closest to LUR lies in \emph{robust} multicriteria decision analysis and minimax regret optimisation \citep{kouvelis1997}.
 \textbf{SMAA} \citep{lahdelma1998,tervonen2007} computes, by Monte-Carlo
 integration over a distribution of admissible weights (and possibly criterion
 values), acceptability indices describing how strongly each alternative is
 supported. \textbf{Robust ordinal regression} \citep{greco2008,figueira2009}
 reasons over the entire set of additive value functions compatible with a DM's
 holistic pairwise judgements, producing necessary and possible preference
-relations. \textbf{Preference robust optimisation} \citep{armbruster2015,hu2015}
+relations, sharing goals with inverse MCDA and the UTA family \citep{jacquetlagreze1982}. \textbf{Preference robust optimisation} \citep{armbruster2015,hu2015,delage2015,vayanos2020}
 optimises the worst-case expected utility over an ambiguity set of utility
 functions. LUR shares the robust philosophy---perform well across a whole class of
 admissible preferences rather than commit to one---but differs in three ways.
@@ -53,12 +54,7 @@ weight distribution or an elicited polyhedron. Second, its criterion is the
 \emph{lexicographic minimax of normalised regret}, not an expected acceptability,
 a necessary/possible relation, or a single worst-case utility. Third, its output
 is an interpretable \emph{certificate} naming the binding coalitions. We note that
-SMAA is primarily an \emph{exploratory} framework that informs the DM through
-acceptability indices rather than emitting a single choice; to obtain a
-comparable single-choice rule we use the standard SMAA-2 device of recommending
-the alternative with the highest first-rank acceptability index (ties broken by
-expected value), and we treat the comparison as one of decision philosophies as
-much as a benchmark. We likewise compare against a Savage minimax-regret (MMR)
+SMAA is inherently an \emph{exploratory} framework designed to visualise the robustness of alternatives across weight spaces, rather than a single-choice prescriptive rule. By forcing it to recommend the alternative with the highest first-rank acceptability index (ties broken by expected value), we create a comparable baseline for \S\ref{sec:exp}; however, we emphasise that LUR's single-shot default recommendation is meant to \emph{complement} rather than compete with SMAA's rich exploratory indices. We likewise compare against a Savage minimax-regret (MMR)
 recommender over a sampled linear weight set (\S\ref{sec:exp}). More broadly, LUR
 is complementary to data-driven preference disaggregation and inverse MCDA
 \citep{doumpos2011}, which infer preference parameters from holistic judgements:
@@ -95,7 +91,11 @@ While LUR shares motivation with several robust approaches, its mathematical obj
 \item \textbf{Versus SMAA:} SMAA integrates over a preference distribution and reports acceptability; LUR does not require a probability distribution and returns a leximax regret certificate.
 \item \textbf{Versus robust ordinal regression (ROR):} ROR reasons over compatible value functions after elicited comparisons; LUR can operate without holistic preference judgements.
 \item \textbf{Versus preference robust optimisation (PRO):} PRO optimises worst-case utility over an ambiguity set; LUR optimises lexicographically sorted normalised disappointments over interpretable monotone probes.
-\item \textbf{Versus ordered weighted aggregation (OWA):} LUR sorts regrets across questions, not criterion values themselves.
+\item \textbf{Versus ordered weighted aggregation (OWA):} LUR sorts regrets
+across declared questions, not criterion values themselves. OWA specifies an
+ordered weight vector, whereas LUR specifies a probe family; both therefore
+encode modelling choices in different forms. We include OWA utilities as a
+held-out evaluation family, not as evidence that LUR subsumes OWA.
 \end{itemize}
 
 The novelty is not minimax regret alone, but lexicographic minimax over normalised disappointments induced by a declared monotone probe family, with an auditable certificate and an adaptive redundancy-aware probe construction.

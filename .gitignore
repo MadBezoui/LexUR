@@ -21,3 +21,10 @@ results/protocol-smoke/
 results/protocol-pilot/
 results/protocol/tmp/
 results/protocol/tmp_*/
+results/protocol/current
+tmp/
+paper/_lxtest.*
+paper/_tikztest.*
+paper/tmp*.tmp
+paper/main.spl
+code/scratch_*.py

@@ -2,11 +2,9 @@
 \label{sec:disc}
 
 \paragraph{What LUR is, and is not.}
-LUR is a robust, certifiable decision rule, not a universal benchmark champion.
-Our results are deliberately honest about this: on worst-case held-out loss LUR
+LUR is a robust, certifiable decision rule. On worst-case held-out loss LUR
 is in the best-performing group---practically equivalent to achievement
-scalarisation and linear minimax regret (negligible effect size), and slightly
-behind them in average rank---while on average-case loss the classical averaging
+scalarisation and linear minimax regret (negligible effect size)---while on average-case loss the classical averaging
 methods do better. LUR's distinctive value is the \emph{combination} it offers
 that no single competitor matches: best-group worst-case robustness across
 additive \emph{and} non-additive preferences, reduced sensitivity to redundant
@@ -30,7 +28,7 @@ Tolerance-rule stability & Theorem~\ref{thm:stab} (margin condition) \\
 Reduced redundancy bias & Table~\ref{tab:redund} (grouped loss) \\
 Robustness on tail held-out loss & Figure~\ref{fig:cd} and Table~\ref{tab:main} \\
 Stochastic consistency & Proposition~\ref{thm:stoch2} and Figure~\ref{fig:stoch} \\
-Smart-grid applicability & Appendix~\ref{app:smartgrid} and Figure~\ref{fig:cert} \\
+Smart-grid applicability & \ref{app:smartgrid} and Figure~\ref{fig:cert} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -43,36 +41,50 @@ empirical question is whether the richer adaptive family helps, and the answer i
 that it does on redundant and asymmetric problems while never hurting on standard
 ones.
 
-\paragraph{Parameters.}
-LUR is not parameter-free: it requires normalisation bounds $\ideal,\nadir$, a
-tolerance $\varepsilon$, a clustering threshold $\theta$ (to which it is
-empirically insensitive over a wide range), and, for the extensions, a confidence
-level $\alpha$ and a fairness slack $\beta$. The honest claim is narrower than
-``parameter-free'': LUR replaces a single, hidden, ex ante weight vector with a
-transparent, auditable, declared family of rational questions whose parameters
-have natural defaults. As practical guidance: set $\theta=0.6$ unless criteria are
-known to be independent (then clustering can be disabled, as it is a no-op);
-default to the adaptive family (singletons $+$ grand mean/max $+$ cluster probes);
-take $\ideal,\nadir$ as the criterion-wise best and worst over the candidate set
-and report a sensitivity check when the nadir is uncertain; set $\varepsilon$ to a
-small fraction of the smallest non-degenerate criterion range; and choose the
-leximax tolerance $\tau$ on the scale of the regret-estimation error. The
-robustness studies of \S\ref{sec:exp} show the recommendation is stable to
-$\theta$ and that quality is stable to nadir error.
+\paragraph{Independence of Irrelevant Alternatives (IIA) and Set-Dependence.}
+Because both the normalisation bounds ($\ideal, \nadir$) and the probe anchors ($q^\star, q^w$) are computed empirically over the active candidate set $A$, LUR does not satisfy Independence of Irrelevant Alternatives (IIA). Adding or removing a non-selected, non-dominated alternative that defines an extremum shifts the normalisation for \emph{all} alternatives, which can change the sorted disappointment vectors and cause rank reversal. This is structurally the same vulnerability identified in TOPSIS (\S\ref{sec:intro}). This set-dependence explains the high winner-flip rates observed in our nadir-sensitivity experiments (Table~\ref{tab:gates}). Consequently, while affine-rescaling invariance holds for a fixed set, LUR is highly sensitive to the composition of $A$. This underscores why deploying LUR with fixed, conservative \emph{a priori} bounds (interval-robust LUR) is mandatory when stability against candidate-set perturbations is required.
 
-\paragraph{When LUR is inappropriate.}
-LUR targets the selection of a single robust alternative. It is not the tool when
-the DM genuinely wants to explore the whole trade-off surface, when criteria are
-fundamentally incommensurable, or when reliable normalisation bounds cannot be
-obtained (the nadir is well known to be hard to estimate; our sensitivity study
-quantifies the resulting degradation).
+\paragraph{The Certificate's Decision Value.}
+While robust scalarisations like ASF provide similar worst-case guarantees, LUR's distinct value lies in its auditable certificate. A standard sensitivity sweep over ASF reference points or a SMAA acceptability index reveals \emph{how often} an alternative wins, but does not explain \emph{why} it loses in specific contexts. In contrast, the LUR certificate explicitly isolates the binding constraints: it names the specific declared probe (e.g., ``the average of cost and emissions'') that forces the maximum disappointment, giving the decision maker a direct semantic justification for the compromise that opaque distributional indices omit. Figure~\ref{fig:certconcept} shows the anatomy of such a certificate.
+
+\input{tikz/fig_cert_concept}
+
+\paragraph{Scope, Parameters, and Limitations.}
+LUR is a leximin-refined robust selector. It complements exploratory tools like SMAA by providing a single, auditable point recommendation when the DM must defend a robust choice. The framework relies on several explicit choices, summarised in Table~\ref{tab:params}. LUR's contribution is that these choices are declared and separated from the final recommendation.
+
+\begin{table}[h]
+\centering\small
+\caption{Consolidated list of LUR parameters, their roles, and recommended defaults.}
+\label{tab:params}
+\begin{tabular}{lllp{6cm}}
+\toprule
+Param & Role & Default & Note \\
+\midrule
+$\ideal, \nadir$ & Normalisation bounds & Empirical over $A$ & Must use fixed \emph{a priori} bounds if IIA/stability is required. \\
+$\Q$ & Probe family & Adaptive family & Defines the semantic interpretations of preference. \\
+$\theta$ & Clustering threshold & $0.6$ & Empirically insensitive over $[0.4, 0.8]$. \\
+$\tau$ & Leximax tolerance & $10^{-4}$ & Set to the scale of the disappointment estimation error. \\
+$\varepsilon$ & Strict domination margin & $10^{-6}$ & Small fraction of the smallest non-degenerate criterion range. \\
+$\alpha$ & Stochastic confidence & $0.95$ & Used only in the stochastic extension (\S\ref{sec:ext}). \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Threats to validity.}
 The held-out families, though disjoint from the probes, are themselves a modelling
 choice; we mitigate this by spanning linear, Chebyshev, ASF and CES forms and by
-reporting per-family results. Candidate sets are synthetic but cover four
-canonical geometries and a realistic stochastic application; extending to a wider
+reporting per-family results. Candidate sets are synthetic but cover eight
+audit geometries, with four canonical geometries used in the mechanistic study,
+and the dispatch illustration is also synthetic; extending to a wider
 library of real MCDA datasets is future work.
 
+\paragraph{Interactive elicitation using certificates.}
+The certificate could support a future interactive workflow in which the DM
+reviews the binding probes and revises the declared family. For example, a DM
+might relax a cost-focused probe after seeing its effect on the recommendation,
+after which LUR can be recomputed. This possibility has not been evaluated here:
+removing a separating singleton can weaken Pareto-exclusion guarantees, so an
+interactive protocol would require explicit safeguards and user validation.
+
 \paragraph{Future work.}
-Natural next steps include large-scale empirical validation of the continuous direct formulations (\S\ref{sec:direct}) on high-dimensional problems; full development and evaluation of the exploratory Rawlsian multi-stakeholder variant; non-linear (product/ratio) probes for synergistic criteria; and interactive elicitation that adapts the probe family from DM feedback, connecting the certificate approach to interactive multiobjective optimisation.
+Natural next steps include large-scale empirical validation of the continuous direct formulations (\S\ref{sec:direct}) on high-dimensional problems; and full development and evaluation of the exploratory Rawlsian multi-stakeholder variant. Finally, extending the family to include non-linear probes would significantly broaden LUR's expressive power. For instance, capturing Cobb-Douglas structures (constant elasticity of substitution) could be achieved by evaluating linear probes in log-transformed criterion space, while modelling threshold-based satisficing preferences with interaction terms would require explicitly incorporating boolean conditionals into the anchor computations.

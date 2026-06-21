@@ -128,6 +128,7 @@ def _bench_block(cfg, csizes, crits, manifest):
                             "seed": s,
                             "N": N,
                             "m": m,
+                            "actual_N": F.shape[0],
                             "geometry": g,
                             "replication": rep,
                             "dirichlet_alpha": float(a),

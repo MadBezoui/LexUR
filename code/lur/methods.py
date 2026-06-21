@@ -281,6 +281,31 @@ def lur(F, theta=0.6, ideal=None, nadir=None, return_detail=False,
     return idx
 
 
+def lur_interval(F, n_bounds=100, bounds_std=0.1, rng=None, theta=0.6, return_set=False, **kw):
+    """Interval-robust LUR: re-evaluates LUR over a hyperbox of plausible nadir/ideal bounds.
+    Returns the most frequently selected candidate. If return_set=True, also returns the stability set."""
+    rng = np.random.default_rng(0) if rng is None else rng
+    m = F.shape[1]
+    ideal_base = F.min(axis=0)
+    nadir_base = F.max(axis=0)
+    range_base = np.maximum(nadir_base - ideal_base, EPS)
+
+    winners = []
+    for _ in range(n_bounds):
+        jitter_i = rng.uniform(0, bounds_std, size=m)
+        jitter_n = rng.uniform(0, bounds_std, size=m)
+        ideal = ideal_base - jitter_i * range_base
+        nadir = nadir_base + jitter_n * range_base
+        winners.append(lur(F, theta=theta, ideal=ideal, nadir=nadir))
+
+    counts = np.bincount(winners, minlength=F.shape[0])
+    best = int(np.argmax(counts))
+    if return_set:
+        stability_set = np.where(counts > 0)[0].tolist()
+        return best, stability_set
+    return best
+
+
 def stability_envelope(F, tolerance=0.01, theta=0.6, ideal=None, nadir=None, probe_kwargs=None):
     """Return indices of candidates whose maximum regret is within tolerance of the optimal."""
     probe_kwargs = probe_kwargs or {}
@@ -337,6 +362,8 @@ def lur_variant(F, variant="adaptive", rng=None, theta=0.6, return_detail=False,
     elif variant == "random":
         k = len(build_probes(F, theta=theta)[1])
         probes, labels = build_random_probes(F, k, rng)
+    elif variant == "no_clusters":
+        probes, labels = build_probes(F, use_clusters=False)
     else:
         raise ValueError(variant)
     
@@ -363,6 +390,8 @@ METHODS = {
     "MMR": minimax_regret,
     "ChebMMR": chebyshev_mmr,
     "LUR": lur,
+    "LUR-noclust": lambda F, **kw: lur_variant(F, variant="no_clusters", **kw),
+    "LUR-interval": lur_interval,
 }
 CLASSICAL = ["TOPSIS", "CP", "VIKOR", "Knee", "HV", "DistIdeal", "RW", "ASF"]
 ROBUST = ["SMAA", "MMR", "ChebMMR"]

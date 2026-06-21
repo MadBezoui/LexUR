@@ -47,7 +47,7 @@ def build_families(m, n_per_family, rng, alpha=1.0, family_list=None):
 
     if "aug_asf" in family_list:
         fams["aug_asf"] = lambda r, W=W: -((r[:, None, :] * W[None, :, :]).max(axis=2)
-                                           + 1e-3 * (r @ W.T))
+                                           + 0.05 * (r @ W.T))
 
     if "lp_compromise" in family_list:
         p = rng.uniform(1.5, 4.0, size=n_per_family)

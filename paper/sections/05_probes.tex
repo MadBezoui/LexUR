@@ -25,7 +25,7 @@ A full coalition family overcounts $\{r_2, r_3\}$ (which are highly correlated),
 
 \subsection{Correlation clustering}
 We group \emph{redundant} criteria by single-linkage connected components of the
-graph whose edges join pairs with Pearson correlation $\Corr(f_i,f_j)\ge\theta$. We use single-linkage because it treats redundancy as connected substitutability and avoids splitting a continuous underlying dimension into several independent concerns. This choice can, however, over-merge criteria through chaining; therefore we report sensitivity to $\theta$ and, in the supplementary material, compare with complete-linkage clustering.
+graph whose edges join pairs with Pearson correlation $\Corr(f_i,f_j)\ge\theta$. We explicitly state that both Pearson correlation and single-linkage clustering are deployed here as \emph{empirical heuristics} rather than theoretically optimal redundancy measures. Pearson correlation captures linear dependence but is known to be sensitive to outliers; rank-based alternatives (e.g., Spearman) or information-theoretic measures could be substituted in future work. Similarly, single-linkage is chosen because it treats redundancy as connected substitutability, though it is notorious for ``chaining'' effects that can over-merge criteria. To mitigate this, we report empirical sensitivity to $\theta$ and compare it with complete-linkage in the supplementary material.
 
 \emph{Redundancy is positive correlation:} two criteria that rise and fall
 together carry duplicate information, whereas negatively correlated criteria are
@@ -40,6 +40,10 @@ of size $>1$:
 \Q=\{q_i\}_{i=1}^m\;\cup\;\{q_\mu,q_{\max}\}\;\cup\;
 \bigcup_{|C_k|>1}\{q_{C_k,\mathrm{mean}},\,q_{C_k,\max}\}.
 \end{equation}
+Figure~\ref{fig:probes} illustrates the construction from the correlation graph to
+the resulting declared family.
+
+\input{tikz/fig_probes}
 A redundant group thus contributes \emph{one} aggregate (cluster) question rather
 than a separate aggregate per member, so the family does not amplify a
 correlated group the way an averaging aggregate does, while the count stays
@@ -97,6 +101,7 @@ $\ge\beta>0$. Using $\reg_q(x)\in[0,1]$,
 The constant is explicit and the dependence on the range floor $\beta$ (worst
 case $\varepsilon$) is exhibited, making clear when the bound is informative.
 \end{proof}
+We emphasise that Lemma~\ref{thm:approx} provides a perturbation bound on the regrets, but it does \emph{not} guarantee exact rank preservation of the alternatives. Thus, the probe reduction relies on theoretical bounds for safety but is ultimately an empirical heuristic whose efficacy is demonstrated in \S\ref{sec:exp}.
 
 Whether the reduced family admits such an $\eta$-close $q'$ for every full-family
 probe is \emph{not} established by correlation clustering in general; we therefore
@@ -104,8 +109,17 @@ present Lemma~\ref{thm:approx} as a sensitivity statement and rely on the
 empirical redundancy study (\S\ref{sec:exp}) for evidence that clustering retains
 decision quality.
 
+\begin{remark}[Residual redundancy sensitivity]
+Clustering does not establish duplication invariance. Singleton probes are
+retained for separation, so duplicating a criterion also duplicates coordinates
+in the sorted disappointment vector and can affect later lexicographic
+comparisons. Cluster-level probes reduce the empirical influence of correlated
+criteria, but the remaining sensitivity must be measured rather than assumed to
+vanish, even under perfect correlation.
+\end{remark}
+
 \subsection{Empirical reduction}
-Table~\ref{tab:reduction} reports the realised reduction on concave instances.
+Table~\ref{tab:reduction} (plotted in Figure~\ref{fig:reduction}) reports the realised reduction on concave instances.
 The full family here is $\{q_{\mathrm{mean},S},q_{\max,S}:\emptyset\neq
 S\subseteq\{1,\dots,m\}\}$, of size $2(2^m-1)-m$ (mean and max coincide on
 singletons); the adaptive family is linear in $m$, giving a nearly four-thousand
@@ -129,6 +143,16 @@ $m$ & full coalitions & adaptive probes & reduction\\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.6\textwidth]{fig_probe_reduction.pdf}
+\caption{Probe-family size versus the number of criteria $m$ (log scale). The full
+coalition family grows as $2(2^m-1)-m$, whereas the adaptive correlation-clustering
+family stays $O(m+c)$, giving a nearly four-thousand-fold reduction by $m=15$ with
+little loss of decision quality (\S\ref{sec:exp}).}
+\label{fig:reduction}
+\end{figure}
 
 \subsection{Greedy probe selection (optional)}
 When even the adaptive family is larger than needed, a greedy set-cover heuristic

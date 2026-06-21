@@ -1,6 +1,12 @@
 \section{The Leximax Universal-Regret core}
 \label{sec:core}
 
+Figure~\ref{fig:pipeline} gives the end-to-end view of the rule developed in this
+section: from a candidate set, through normalisation and the declared probe family,
+to the leximax selection and its certificate.
+
+\input{tikz/fig_pipeline}
+
 \subsection{Problem setting and normalisation}
 Let $\X\subseteq\R^n$ be the feasible set and $F:\X\to\R^m$, $F(x)=(f_1(x),\dots,
 f_m(x))$, the vector objective.
@@ -42,11 +48,11 @@ question. The family $\Q$ is \emph{declared}: it is part of the specification.
 \begin{definition}[Admissible probe]
 \label{def:probe}
 A probe $q$ is \emph{admissible} if (i) it is non-decreasing in each $r_i$
-(monotonicity); (ii) it can be rescaled so that $q(\mathbf 0)=0$, $q(\mathbf
-1)=1$ (normalisation); and (iii) it is $L$-Lipschitz in $\|\cdot\|_\infty$.
+(monotonicity) and (ii) it can be rescaled so that $q(\mathbf 0)=0$, $q(\mathbf
+1)=1$ (normalisation).
 \end{definition}
 
-Here $\mathbf 0$ and $\mathbf 1$ denote the all-zeros and all-ones vectors.
+Here $\mathbf 0$ and $\mathbf 1$ denote the all-zeros and all-ones vectors. The initial endpoint normalisation ($q(\mathbf 0)=0, q(\mathbf 1)=1$) serves to make values structurally scale-comparable across the heterogeneous family, before the empirical disappointment anchors ($q^\star, q^{\mathrm w}$) re-normalise the observed active range.
 Monotonicity gives \emph{weak} Pareto compatibility; strict compatibility needs a
 separation property (Definition~\ref{def:sep}). Canonical admissible probes are
 the \emph{singletons} $q_i(r)=r_i$; the \emph{grand mean} $q_\mu(r)=\frac1m
@@ -85,7 +91,10 @@ i.e.\ $x$ is preferred if its worst disappointment is smaller; on ties, its
 second worst; and so on. The \emph{LUR solution} is $x^{\mathrm{LUR}}\in
 \argmin^{\mathrm{lex}}_{x}\reg^{\downarrow}(x)$, and its \emph{certificate} is the
 labelled, sorted vector $\reg^{\downarrow}(x^{\mathrm{LUR}})$ together with the
-probes attaining the largest entries.
+probes attaining the largest entries. Figure~\ref{fig:leximax} illustrates the
+comparison on a two-alternative example.
+
+\input{tikz/fig_leximax}
 
 Exact LUR defines the mathematical complete preorder. In computation and practical reporting, a tolerance $\tau>0$ is used only to define a numerical indifference class: we report alternatives whose sorted disappointment vectors are not separated from the exact winner by more than $\tau$ at the first differing coordinate. The $\tau$-tolerance rule is not itself a transitive preorder, but rather a numerical reporting and stability device around the exact or margin-separated winner (Theorem~\ref{thm:stab}).
 
@@ -172,8 +181,12 @@ Theorem~\ref{thm:stab} is deliberately stated for the tolerance rule: exact
 lexicographic comparison is \emph{not} perturbation-stable, because a winner that
 beats a rival only at a later coordinate after an exact earlier tie can be
 reversed by an arbitrarily small perturbation of the earlier coordinate. The
-tolerance $\tau$ absorbs exactly those near-ties. Proofs are in Appendix~A. For
+tolerance $\tau$ absorbs exactly those near-ties. We
+note that the margin condition $\Delta$ in Theorem~\ref{thm:stab} can be
+restrictive on densely packed candidate sets, where the separation between
+certificates may be very small. Without that margin the theorem gives no winner
+stability guarantee; the appropriate output is therefore a tolerance or
+stability set rather than a uniquely stable recommendation. For
 continuous $\X$, existence requires compactness of $\X$ and continuity of each
 $q\circ r$; uniqueness is not guaranteed and a small indifference class may arise.
-
 

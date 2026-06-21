@@ -21,6 +21,7 @@ reproduce_all: protocol
 ## Run the EJOR validation protocol (all stages) from the frozen config
 protocol:
 	$(PY) run_protocol.py --config $(CFG) --stage all
+	$(PY) scripts/generate_auditability.py
 
 ## Individual protocol stages
 benchmark redundancy probes gates direct stochastic multistakeholder report:

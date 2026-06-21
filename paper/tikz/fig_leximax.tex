@@ -1,0 +1,55 @@
+% Leximax comparison of two alternatives' sorted disappointment vectors
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[x=1cm, y=1cm]
+\def\barw{0.42}
+\def\sc{0.8}        % vertical scale for bar heights
+\def\rowA{3.0}      % baseline y for row A
+\def\rowB{1.6}      % baseline y for row B
+\def\Lx{0}          % left block origin x
+\def\Rx{4.8}        % right block origin x
+
+% --- column titles ---
+\node[font=\scriptsize\bfseries] at (\Lx+1.1,4.45) {unsorted regrets};
+\node[font=\scriptsize\bfseries] at (\Rx+1.1,4.45) {sorted $\reg^{\downarrow}$ (worst-first)};
+
+% --- row labels ---
+\node[font=\small, anchor=east] at (\Lx-0.15,\rowA+0.3) {$A$};
+\node[font=\small, anchor=east] at (\Lx-0.15,\rowB+0.3) {$B$};
+\node[font=\small, anchor=east] at (\Rx-0.15,\rowA+0.3) {$A$};
+\node[font=\small, anchor=east] at (\Rx-0.15,\rowB+0.3) {$B$};
+
+% --- unsorted bars ---
+\foreach \v/\i in {0.2/0,0.9/1,0.4/2,0.7/3,0.3/4}{
+  \fill[lurslate!50] (\Lx+\i*0.5,\rowA) rectangle ++(\barw,{\v*\sc});}
+\foreach \v/\i in {0.6/0,0.8/1,0.5/2,0.8/3,0.2/4}{
+  \fill[lurslate!50] (\Lx+\i*0.5,\rowB) rectangle ++(\barw,{\v*\sc});}
+
+% --- sorted bars (A wins/loses comparison) ---
+\foreach \v/\i in {0.9/0,0.7/1,0.4/2,0.3/3,0.2/4}{
+  \fill[lurslate!50] (\Rx+\i*0.5,\rowA) rectangle ++(\barw,{\v*\sc});}
+\foreach \v/\i in {0.8/0,0.8/1,0.6/2,0.5/3,0.2/4}{
+  \fill[lurslate!50] (\Rx+\i*0.5,\rowB) rectangle ++(\barw,{\v*\sc});}
+% highlight the deciding first coordinate
+\draw[lurcrimson, line width=1pt] (\Rx,\rowA) rectangle ++(\barw,{0.9*\sc});
+\node[lurcrimson, font=\scriptsize] at (\Rx+\barw/2,\rowA+0.9*\sc+0.18) {$0.9$};
+\draw[lurgreen!60!black, line width=1pt] (\Rx,\rowB) rectangle ++(\barw,{0.8*\sc});
+\node[lurgreen!60!black, font=\scriptsize] at (\Rx+\barw/2,\rowB+0.8*\sc+0.18) {$0.8$};
+
+% --- comparison note (to the right, clear of bars) ---
+\node[anchor=west, font=\scriptsize, align=left, lurslate] at (\Rx+2.9,2.3)
+  {compare worst-first:\\[1pt]
+   $0.8<0.9 \;\Rightarrow\; B\prec_{\mathrm{LUR}}A$};
+\draw[flow, draw=lurcrimson] (\Rx+2.85,2.3) -- (\Rx+0.5,2.5);
+
+% --- verdict box ---
+\node[win, font=\scriptsize, align=center] at (\Rx+0.0,0.45)
+  {$B$ is recommended: its \emph{worst} disappointment is smallest.
+   On a tie at the worst entry, the next sorted coordinate decides, and so on.};
+\end{tikzpicture}
+\caption{The leximax order. Each alternative's probe disappointments are sorted
+worst-first; alternatives are then compared lexicographically on the sorted
+vectors. Here $B$ wins because its largest disappointment ($0.8$) is below $A$'s
+($0.9$); had they tied, the second-largest entries would decide, and so on.}
+\label{fig:leximax}
+\end{figure}

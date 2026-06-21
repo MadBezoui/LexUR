@@ -2,7 +2,25 @@
 \label{sec:exp}
 
 \subsection{Design and protocol}
-Section 7.2 reports the main robust benchmark (2,400 instances) using a frozen broadened audit protocol. Sections 7.3--7.9 report the mechanistic analysis on a controlled 480-instance study used to understand behaviour, redundancy, and sensitivity.
+\paragraph{Software Architecture and Reproducibility.}
+All experiments are implemented in the accompanying modular Python
+reproducibility package. Core selection methods (\texttt{lur.methods}),
+performance metrics (\texttt{lur.metrics}), and test problems
+(\texttt{lur.problems}) are separated. A recommendation and its labelled
+disappointment certificate are obtained directly from an objective matrix
+\texttt{F}:
+\begin{verbatim}
+from lur.methods import lur
+winner, D, labels, _ = lur(F, return_detail=True)
+certificate = sorted(zip(labels, D[winner]),
+                     key=lambda item: item[1], reverse=True)
+\end{verbatim}
+The protocol uses \texttt{pyarrow} for Parquet persistence and records the
+configuration, scientific-source, and environment identity of each run. A
+single command executes the frozen pipeline; failed and missing gates remain in
+the generated report.
+
+Section 7.2 reports the main robust benchmark (\protocolInstances{} instances) using this frozen broadened audit protocol. Sections 7.3--7.9 report the mechanistic analysis on a controlled 480-instance study used to understand behaviour, redundancy, and sensitivity.
 
 We evaluate selection \emph{quality} under a held-out protocol: each method picks
 one alternative using only its own machinery, and the pick is scored against
@@ -33,7 +51,7 @@ Significance is assessed by the Friedman test with Nemenyi critical difference
 (CD) and by Holm-corrected Wilcoxon signed-rank tests against LUR with Cliff's
 $\delta$ effect size.
 
-\subsection{Main Benchmark: The Broadened Protocol (2,400 instances)}
+\subsection{Main Benchmark: The Broadened Protocol (\protocolInstances{} instances)}
 \label{sec:protocol}
 To guard against confirmation bias we additionally ran a frozen audit protocol
 (frozen config, single-command reproduction) on a deliberately broadened suite:
@@ -51,12 +69,12 @@ ASF $4.65$, MMR $4.65$, LUR $4.67$, VIKOR $4.71$, ChebMMR $4.99$, then CP $5.32$
 TOPSIS $6.98$, knee $7.21$, RW $9.26$ and SMAA $9.30$ (Figure~\ref{fig:cdprot}).
 A frozen \emph{non-inferiority} test (paired bootstrap, margin $0.01$
 absolute \emph{or} $2\%$ relative) finds LUR non-inferior to both ASF and MMR
-(upper 95\% CI bounds $0.004$ and $0.0025$), with negligible effect size
+(upper 95\% CI bounds $0.0015$ and $0.0021$), with negligible effect size
 (Cliff's $\delta\le0.015$)---supporting ``practically equivalent to the best
 robust scalarisations'' rather than ``better''. Direct computation is demonstrated
-on a continuous linear MOP (LUR via sequential LPs uses $19$ solver calls and
+on a continuous linear MOP, where LUR via sequential LPs uses $19$ solver calls and
 \emph{no} front enumeration vs.\ $150$ for generate-then-select, at equal or
-better tail quality) and a multi-objective LP. In the LP, direct computation resolves the exact answer in just $12$ restricted LP calls compared to exhaustive generation. The confidence-aware stochastic LUR attains
+better tail quality. On a secondary MILP test, direct computation resolves the exact answer in just $4$ solver calls compared to $60$ for exhaustive generation. The confidence-aware stochastic LUR attains
 near-zero out-of-sample worst-criterion risk ($\approx0$) against $0.28$ for
 TOPSIS and $0.52$ for SMAA, and the Rawlsian variant achieves the lowest
 worst-stakeholder regret ($0.362$) and inequality (Gini $0.207$) among average-,
@@ -79,18 +97,18 @@ Beats practical baselines (tail) & PASS & $\delta$: TOPSIS $.17$, CP $.07$, SMAA
 Redundancy $<$ averaging (grouped) & PASS & $0.256$ vs $0.359$\\
 Adaptive $\approx$ full (tail gap $\le0.01$) & PASS & gap $0.0053$\\
 Direct computation (LP $+$ MILP) & PASS & $19$ vs $150$; $4$ vs $60$ solver calls\\
-Stochastic LUR $\le$ deterministic (tail) & PASS & risk $0.383$ vs $0.383$\\
+Stochastic LUR does not hurt tail loss & PASS & risk $0.383$ vs $0.383$\\
 \bottomrule
 \end{tabular}
 \end{table}
 
+The single CHECK outcome on Gate 3 (Nadir-error stability) serves as an important practical flag. It indicates that LUR's recommendation can be sensitive to incorrect point estimates of the nadir. For practitioners, this CHECK explicitly means that if the true nadir is unknown or highly uncertain, they should not rely on naive point estimates, but must instead supply conservative interval bounds (evaluating worst-case regret over a box of plausible nadirs) to ensure true robustness, as further discussed in \S\ref{sec:disc}.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.92\textwidth]{cd_protocol.pdf}
 \caption{Average ranks on tail held-out loss over the broadened protocol suite
-(11 methods, 10 families, 8 geometries, $2{,}400$ instances; Nemenyi CD $=0.31$).
-LUR groups with the best robust methods and outperforms the SMAA single-choice baseline
-on worst-case tail loss while remaining mathematically rigorous, transparent.}
+(11 methods, 10 families, 8 geometries, $\protocolInstances$ instances; Nemenyi CD $=\protocolCD$).
+LUR sits in the best-performing group on worst-case tail loss while providing an auditable certificate.}
 \label{fig:cdprot}
 \end{figure}
 
@@ -109,11 +127,13 @@ $0.59$ and $0.50$, just beyond CD)---but the corresponding effect sizes are
 \emph{negligible} (Cliff's $|\delta|\le 0.034$). Against the methods practitioners
 actually use, LUR is significantly better with small-to-large effect:
 $\delta=0.087$ (TOPSIS), $0.285$ (knee), $0.850$ (RW), $0.873$ (SMAA), all
-$p<10^{-4}$. LUR is clearly ahead of the default distance-based methods and of the SMAA-derived first-rank single-choice recommender used in this benchmark. This should not be read as a claim that LUR dominates SMAA as an exploratory MCDA framework. We therefore claim only that \emph{LUR is in the best-performing
+$p<10^{-4}$. LUR is clearly ahead of the default distance-based methods and of the SMAA-derived first-rank single-choice recommender used in this benchmark. We stress again that SMAA's primary value is exploratory and visual; rather than claiming superiority over SMAA, we frame LUR's single-shot default recommendation as strictly complementary to SMAA's rich weight-space indices. We therefore claim only that \emph{LUR is in the best-performing
 group on worst-case loss and far better than averaging/Monte-Carlo selection}, not
 that it dominates the strongest robust scalarisations. On \emph{mean} loss the
 averaging methods (CP, MMR) lead and LUR is mid-pack---the expected price of
-worst-case robustness (\S\ref{sec:disc}).
+worst-case robustness (\S\ref{sec:disc}). Figure~\ref{fig:tradeoff} makes this
+average-versus-worst-case structure explicit: LUR lies in the robust lower-left
+cluster, well separated from the averaging/Monte-Carlo rules.
 
 \begin{table}[t]
 \centering\small
@@ -140,6 +160,16 @@ MMR    & 0.228 & \textbf{0.470}\\
 
 \begin{figure}[t]
 \centering
+\includegraphics[width=0.62\textwidth]{fig_tradeoff.pdf}
+\caption{Average- versus worst-case held-out loss across selection rules (480-instance
+mechanistic study; lower-left is better). LUR sits in the robust cluster with ASF, MMR
+and CP on worst-case (tail) loss while the averaging and Monte-Carlo rules (RW, SMAA)
+trade away worst-case protection. The inset zooms into the robust cluster.}
+\label{fig:tradeoff}
+\end{figure}
+
+\begin{figure}[t]
+\centering
 \includegraphics[width=0.85\textwidth]{cd_diagram.pdf}
 \caption{Average ranks on tail (worst-case) held-out loss with Nemenyi critical
 difference ($n=480$, $\alpha=0.05$, CD $=0.48$). LUR groups with the best methods
@@ -149,7 +179,8 @@ correlations with CP and ASF are extremely high ($>0.95$).}
 \end{figure}
 
 \subsection{Behaviour across preference families}
-Table~\ref{tab:family} breaks the loss down by held-out family on a representative
+Table~\ref{tab:family} (visualised as a heatmap in Figure~\ref{fig:family})
+breaks the loss down by held-out family on a representative
 setting (concave, $m=8$), including the two non-additive families. The structure
 is a clear trade-off: averaging methods (TOPSIS, SMAA) are strong on linear
 utilities but weak on the max-type families; ASF and MMR are the reverse---best on
@@ -165,7 +196,12 @@ robust across additive and non-additive preferences without being tuned to any.
 \caption{Held-out loss by preference family (concave, $m=8$, 30 replications),
 including the non-additive Choquet and satisficing families. Lowest per column in
 \textbf{bold}. The table illustrates the averaging-vs-worst-case trade-off; LUR is
-balanced across additive and non-additive families.}
+balanced across additive and non-additive families. The \emph{augmented ASF}
+family is the weighted Chebyshev term plus a small ($0.05$) linear augmentation on
+the same weights, so it induces almost the same induced ranking---and hence almost
+the same held-out loss---as the Chebyshev column; the two coincide to three
+decimals except where the augmentation flips a ranking (e.g.\ MMR, $0.442$ vs
+$0.443$).}
 \label{tab:family}
 \begin{tabular}{lccccccc}
 \toprule
@@ -183,6 +219,17 @@ MMR    & 0.653 & 0.442 & 0.443 & 0.348 & 0.344 & 0.402 & 0.439\\
 \end{tabular}
 \end{table}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.88\textwidth]{fig_perfamily.pdf}
+\caption{Held-out loss by preference family (concave, $m=8$); greener is better.
+Averaging rules (TOPSIS, SMAA) are strong on linear utilities but weak on max-type
+families; ASF and MMR are the reverse. LUR (outlined) is the most balanced row
+across the additive \emph{and} non-additive (Choquet, satisfice) families without
+being tuned to any.}
+\label{fig:family}
+\end{figure}
+
 \subsection{Certificate regret and uniformity}
 By construction LUR minimises the leximax of its certificate regret. Empirically
 (concave, $m=8$) LUR attains worst-case certificate regret $0.708$, far below
@@ -197,8 +244,9 @@ We test the case motivating clustering: the DM's true preferences are over $c$
 underlying criteria, each measured by several redundant (positively correlated)
 objectives, with held-out utilities defined on the \emph{true} criteria. The
 clustering recovers the redundancy groups essentially exactly.
-Table~\ref{tab:redund} (four group structures $\times$ three geometries, 30
-replications) shows LUR tied with ASF for best grouped loss and in the best group
+Table~\ref{tab:redund} and Figure~\ref{fig:redund} (four group structures
+$\times$ three geometries, 30
+replications) show LUR tied with ASF for best grouped loss and in the best group
 on tail loss; the averaging and Monte-Carlo methods, which amplify redundant
 groups, are $19$--$35\%$ worse on grouped loss (TOPSIS $0.332$, SMAA $0.413$ vs
 LUR $0.268$). As discussed in \S\ref{sec:probes}, this reflects \emph{reduced},
@@ -226,6 +274,16 @@ MMR    & 0.295 & \textbf{0.387}\\
 \end{tabular}
 \end{table}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.66\textwidth]{fig_redundancy.pdf}
+\caption{Robustness to redundant criteria. On grouped loss (true preferences over
+the underlying criteria) LUR ties ASF for best and clearly beats the averaging and
+Monte-Carlo rules, which over-weight correlated groups; the advantage is the
+reduced---not eliminated---redundancy sensitivity of the clustered probe family.}
+\label{fig:redund}
+\end{figure}
+
 \subsection{Distinctness, dominated exclusion, ablation, sensitivity}
 LUR and the SMAA recommender coincide on only $1.2\%$ of instances and select
 alternatives a mean normalised distance $0.86$ apart: LUR is operationally a
@@ -236,9 +294,28 @@ $m=8$): dropping the singletons raises loss ($0.456\!\to\!0.483$) and worst-case
 certificate regret ($0.701\!\to\!0.783$); a max-only family lowers mean loss to
 $0.420$ but inflates certificate regret to $0.929$, defeating the robustness aim;
 clustering is, by design, a no-op when criteria are independent (its value is the
-redundancy result). 
+redundancy result); Figure~\ref{fig:ablation} summarises the ablation, and
+Figure~\ref{fig:smaa} the LUR--SMAA distinctness across geometries and $m$.
 
-LUR is insensitive to the clustering threshold $\theta$ over $[0.3,0.9]$ across all four geometries. Nadir perturbations reveal an important practical limitation. Although many changed winners remain close in held-out loss, the identity of the LUR recommendation can change frequently because the leximax certificate often contains near-ties. In the frozen audit protocol, the nadir-error stability gate was marked CHECK rather than PASS. Reliable normalisation bounds therefore remain a practical condition for using LUR, and users should report both winner-change rates and loss degradation under plausible bound perturbations. Table~\ref{tab:sens} quantifies these diagnostics.
+\begin{figure}[t]
+\centering
+\begin{minipage}[t]{0.49\textwidth}\centering
+\includegraphics[width=\textwidth]{fig_ablation.pdf}
+\caption{Ablation (concave, $m=8$). Removing the singletons hurts both loss and
+certificate regret; a max-only family lowers mean loss but inflates worst-case
+certificate regret, defeating the robustness aim.}
+\label{fig:ablation}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\textwidth}\centering
+\includegraphics[width=\textwidth]{fig_smaa_distinct.pdf}
+\caption{LUR versus the SMAA first-rank recommender: near-zero agreement and a
+large mean choice distance across geometries and $m$ confirm LUR is a distinct
+rule, not a re-description of acceptability analysis.}
+\label{fig:smaa}
+\end{minipage}
+\end{figure}
+
+LUR is insensitive to the clustering threshold $\theta$ over $[0.3,0.9]$ across all four geometries. Nadir perturbations reveal an important practical limitation. Although many changed winners remain close in held-out loss, the identity of the LUR recommendation can change frequently because the leximax certificate often contains near-ties. In the frozen audit protocol, the nadir-error stability gate was marked CHECK rather than PASS. Reliable normalisation bounds therefore remain a practical condition for using LUR, and users should report both winner-change rates and loss degradation under plausible bound perturbations. Table~\ref{tab:sens} and Figure~\ref{fig:nadirsens} quantify these diagnostics.
 
 \begin{table}[t]
 \centering\small
@@ -268,6 +345,17 @@ nadir err. & loss & flip rate \\
 \end{tabular}
 \end{tabular}
 \end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.6\textwidth]{fig_nadir.pdf}
+\caption{Nadir sensitivity. As the nadir estimate is corrupted, held-out
+\emph{quality} stays essentially flat (green) while the \emph{identity} of the
+winner flips frequently (crimson)---a direct consequence of the near-ties in the
+leximax certificate and of LUR's set-dependence (\S\ref{sec:disc}). This motivates
+deploying LUR with conservative interval bounds.}
+\label{fig:nadirsens}
+\end{figure}
 
 \subsection{Runtime scalability}
 LUR achieves its robustness without Monte-Carlo preference sampling. On our evaluation hardware, evaluating a candidate set instance ($N=300$, $m=8$) takes under 10 milliseconds for LUR, comparable to simple scalarizations (TOPSIS, CP) and roughly two orders of magnitude faster than evaluating robust Monte-Carlo baselines (SMAA, MMR) with 1,000 weight samples.
@@ -309,9 +397,9 @@ the number of observations per criterion (concave, $m=6$).}
 \end{figure}
 
 \subsection{Smart-grid dispatch case study}
-We apply LUR to a six-objective stochastic 24-hour economic dispatch formulated on a 14-generator test case (derived from the IEEE 14-bus structure). The objectives track total generation cost, $\text{CO}_2$ emissions, unreliability (loss of load probability), inter-hour ramping wear, non-renewable generation fraction, and the peak-to-average demand gap. The system is evaluated under Monte-Carlo renewable (wind/solar) generation scenarios, yielding $163$ non-dominated dispatch
-policies; the full dispatch model (demand profile, generator limits, ramping,
-scenario generation) is formulated in Appendix~\ref{app:smartgrid} and fully specified in the released code.
+We apply LUR to a six-objective stochastic 24-hour economic dispatch formulated on a 14-generator test case (derived from the IEEE 14-bus structure). The objectives track total generation cost, $\text{CO}_2$ emissions, unreliability (loss of load probability), inter-hour ramping wear, non-renewable generation fraction, and the peak-to-average demand gap. The system is evaluated under Monte-Carlo renewable (wind/solar) generation scenarios. The $163$ non-dominated dispatch
+policies were generated \emph{a priori} using a standard NSGA-II evolutionary algorithm; this illustrates how LUR naturally interfaces with established multi-objective generation methods as a post-hoc robust selector without systematically biasing the candidate set. The full dispatch model (demand profile, generator limits, ramping,
+scenario generation) is formulated in \ref{app:smartgrid} and fully specified in the released code.
 Relative to the distance/averaging methods, LUR accepts a negligible increase in
 \emph{mean} held-out loss ($0.103$ vs $0.100$) for a $23\%$ reduction in
 \emph{worst-case} loss ($0.282$ vs $0.366$; knee $0.623$). Crucially it

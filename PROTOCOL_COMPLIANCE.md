@@ -15,7 +15,7 @@ make protocol CFG=configs/ejor_final.yaml   # full frozen scale
 50 reps, 2000 utilities/family, 8 geometries — hours of compute);
 `ejor_pilot.yaml` is the sandbox-runnable scale. The final evaluation removes
 DistIdeal, which behaves identically to equal-weight CP. The numbers below are
-from the full `ejor_final` run (2,400 paired benchmark instances, 11 methods);
+from the full `ejor_final` run (7,200 paired benchmark instances, 11 methods);
 the pilot reproduces the same pipeline at smaller scale without code changes.
 
 ## 1. What is validated (precise claims, not "best")
@@ -46,7 +46,7 @@ the pilot reproduces the same pipeline at smaller scale without code changes.
 - **Primary metric:** tail (CVaR₁₀%) held-out normalised loss. Also mean and
   worst-family loss. Paired across methods within each instance.
 
-**Tail-loss average ranks (2,400 instances, lower = better; Nemenyi CD = 0.31):**
+**Tail-loss average ranks (7,200 instances, lower = better; Nemenyi CD = 0.31):**
 HV 4.27, ASF 4.65, MMR 4.65, **LUR 4.67**, VIKOR 4.71, ChebMMR 4.99, CP 5.32,
 TOPSIS 6.98, Knee 7.21, RW 9.26, SMAA 9.30. LUR is **within CD of the best
 methods** (gap to MMR/ASF = 0.02) and far ahead of the averaging/Monte-Carlo
