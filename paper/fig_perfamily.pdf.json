@@ -1,0 +1,12 @@
+{
+  "git_commit": "b4f2bf5ca55c7618337be3697588bfef292736c2",
+  "git_dirty": true,
+  "params": {
+    "figure": "fig_perfamily.pdf",
+    "sources": {
+      "results/tables/per_family_concave_m8.csv": "75b0f4879ebc2ba9e90174c6bd7211347e28629163800397f7c145b320e3e11b"
+    }
+  },
+  "params_sha256": "037197dc15d6454bbc78453b107fc617670fb4ce17c6b3d0b9074d800370fdc3",
+  "run_id": null
+}

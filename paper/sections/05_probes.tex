@@ -25,7 +25,7 @@ A full coalition family overcounts $\{r_2, r_3\}$ (which are highly correlated),
 
 \subsection{Correlation clustering}
 We group \emph{redundant} criteria by single-linkage connected components of the
-graph whose edges join pairs with Pearson correlation $\Corr(f_i,f_j)\ge\theta$. We explicitly state that both Pearson correlation and single-linkage clustering are deployed here as \emph{empirical heuristics} rather than theoretically optimal redundancy measures. Pearson correlation captures linear dependence but is known to be sensitive to outliers; rank-based alternatives (e.g., Spearman) or information-theoretic measures could be substituted in future work. Similarly, single-linkage is chosen because it treats redundancy as connected substitutability, though it is notorious for ``chaining'' effects that can over-merge criteria. To mitigate this, we report empirical sensitivity to $\theta$ and compare it with complete-linkage in the supplementary material.
+graph whose edges join pairs with Pearson correlation $\Corr(f_i,f_j)\ge\theta$. We explicitly state that both Pearson correlation and single-linkage clustering are deployed here as \emph{empirical heuristics} rather than theoretically optimal redundancy measures. Correlations are computed over the un-normalised objective values $f_i(x)$ evaluated on the active candidate set $A$. Pearson correlation captures linear dependence but is known to be sensitive to outliers; rank-based alternatives (e.g., Spearman) or information-theoretic measures could be substituted in future work. Similarly, single-linkage is chosen because it treats redundancy as connected substitutability, though it is notorious for ``chaining'' effects that can over-merge criteria. To mitigate this, we report empirical sensitivity to $\theta$ and compare it with complete-linkage in the supplementary material.
 
 \emph{Redundancy is positive correlation:} two criteria that rise and fall
 together carry duplicate information, whereas negatively correlated criteria are
@@ -33,7 +33,7 @@ genuine trade-offs and must remain separate---hence we threshold the signed
 correlation, not its absolute value. This yields clusters $C_1,\dots,C_c$.
 
 \subsection{The adaptive probe family}
-LUR always includes the canonical anchors---the $m$ singletons, the grand mean,
+LexUR always includes the canonical anchors---the $m$ singletons, the grand mean,
 and the grand maximum---and adds one mean and one maximum probe \emph{per cluster}
 of size $>1$:
 \begin{equation}
@@ -56,22 +56,18 @@ the tested benchmarks (\S\ref{sec:exp})---not a duplication-invariance theorem.
 All probes are non-negative-weighted sums or maxima, hence monotone, so
 Pareto compatibility (Theorem~\ref{thm:pareto}) is preserved.
 
-\begin{theorem}[Non-negative-probe Pareto compatibility]
+\begin{theorem}[Pareto compatibility for adaptive probes]
 \label{thm:nonneg}
-If every probe in $\Q$ is a non-negative-weighted sum or a maximum of the
-normalised criteria, then LUR is Pareto compatible.
+If every probe is monotone, LexUR is weakly Pareto compatible. If, in addition, the family contains the singleton probes or otherwise separates criteria, LexUR is strictly Pareto compatible.
 \end{theorem}
 \begin{proof}
-If $q(r)=\sum_i w_i r_i$ with $w_i\ge 0$, then $r\le r'$ componentwise implies
-$q(r)\le q(r')$; likewise $q_{\max}(r)=\max_i w_i r_i\le\max_i w_i r_i'=
-q_{\max}(r')$. All such probes are monotone non-decreasing, so
-Theorem~\ref{thm:pareto} applies.
+If a probe $q$ is a non-negative-weighted sum $q(r)=\sum_{i=1}^m w_i r_i$ with $w_i\ge 0$, then $r\le r'$ componentwise implies $q(r)\le q(r')$. Likewise, a maximum probe $q_{\max}(r)=\max_{i} w_i r_i$ satisfies $q_{\max}(r)\le q_{\max}(r')$. Since all such probes are monotone non-decreasing, weak Pareto compatibility holds. The inclusion of singleton probes $q_i(r)=r_i$ ensures the family separates criteria, establishing strict Pareto compatibility as shown in Theorem~\ref{thm:pareto}.
 \end{proof}
 
 \subsection{A perturbation bound (not a ranking guarantee)}
 We state the reduction effect as a regret-value perturbation lemma with explicit
 constants. We are deliberately modest: it bounds the change in individual
-disappointments, \emph{not} the change in the LUR ranking or winner, and it
+disappointments, \emph{not} the change in the LexUR ranking or winner, and it
 depends on the normalisation floor $\varepsilon$, which is decision-critical.
 
 \begin{lemma}[Disappointment perturbation]
@@ -118,18 +114,39 @@ criteria, but the remaining sensitivity must be measured rather than assumed to
 vanish, even under perfect correlation.
 \end{remark}
 
+\begin{remark}[Correlation is not semantic redundancy, and clustering is
+set-dependent]
+\label{rem:cluster-caveats}
+Two further caveats bound the interpretation of the clustered family. First,
+positive correlation on $A$ is \emph{empirical redundancy}, not necessarily
+\emph{semantic} redundancy: two criteria can be positively correlated because of
+the geometry of the feasible region rather than because they measure the same
+underlying concern. The clustering should therefore be read as empirical
+redundancy \emph{detection}, not as a determination that two criteria encode the
+same preference. Second, because correlations are computed on the active candidate
+set $A$, the clusters---and hence the declared family $\Q$ itself---are
+set-dependent: adding or removing alternatives can change the correlation
+structure and thus change $\Q$. This is a second channel of set-dependence beyond
+the normalisation bounds discussed in \S\ref{sec:core}, and it should be reported
+together with the normalisation stability analysis whenever the candidate set may
+change.
+\end{remark}
+
 \subsection{Empirical reduction}
 Table~\ref{tab:reduction} (plotted in Figure~\ref{fig:reduction}) reports the realised reduction on concave instances.
 The full family here is $\{q_{\mathrm{mean},S},q_{\max,S}:\emptyset\neq
 S\subseteq\{1,\dots,m\}\}$, of size $2(2^m-1)-m$ (mean and max coincide on
-singletons); the adaptive family is linear in $m$, giving a nearly four-thousand
--fold reduction by $m=15$ with, as \S\ref{sec:exp} shows, little loss of decision
+singletons); the adaptive family is linear in $m$, giving a nearly four-thousand-fold
+reduction by $m=15$ with, as \S\ref{sec:exp} shows, little loss of decision
 quality.
 
 \begin{table}[t]
 \centering\small
 \caption{Probe-family size: full coalition family ($2(2^m-1)-m$ probes) vs.\
-adaptive correlation-clustering family (concave instances, $N=400$).}
+adaptive family (concave instances, $N=400$). The realised number of nontrivial
+clusters is $c=0$ at every plotted value of $m$, so the adaptive count is $m+2$;
+the redundant-objective experiment in Figure~\ref{fig:redund} evaluates actual
+clustering behaviour.}
 \label{tab:reduction}
 \begin{tabular}{rrrr}
 \toprule
@@ -149,8 +166,10 @@ $m$ & full coalitions & adaptive probes & reduction\\
 \includegraphics[width=0.6\textwidth]{fig_probe_reduction.pdf}
 \caption{Probe-family size versus the number of criteria $m$ (log scale). The full
 coalition family grows as $2(2^m-1)-m$, whereas the adaptive correlation-clustering
-family stays $O(m+c)$, giving a nearly four-thousand-fold reduction by $m=15$ with
-little loss of decision quality (\S\ref{sec:exp}).}
+family has $m+2+2c$ probes. Here $c=0$ throughout, so the plotted reduction comes
+from the restricted singleton-plus-grand-probe family rather than observed
+clustering. Clustering performance is evaluated separately in
+Figure~\ref{fig:redund}.}
 \label{fig:reduction}
 \end{figure}
 

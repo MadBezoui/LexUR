@@ -17,9 +17,9 @@
     "SMAA": 10.6875,
     "MMR": 3.1875,
     "ChebMMR": 3.5,
-    "LUR": 5.375
+    "LexUR": 5.375
   },
-  "wilcoxon_vs_LUR": {
+  "wilcoxon_vs_LexUR": {
     "Knee": {
       "p_raw": 0.0078125,
       "p_holm": 0.0859375,

@@ -1,5 +1,5 @@
 import numpy as np
-from lur.probe_validation import compare_probe_families
+from lexur.probe_validation import compare_probe_families
 
 
 def test_two_criterion_complete_adaptive_family_has_zero_regret_gap():

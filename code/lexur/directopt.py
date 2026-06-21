@@ -1,14 +1,14 @@
-"""Direct computation of LUR without enumerating the efficient set.
+"""Direct computation of LexUR without enumerating the efficient set.
 
 Two exploratory settings:
-  (A) Continuous linear MOP: the first, minimax-regret coordinate of LUR over
+  (A) Continuous linear MOP: the first, minimax-regret coordinate of LexUR over
       linear probes is solved by LP and compared with generate-then-select.
       Later lexicographic coordinates are not implemented here.
   (B) Mixed-integer facility location: a four-solve anchor proxy is compared
-      with a sampled weighted-sum front. This is not an exact direct LUR MILP.
+      with a sampled weighted-sum front. This is not an exact direct LexUR MILP.
 
 For linear probes q_k(r)=w_k^T r the regret D_k(x) is affine in x up to the
-constant anchors q_k^*, q_k^w, so stage-1 LUR is the LP
+constant anchors q_k^*, q_k^w, so stage-1 LexUR is the LP
     min_{x in X, rho} rho   s.t.  (w_k^T r(x) - q_k^*)/(q_k^w-q_k^*) <= rho  for all k.
 The anchors q_k^*, q_k^w are obtained by 2K scalar LPs/MILPs.
 """
@@ -46,8 +46,8 @@ def _solve_lp(c, A_ub, b_ub, bounds):
     return res
 
 
-def direct_lur_linear(C, A, b, probe_weights, tol=1e-6):
-    """Stage-1 minimax-regret LUR with linear probes via one LP (plus 2K anchor
+def direct_lexur_linear(C, A, b, probe_weights, tol=1e-6):
+    """Stage-1 minimax-regret LexUR with linear probes via one LP (plus 2K anchor
     LPs). Returns (x, info)."""
     m, n = C.shape
     bounds = [(0, 1)] * n
@@ -101,7 +101,7 @@ def enumerate_then_select(C, A, b, n_weights=200, rng=None):
 
 
 def run_linear_case(m=4, reps=10, seed=3):
-    """Compare direct-LUR vs enumerate-then-LUR on random linear MOPs."""
+    """Compare direct-LexUR vs enumerate-then-LexUR on random linear MOPs."""
     from . import methods, families
     from .methods import normalize
     rng = np.random.default_rng(seed)
@@ -111,13 +111,13 @@ def run_linear_case(m=4, reps=10, seed=3):
         # probe weights: singletons + grand mean (linear monotone probes)
         pw = np.vstack([np.eye(m), np.ones(m) / m])
         t0 = time.time()
-        x_dir, info_dir = direct_lur_linear(C, A, b, pw)
+        x_dir, info_dir = direct_lexur_linear(C, A, b, pw)
         t_dir = time.time() - t0
         f_dir = C @ x_dir
         t1 = time.time()
         F, info_enum = enumerate_then_select(C, A, b, n_weights=150, rng=rng)
-        # post-process the enumerated front with full LUR
-        i_sel = methods.lur(F)
+        # post-process the enumerated front with full LexUR
+        i_sel = methods.lexur(F)
         f_enum = F[i_sel]
         t_enum = time.time() - t1
         # held-out quality: append both decisions to the enumerated front, score
@@ -141,7 +141,7 @@ def run_linear_case(m=4, reps=10, seed=3):
 # --------------------------------------------------------------------------- #
 def run_facility_location(n_fac=8, n_cust=12, seed=4, n_weights=60):
     """Bi/tri-objective uncapacitated facility location (open cost, service
-    distance, worst-case distance). Direct LUR via repeated MILPs vs enumerate-
+    distance, worst-case distance). Direct LexUR via repeated MILPs vs enumerate-
     then-select. Requires PuLP+CBC."""
     try:
         import pulp
@@ -179,7 +179,7 @@ def run_facility_location(n_fac=8, n_cust=12, seed=4, n_weights=60):
     F = np.unique(np.round(np.array(pts), 4), axis=0)
     t_enum = time.time() - t0
     from . import methods
-    i_sel = methods.lur(F)
+    i_sel = methods.lexur(F)
     # "direct" proxy: scalarised minimax-regret weight found by a small search
     # over the same weight family but only K+1 solves (singletons + mean)
     t1 = time.time(); dcalls = 0

@@ -3,12 +3,12 @@
 Each family yields, given the normalised candidate matrix r in [0,1]^m
 (minimisation), an (N x T) matrix of *utilities* (higher = better) for T sampled
 parameterisations.  Families span additive and non-additive monotone preferences
-so the evaluation is not biased toward LUR's additive/scalarising probes.
+so the evaluation is not biased toward LexUR's additive/scalarising probes.
 
 Weights are drawn from Dirichlet(alpha * 1) to control preference shape:
   alpha = 0.2  -> sparse / extreme   ;  1 -> uniform simplex ;  5 -> balanced.
 
-NONE of these families is used to construct LUR probes.
+NONE of these families is used to construct LexUR probes.
 """
 from __future__ import annotations
 import numpy as np

@@ -29,35 +29,41 @@ class ManuscriptCheck:
     errors: list[str] = field(default_factory=list)
 
 
-def _table_dir(results_dir: Path) -> Path:
-    return results_dir / "tables" if (results_dir / "tables").is_dir() else results_dir
-
-
 def load_publication_evidence(
-    results_dir: str | Path,
-    config_path: str | Path,
+    repo_root: str | Path,
     claims_path: str | Path,
 ) -> PublicationEvidence:
-    results_dir = Path(results_dir)
-    tables = _table_dir(results_dir)
-    analysis = json.loads((tables / "benchmark_analysis.json").read_text())
-    gates = json.loads((tables / "gates_report.json").read_text())
-    cfg = yaml.safe_load(Path(config_path).read_text())
+    """Load manuscript evidence from the immutable, manuscript-approved run.
+
+    Every protocol constant (instances, methods, geometries, Nemenyi CD, ranks,
+    gates) is sourced from the frozen run ``figure_evidence.AUTHORITATIVE_RUN_ID``
+    and the code-level family registry -- never from a mutable config file -- so
+    that editing ``configs/ejor_final.yaml`` cannot silently change published
+    numbers.
+    """
+    import pandas as pd
+
+    from .families import ALL_FAMILIES
+    from .figure_evidence import authoritative_run_dir, load_protocol_evidence
+
+    repo_root = Path(repo_root)
+    protocol = load_protocol_evidence(repo_root)
+    run_dir = authoritative_run_dir(repo_root)
+    analysis = json.loads(
+        (run_dir / "tables" / "benchmark_analysis.json").read_text(encoding="utf-8")
+    )
+    gates = json.loads(
+        (run_dir / "tables" / "gates_report.json").read_text(encoding="utf-8")
+    )
     claims_cfg = yaml.safe_load(Path(claims_path).read_text())["claims"]
 
-    run_id = analysis["run_id"]
+    run_id = protocol.run_id
     if any(row.get("run_id") != run_id for row in gates):
-        raise ValueError("gate report run_id does not match benchmark analysis")
-    expected_instances = (
-        len(cfg["candidate_sizes"])
-        * len(cfg["criteria"])
-        * len(cfg["geometries"])
-        * int(cfg["replications"])
+        raise ValueError("gate report run_id does not match authoritative run")
+
+    geometries = int(
+        pd.read_parquet(protocol.raw_path, columns=["geometry"])["geometry"].nunique()
     )
-    if analysis["n_instances"] != expected_instances:
-        raise ValueError("benchmark instance count does not match frozen config")
-    if analysis["n_methods"] != len(cfg["methods"]):
-        raise ValueError("benchmark method count does not match frozen config")
 
     gate_map = {
         row["gate"]: {
@@ -72,12 +78,12 @@ def load_publication_evidence(
     }
     return PublicationEvidence(
         run_id=run_id,
-        instances=expected_instances,
-        methods=len(cfg["methods"]),
-        geometries=len(cfg["geometries"]),
-        families=len(cfg["families"]),
-        nemenyi_cd=float(analysis["nemenyi_cd"]),
-        average_ranks=analysis["average_ranks"],
+        instances=protocol.n_instances,
+        methods=len(protocol.method_names),
+        geometries=geometries,
+        families=len(ALL_FAMILIES),
+        nemenyi_cd=protocol.nemenyi_cd,
+        average_ranks=dict(protocol.average_ranks),
         noninferiority=analysis.get("noninferiority", {}),
         gates=gates,
         claims=claims,
@@ -125,7 +131,7 @@ def write_generated_inputs(
     generated_dir = Path(generated_dir)
     generated_dir.mkdir(parents=True, exist_ok=True)
     numbers = (
-        "% Generated from validated ALUR evidence. Do not edit.\n"
+        "% Generated from validated ALexUR evidence. Do not edit.\n"
         f"\\newcommand{{\\protocolInstances}}{{{evidence.instances:,}}}\n"
         f"\\newcommand{{\\protocolMethods}}{{{evidence.methods}}}\n"
         f"\\newcommand{{\\protocolGeometries}}{{{evidence.geometries}}}\n"
@@ -151,10 +157,10 @@ def write_generated_inputs(
         "\n".join(gate_lines), encoding="utf-8"
     )
 
-    result_lines = ["% Generated from validated ALUR evidence. Do not edit."]
-    if "LUR" in evidence.average_ranks:
+    result_lines = ["% Generated from validated ALexUR evidence. Do not edit."]
+    if "LexUR" in evidence.average_ranks:
         result_lines.append(
-            f"\\newcommand{{\\protocolLURRank}}{{{evidence.average_ranks['LUR']:.3f}}}"
+            f"\\newcommand{{\\protocolLexURRank}}{{{evidence.average_ranks['LexUR']:.3f}}}"
         )
     (generated_dir / "protocol_results.tex").write_text(
         "\n".join(result_lines) + "\n", encoding="utf-8"

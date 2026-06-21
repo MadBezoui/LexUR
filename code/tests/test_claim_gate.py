@@ -1,4 +1,4 @@
-from lur.claim_gate import summarize_claim
+from lexur.claim_gate import summarize_claim
 
 def test_failed_required_gate_prevents_supported_status():
     claim = {"stage": "core", "gates": ["a", "b"]}

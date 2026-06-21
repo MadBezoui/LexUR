@@ -1,7 +1,7 @@
 import numpy as np
 from dataclasses import dataclass
 from typing import Literal
-from .methods import lur_variant
+from .methods import lexur_variant
 
 @dataclass
 class StabilityResult:
@@ -9,7 +9,7 @@ class StabilityResult:
     indices: list[int]
     frequencies: dict[int, float]
 
-def lur_stable(F: np.ndarray, bounds: list[tuple[np.ndarray, np.ndarray]], 
+def lexur_stable(F: np.ndarray, bounds: list[tuple[np.ndarray, np.ndarray]], 
                min_identity_rate: float = 0.90, set_coverage_rate: float = 0.95, 
                max_set_size: int = 3, **kwargs) -> StabilityResult:
     n_samples = len(bounds)
@@ -18,7 +18,7 @@ def lur_stable(F: np.ndarray, bounds: list[tuple[np.ndarray, np.ndarray]],
         
     counts = {}
     for ideal, nadir in bounds:
-        idx = lur_variant(F, ideal=ideal, nadir=nadir, **kwargs)
+        idx = lexur_variant(F, ideal=ideal, nadir=nadir, **kwargs)
         counts[idx] = counts.get(idx, 0) + 1
         
     frequencies = {idx: c / n_samples for idx, c in counts.items()}
@@ -78,4 +78,4 @@ def generate_bounds(F: np.ndarray, n_samples: int, mode: str, rng: np.random.Gen
     return bounds
 
 def normalization_stability(F: np.ndarray, bound_samples: list[tuple[np.ndarray, np.ndarray]], tolerance: float = 1e-9) -> StabilityResult:
-    return lur_stable(F, bound_samples)
+    return lexur_stable(F, bound_samples)

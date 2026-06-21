@@ -4,7 +4,7 @@
 
 **Target:** European Journal of Operational Research, Decision Support
 
-**Purpose:** Convert the current ALUR worktree into the strongest scientifically
+**Purpose:** Convert the current ALexUR worktree into the strongest scientifically
 defensible EJOR submission that the available evidence supports. Acceptance
 cannot be guaranteed; the deliverable is a submission-ready manuscript and
 reproducibility package with no known critical evidence, consistency, or build
@@ -74,13 +74,13 @@ New or revised behavior is developed test-first. Required integration coverage:
 - manuscript constants equal the frozen config and validated raw frame;
 - smoke execution regenerates a self-consistent report in an isolated directory.
 
-The complete test command must finish without warnings caused by ALUR code.
+The complete test command must finish without warnings caused by ALexUR code.
 Warnings from degenerate correlation inputs are handled explicitly rather than
 ignored globally.
 
 ## 5. Manuscript Policy
 
-- Position LUR as a finite candidate-set, regret-based robust-MCDA recommender,
+- Position LexUR as a finite candidate-set, regret-based robust-MCDA recommender,
   not as universally optimal or preference-free.
 - Describe the protocol as frozen or pre-specified, not publicly pre-registered,
   unless independent timestamp evidence is available.

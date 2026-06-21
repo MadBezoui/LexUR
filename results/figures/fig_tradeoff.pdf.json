@@ -1,0 +1,12 @@
+{
+  "git_commit": "b4f2bf5ca55c7618337be3697588bfef292736c2",
+  "git_dirty": true,
+  "params": {
+    "figure": "fig_tradeoff.pdf",
+    "sources": {
+      "results/tables/main_comparison.csv": "9353b3964ae499d45fc9553ee59ac42cabb281413083ae6a77eefb406a29fcad"
+    }
+  },
+  "params_sha256": "969769fc9aa3f93434e741a3895b7cdd11ba8a30ad76cb03618551bc14f170d1",
+  "run_id": null
+}

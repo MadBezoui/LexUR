@@ -32,7 +32,7 @@
   {
     "gate": "redundancy_grouped_loss",
     "result": "PASS",
-    "detail": "LUR 0.256 vs avg 0.359"
+    "detail": "LexUR 0.256 vs avg 0.359"
   },
   {
     "gate": "Direct computation demonstrated (LP+MILP)",
@@ -40,7 +40,7 @@
     "detail": "LP direct calls 19 vs enum 150"
   },
   {
-    "gate": "Stochastic LUR <= deterministic LUR (tail)",
+    "gate": "Stochastic LexUR <= deterministic LexUR (tail)",
     "result": "PASS",
     "detail": "best-alpha 0.383 vs det 0.383"
   }

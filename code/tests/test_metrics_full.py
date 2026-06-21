@@ -1,4 +1,4 @@
-"""Tests for lur.metrics — evaluation metrics and held-out loss computation.
+"""Tests for lexur.metrics — evaluation metrics and held-out loss computation.
 
 Covers: sample_test_utilities, precompute_utilities, loss_from_cache,
 out_of_class_loss, is_dominated, tail_loss, worst_case_regret.
@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 import numpy.testing as npt
 
-from lur.metrics import (
+from lexur.metrics import (
     sample_test_utilities, precompute_utilities, loss_from_cache,
     out_of_class_loss, is_dominated, tail_loss, worst_case_regret,
 )
@@ -24,7 +24,7 @@ def rng():
 @pytest.fixture
 def front():
     """A 10x3 candidate set for metric tests."""
-    from lur.problems import make_candidate_set
+    from lexur.problems import make_candidate_set
     return make_candidate_set("concave", 10, 3, np.random.default_rng(42))
 
 
@@ -204,7 +204,7 @@ class TestTailLoss:
 
     def test_tail_ge_mean(self, front, rng):
         """Tail loss (upper quantile) should be >= mean loss."""
-        from lur.metrics import out_of_class_loss as ocl
+        from lexur.metrics import out_of_class_loss as ocl
         rng1 = np.random.default_rng(99)
         rng2 = np.random.default_rng(99)
         mean_loss = ocl(front, 0, rng1, n_per_family=50)

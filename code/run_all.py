@@ -18,8 +18,8 @@ import argparse, json, os, sys, time
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from lur import experiments as ex
-from lur import smartgrid as sg
+from lexur import experiments as ex
+from lexur import smartgrid as sg
 
 OUT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "results"))
 NUM = f"{OUT}/tables/numbers.json"
@@ -49,7 +49,7 @@ def stage_benchmark(reps, ntest):
     n = _load(); n["stats"] = summ; n["main_comparison"] = main.to_dict(orient="records")
     _save(n)
     print(f"  tail Friedman p={summ['tail_loss']['friedman_p']:.2e}; "
-          f"LUR tail rank={summ['tail_loss']['avg_ranks']['LUR']:.2f}")
+          f"LexUR tail rank={summ['tail_loss']['avg_ranks']['LexUR']:.2f}")
 
 
 def stage_redundancy(reps, ntest):
@@ -70,14 +70,14 @@ def stage_tables(reps, ntest):
 
 def stage_sensitivity(reps, ntest):
     ex.sensitivity_theta(reps=max(10, reps // 2), n_test=ntest, outdir=OUT)
-    ex.sensitivity_nadir(reps=max(10, reps // 2), n_test=ntest, outdir=OUT)
-    df = ex.stochastic_demo(reps=max(20, reps), outdir=OUT)
+    ex.sensitivity_nadir(reps=max(20, reps), n_test=ntest, outdir=OUT)
+    df = ex.stochastic_demo(reps=max(40, reps), outdir=OUT)
     n = _load(); n["stochastic"] = df.to_dict("records"); _save(n)
 
 
 def stage_extras(reps, ntest):
     n = _load()
-    n["agreement_smaa"] = ex.agreement_with_smaa(reps=max(20, reps), outdir=OUT).to_dict("records")
+    n["agreement_smaa"] = ex.agreement_with_smaa(reps=max(40, reps), outdir=OUT).to_dict("records")
     n["dominated_exclusion"] = ex.dominated_exclusion_check()
     _save(n)
     print("  dominated-exclusion:", n["dominated_exclusion"])

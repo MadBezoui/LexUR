@@ -1,227 +1,315 @@
-"""Generate the data-driven figures for the manuscript from results/tables/*.
+"""Generate publication figures from validated result tables."""
 
-All figures are vector PDFs written into ../../paper/ (and ../../results/figures/).
-Every number is read from the frozen results tables; nothing is hard-coded except
-cosmetic styling. LUR is highlighted consistently in crimson.
-"""
-import os
+from __future__ import annotations
+
+from hashlib import sha256
 import json
-import numpy as np
-import pandas as pd
+import os
+from pathlib import Path
+import sys
+
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
-
-HERE = os.path.dirname(os.path.abspath(__file__))
-TAB = os.path.abspath(os.path.join(HERE, "..", "..", "results", "tables"))
-OUT_DIRS = [
-    os.path.abspath(os.path.join(HERE, "..", "..", "paper")),
-    os.path.abspath(os.path.join(HERE, "..", "..", "results", "figures")),
-]
-
-plt.rcParams.update({
-    "font.size": 10,
-    "axes.spines.top": False,
-    "axes.spines.right": False,
-    "figure.dpi": 150,
-    "savefig.bbox": "tight",
-    "axes.titlesize": 11,
-})
-
-LUR_C = "#c0392b"      # crimson for LUR
-BASE_C = "#34495e"     # slate for others
-ACC_C = "#2980b9"      # blue accent
-GOOD_C = "#27ae60"     # green
+import numpy as np
+import pandas as pd
 
 
-def save(fig, name):
-    for d in OUT_DIRS:
-        if os.path.isdir(d):
-            fig.savefig(os.path.join(d, name))
+HERE = Path(__file__).resolve().parent
+REPO_ROOT = HERE.parents[1]
+sys.path.insert(0, str(REPO_ROOT / "code"))
+
+from lexur.figure_evidence import figure_provenance, write_sidecar
+from lexur.publication_figures import (
+    OKABE_ITO,
+    publication_style,
+    render_cd_diagram,
+)
+
+
+TAB = REPO_ROOT / "results" / "tables"
+OUT_DIRS = [REPO_ROOT / "paper", REPO_ROOT / "results" / "figures"]
+
+
+def _source_metadata(paths):
+    return {
+        str(Path(path).relative_to(REPO_ROOT)): sha256(Path(path).read_bytes()).hexdigest()
+        for path in paths
+    }
+
+
+def save(fig, name, *, sources):
+    params = {"figure": name, "sources": _source_metadata(sources)}
+    metadata = figure_provenance(REPO_ROOT, run_id=None, params=params)
+    for directory in OUT_DIRS:
+        directory.mkdir(parents=True, exist_ok=True)
+        path = directory / name
+        fig.savefig(path)
+        write_sidecar(path, metadata)
     plt.close(fig)
     print("wrote", name)
 
 
-def _colors(methods):
-    return [LUR_C if m == "LUR" else BASE_C for m in methods]
+def _yerr(frame, mean, lower, upper):
+    center = frame[mean].to_numpy(float)
+    return np.vstack(
+        [
+            center - frame[lower].to_numpy(float),
+            frame[upper].to_numpy(float) - center,
+        ]
+    )
 
 
-# ---------------------------------------------------------------- 1. tradeoff
 def fig_tradeoff():
-    df = pd.read_csv(f"{TAB}/main_comparison.csv")
-    # manual label offsets (points) to de-overlap the robust-method cluster
-    off = {"CP": (-30, -2), "TOPSIS": (4, 7), "ASF": (8, -3),
-           "MMR": (-40, -6), "LUR": (9, -10), "Knee": (7, 4),
-           "RW": (6, -12), "SMAA": (4, 6)}
-    fig, ax = plt.subplots(figsize=(5.6, 4.2))
-    for _, r in df.iterrows():
-        is_lur = r["method"] == "LUR"
-        ax.scatter(r["loss_mean"], r["tail_loss"],
-                   s=150 if is_lur else 70,
-                   color=LUR_C if is_lur else BASE_C,
-                   zorder=3, edgecolor="white", linewidth=0.8)
-        ax.annotate(r["method"],
-                    (r["loss_mean"], r["tail_loss"]),
+    source = TAB / "main_comparison.csv"
+    df = pd.read_csv(source)
+    cluster = ["CP", "ASF", "MMR", "LexUR", "TOPSIS"]
+    offsets = {
+        "CP": (-24, 5), "TOPSIS": (5, 6), "ASF": (5, 6), "MMR": (-30, -11),
+        "LexUR": (5, -12), "Knee": (5, 5), "RW": (-18, -13), "SMAA": (5, 5),
+    }
+    zoom_offsets = {
+        "CP": (5, 5), "TOPSIS": (-24, 7), "ASF": (5, 6),
+        "MMR": (-27, -11), "LexUR": (5, -11),
+    }
+    with publication_style():
+        fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.5), gridspec_kw={"width_ratios": [1.2, 1]})
+        for ax, methods, title in (
+            (axes[0], list(df["method"]), "All selection rules"),
+            (axes[1], cluster, "Robust cluster (zoom)"),
+        ):
+            subset = df[df["method"].isin(methods)]
+            for _, row in subset.iterrows():
+                is_lexur = row["method"] == "LexUR"
+                ax.scatter(
+                    row["loss_mean"], row["tail_loss"],
+                    s=70 if is_lexur else 40,
+                    marker="D" if is_lexur else "o",
+                    color=OKABE_ITO["orange"] if is_lexur else OKABE_ITO["blue"],
+                    edgecolor="white", linewidth=0.6, zorder=3,
+                )
+                ax.annotate(
+                    row["method"], (row["loss_mean"], row["tail_loss"]),
                     textcoords="offset points",
-                    xytext=off.get(r["method"], (7, 4)),
-                    fontsize=9, fontweight="bold" if is_lur else "normal",
-                    color=LUR_C if is_lur else "black")
-    ax.set_xlabel("Mean held-out loss  (average case)")
-    ax.set_ylabel("Tail held-out loss  CVaR$_{10\\%}$  (worst case)")
-    ax.set_title("Average- vs worst-case loss across selection rules")
-    ax.grid(True, alpha=0.25)
-
-    # --- zoom inset on the robust-method cluster (lower-left) ---
-    from mpl_toolkits.axes_grid1.inset_locator import mark_inset
-    axin = ax.inset_axes([0.46, 0.30, 0.50, 0.45])
-    cluster = ["CP", "ASF", "MMR", "LUR", "TOPSIS"]
-    coff = {"CP": (6, -3), "ASF": (6, 4), "MMR": (-30, -10),
-            "LUR": (7, 4), "TOPSIS": (-10, 8)}
-    for _, r in df[df["method"].isin(cluster)].iterrows():
-        is_lur = r["method"] == "LUR"
-        axin.scatter(r["loss_mean"], r["tail_loss"], s=130 if is_lur else 60,
-                     color=LUR_C if is_lur else BASE_C, zorder=3,
-                     edgecolor="white", linewidth=0.7)
-        axin.annotate(r["method"], (r["loss_mean"], r["tail_loss"]),
-                      textcoords="offset points", xytext=coff[r["method"]],
-                      fontsize=8, fontweight="bold" if is_lur else "normal",
-                      color=LUR_C if is_lur else "black")
-    axin.set_xlim(0.20, 0.255); axin.set_ylim(0.462, 0.55)
-    axin.grid(True, alpha=0.25); axin.tick_params(labelsize=7)
-    axin.set_title("robust cluster (zoom)", fontsize=8)
-    mark_inset(ax, axin, loc1=2, loc2=3, fc="none", ec="0.6", lw=0.8)
-    save(fig, "fig_tradeoff.pdf")
+                    xytext=(zoom_offsets if ax is axes[1] else offsets)[row["method"]],
+                    fontsize=7.5,
+                    color=OKABE_ITO["orange"] if is_lexur else OKABE_ITO["black"],
+                    fontweight="bold" if is_lexur else "normal",
+                )
+            ax.set_title(title)
+            ax.set_xlabel("mean held-out loss")
+            ax.grid(True, alpha=0.2)
+        axes[0].set_ylabel("tail held-out loss (CVaR$_{10\%}$)")
+        axes[1].set_xlim(0.198, 0.257)
+        axes[1].set_ylim(0.462, 0.55)
+        fig.suptitle("Average- versus tail-loss trade-off", fontsize=10)
+        fig.tight_layout()
+        save(fig, "fig_tradeoff.pdf", sources=[source])
 
 
-# ------------------------------------------------------------ 2. per-family heatmap
 def fig_perfamily():
-    df = pd.read_csv(f"{TAB}/per_family_concave_m8.csv").set_index("method")
+    source = TAB / "per_family_concave_m8.csv"
+    df = pd.read_csv(source).set_index("method")
     fams = ["linear", "chebyshev", "aug_asf", "ces", "choquet", "satisfice", "overall"]
     labels = ["linear", "Chebyshev", "aug. ASF", "CES", "Choquet", "satisfice", "overall"]
-    M = df.loc[:, fams].values
-    fig, ax = plt.subplots(figsize=(7.2, 4.2))
-    im = ax.imshow(M, cmap="RdYlGn_r", aspect="auto")
-    ax.set_xticks(range(len(fams)), labels, rotation=30, ha="right")
-    ax.set_yticks(range(len(df.index)), df.index)
-    for i in range(M.shape[0]):
-        for j in range(M.shape[1]):
-            ax.text(j, i, f"{M[i, j]:.2f}", ha="center", va="center",
-                    fontsize=8, color="black")
-    # mark LUR row
-    if "LUR" in df.index:
-        yi = list(df.index).index("LUR")
-        ax.add_patch(plt.Rectangle((-0.5, yi - 0.5), len(fams), 1, fill=False,
-                                   edgecolor=LUR_C, lw=2.2))
-    ax.set_title("Held-out loss by preference family (concave, $m=8$); lower is better")
-    fig.colorbar(im, ax=ax, fraction=0.025, pad=0.02, label="loss")
-    save(fig, "fig_perfamily.pdf")
+    values = df.loc[:, fams].to_numpy(float)
+    with publication_style():
+        fig, ax = plt.subplots(figsize=(7.2, 4.2))
+        mesh = ax.pcolormesh(
+            np.arange(values.shape[1] + 1), np.arange(values.shape[0] + 1), values,
+            cmap="viridis_r", shading="flat", edgecolors="white", linewidth=0.6,
+        )
+        ax.set_xlim(0, values.shape[1]); ax.set_ylim(values.shape[0], 0)
+        ax.set_xticks(np.arange(len(fams)) + 0.5, labels, rotation=30, ha="right")
+        ax.set_yticks(np.arange(len(df.index)) + 0.5, df.index)
+        midpoint = (values.min() + values.max()) / 2
+        for i in range(values.shape[0]):
+            for j in range(values.shape[1]):
+                ax.text(j + 0.5, i + 0.5, f"{values[i, j]:.2f}", ha="center", va="center",
+                        fontsize=7.5, color="white" if values[i, j] > midpoint else "black")
+        lexur_row = list(df.index).index("LexUR")
+        ax.add_patch(plt.Rectangle((0, lexur_row), len(fams), 1, fill=False,
+                                   edgecolor=OKABE_ITO["orange"], lw=2.0))
+        ax.set_title("Held-out loss by preference family (concave, $m=8$; lower is better)")
+        fig.colorbar(mesh, ax=ax, fraction=0.028, pad=0.02, label="loss")
+        fig.tight_layout()
+        save(fig, "fig_perfamily.pdf", sources=[source])
 
 
-# ----------------------------------------------------------------- 3. redundancy
 def fig_redundancy():
-    df = pd.read_csv(f"{TAB}/redundancy.csv")
-    x = np.arange(len(df)); w = 0.38
-    fig, ax = plt.subplots(figsize=(6.6, 4.0))
-    ax.bar(x - w/2, df["grouped_loss"], w, yerr=df["grouped_std"], capsize=3,
-           color=_colors(df["method"]), label="grouped loss")
-    ax.bar(x + w/2, df["tail_loss"], w, color=[ACC_C]*len(df), alpha=0.55,
-           label="tail loss")
-    ax.set_xticks(x, df["method"], rotation=0)
-    ax.set_ylabel("loss (lower is better)")
-    ax.set_title("Robustness to redundant criteria (grouped vs tail loss)")
-    ax.legend(frameon=False)
-    ax.grid(True, axis="y", alpha=0.25)
-    save(fig, "fig_redundancy.pdf")
+    source = TAB / "redundancy.csv"
+    df = pd.read_csv(source)
+    x = np.arange(len(df)); width = 0.37
+    with publication_style():
+        fig, ax = plt.subplots(figsize=(7.0, 4.0))
+        colors = [OKABE_ITO["orange"] if method == "LexUR" else OKABE_ITO["blue"] for method in df["method"]]
+        ax.bar(x - width / 2, df["grouped_loss"], width,
+               yerr=_yerr(df, "grouped_loss", "grouped_lower", "grouped_upper"),
+               capsize=2, color=colors, hatch="//", label="grouped loss (95% CI)")
+        ax.bar(x + width / 2, df["tail_loss"], width,
+               yerr=_yerr(df, "tail_loss", "tail_lower", "tail_upper"),
+               capsize=2, color=colors, alpha=0.55, label="tail loss (95% CI)")
+        ax.set_xticks(x, df["method"])
+        ax.set_ylabel("loss (lower is better)")
+        ax.set_title("Robustness to redundant criteria")
+        handles, labels = ax.get_legend_handles_labels()
+        handles.append(Patch(facecolor=OKABE_ITO["orange"], label="LexUR highlight"))
+        labels.append("LexUR highlight")
+        ax.legend(handles, labels, frameon=False, ncol=3, loc="upper center")
+        ax.grid(True, axis="y", alpha=0.2)
+        fig.tight_layout()
+        save(fig, "fig_redundancy.pdf", sources=[source])
 
 
-# -------------------------------------------------------------- 4. nadir sensitivity
 def fig_nadir():
-    df = pd.read_csv(f"{TAB}/sensitivity_nadir.csv").sort_values("nadir_err")
-    fig, ax1 = plt.subplots(figsize=(6.2, 4.0))
-    x = df["nadir_err"] * 100
-    ax1.plot(x, df["loss"], "o-", color=GOOD_C, lw=2, label="held-out loss")
-    ax1.set_xlabel("nadir estimation error (%)")
-    ax1.set_ylabel("held-out loss", color=GOOD_C)
-    ax1.tick_params(axis="y", labelcolor=GOOD_C)
-    ax1.set_ylim(0, max(df["loss"]) * 1.4)
-    ax2 = ax1.twinx()
-    ax2.spines["top"].set_visible(False)
-    ax2.plot(x, df["flip_rate"] * 100, "s--", color=LUR_C, lw=2, label="winner flip rate")
-    ax2.set_ylabel("winner flip rate (%)", color=LUR_C)
-    ax2.tick_params(axis="y", labelcolor=LUR_C)
-    ax2.set_ylim(0, 100)
-    ax1.set_title("Nadir sensitivity: quality is stable, identity is not")
-    save(fig, "fig_nadir.pdf")
+    source = TAB / "sensitivity_nadir.csv"
+    df = pd.read_csv(source)
+    x = df["realized_rms_error"] * 100
+    with publication_style():
+        fig, ax1 = plt.subplots(figsize=(6.2, 4.0))
+        loss = df["loss_change"]
+        ax1.errorbar(x, loss, yerr=_yerr(df, "loss_change", "loss_change_lower", "loss_change_upper"),
+                     color=OKABE_ITO["blue"], marker="o", capsize=2,
+                     label="paired held-out loss change")
+        ax1.axhline(0, color="0.5", linewidth=0.7)
+        ax1.set_xlabel("realized RMS nadir perturbation (%)")
+        ax1.set_ylabel("paired held-out loss change", color=OKABE_ITO["blue"])
+        ax2 = ax1.twinx()
+        rate = df["flip_rate"] * 100
+        ax2.errorbar(x, rate,
+                     yerr=np.vstack([rate - df["flip_lower"] * 100, df["flip_upper"] * 100 - rate]),
+                     color=OKABE_ITO["orange"], marker="s", linestyle="--", capsize=2,
+                     label="winner-change rate")
+        ax2.set_ylim(0, 105)
+        ax2.set_ylabel("winner-change rate (%)", color=OKABE_ITO["orange"])
+        ax1.set_title("Nadir sensitivity: quality and identity are paired diagnostics")
+        fig.tight_layout()
+        save(fig, "fig_nadir.pdf", sources=[source])
 
 
-# ------------------------------------------------------------- 5. probe reduction
 def fig_probe_reduction():
-    df = pd.read_csv(f"{TAB}/probe_reduction.csv")
-    fig, ax = plt.subplots(figsize=(6.2, 4.0))
-    ax.plot(df["m"], df["full_coalitions"], "o-", color=BASE_C, lw=2,
-            label="full coalition family $2(2^m-1)-m$")
-    ax.plot(df["m"], df["cluster_probes"], "s-", color=LUR_C, lw=2,
-            label="adaptive family $O(m+c)$")
-    ax.set_yscale("log")
-    ax.set_xlabel("number of criteria $m$")
-    ax.set_ylabel("probe-family size (log scale)")
-    ax.set_title("Adaptive probe construction keeps the family linear")
-    for _, r in df.iterrows():
-        ax.annotate(f"{r['reduction']:.0f}$\\times$",
-                    (r["m"], r["full_coalitions"]),
-                    textcoords="offset points", xytext=(0, 7),
-                    ha="center", fontsize=8, color=BASE_C)
-    ax.legend(frameon=False, loc="upper left")
-    ax.grid(True, which="both", alpha=0.2)
-    save(fig, "fig_probe_reduction.pdf")
+    source = TAB / "probe_reduction.csv"
+    df = pd.read_csv(source)
+    with publication_style():
+        fig, ax = plt.subplots(figsize=(6.2, 4.0))
+        ax.plot(df["m"], df["full_coalitions"], "o-", color=OKABE_ITO["blue"], lw=2,
+                label="full coalition family $2(2^m-1)-m$")
+        ax.plot(df["m"], df["cluster_probes"], "s-", color=OKABE_ITO["orange"], lw=2,
+                label="adaptive family $m+2+2c$")
+        ax.set_yscale("log")
+        ax.set_xlabel("number of criteria $m$")
+        ax.set_ylabel("probe-family size (log scale)")
+        ax.set_title("Probe-family size and realized cluster count")
+        for _, row in df.iterrows():
+            ax.annotate(f"c={int(row['nontrivial_clusters'])}",
+                        (row["m"], row["cluster_probes"]), xytext=(0, -14),
+                        textcoords="offset points", ha="center", fontsize=7)
+            ax.annotate(f"{row['reduction']:.0f}$\\times$",
+                        (row["m"], row["full_coalitions"]), xytext=(0, 6),
+                        textcoords="offset points", ha="center", fontsize=7)
+        ax.legend(frameon=False, loc="upper left")
+        ax.grid(True, which="both", alpha=0.18)
+        fig.tight_layout()
+        save(fig, "fig_probe_reduction.pdf", sources=[source])
 
 
-# ----------------------------------------------------------------- 6. ablation
 def fig_ablation():
-    df = pd.read_csv(f"{TAB}/ablation_concave_m8.csv")
-    # de-duplicate identical configs but keep informative ones, preserve order
-    order = ["Full LUR", "No singletons", "Max only"]
-    df = df[df["config"].isin(order)].set_index("config").loc[order].reset_index()
-    x = np.arange(len(df)); w = 0.38
-    fig, ax = plt.subplots(figsize=(6.4, 4.0))
-    b1 = ax.bar(x - w/2, df["loss_mean"], w, yerr=df["loss_std"], capsize=3,
-                color=ACC_C, label="mean held-out loss")
-    b2 = ax.bar(x + w/2, df["wcr_mean"], w, color=LUR_C, alpha=0.8,
-                label="worst-case certificate regret")
-    ax.set_xticks(x, df["config"])
-    ax.set_ylabel("value (lower is better)")
-    ax.set_title("Ablation: singletons and the leximax both matter")
-    ax.legend(frameon=False)
-    ax.grid(True, axis="y", alpha=0.25)
-    ax.annotate("max-only lowers loss\nbut inflates regret",
-                (2 + w/2, df["wcr_mean"].iloc[2]),
-                textcoords="offset points", xytext=(-10, -38), fontsize=8,
-                color=LUR_C, ha="center",
-                arrowprops=dict(arrowstyle="->", color=LUR_C, lw=1))
-    save(fig, "fig_ablation.pdf")
+    source = TAB / "ablation_concave_m8.csv"
+    df = pd.read_csv(source)
+    x = np.arange(len(df)); width = 0.38
+    with publication_style():
+        fig, ax = plt.subplots(figsize=(7.0, 4.0))
+        ax.bar(x - width / 2, df["loss_mean"], width,
+               yerr=_yerr(df, "loss_mean", "loss_lower", "loss_upper"),
+               capsize=2, color=OKABE_ITO["blue"], label="mean held-out loss (95% CI)")
+        ax.bar(x + width / 2, df["wcr_mean"], width,
+               yerr=_yerr(df, "wcr_mean", "wcr_lower", "wcr_upper"),
+               capsize=2, color=OKABE_ITO["orange"], alpha=0.75,
+               label="worst certificate regret (95% CI)")
+        ax.set_xticks(x, df["config"], rotation=20, ha="right")
+        ax.set_ylabel("normalized value (lower is better)")
+        ax.set_title("Probe-family ablations, including null results")
+        ax.legend(frameon=False)
+        ax.grid(True, axis="y", alpha=0.2)
+        fig.tight_layout()
+        save(fig, "fig_ablation.pdf", sources=[source])
 
 
-# ------------------------------------------------------------ 7. SMAA distinctness
 def fig_smaa_distinct():
-    df = pd.read_csv(f"{TAB}/agreement_smaa.csv")
-    piv_gap = df.pivot(index="geometry", columns="m", values="mean_gap")
-    piv_ag = df.pivot(index="geometry", columns="m", values="agreement")
-    fig, ax = plt.subplots(figsize=(6.4, 3.8))
-    im = ax.imshow(piv_gap.values, cmap="viridis", aspect="auto")
-    ax.set_xticks(range(len(piv_gap.columns)), [f"m={c}" for c in piv_gap.columns])
-    ax.set_yticks(range(len(piv_gap.index)), piv_gap.index)
-    for i in range(piv_gap.shape[0]):
-        for j in range(piv_gap.shape[1]):
-            ax.text(j, i,
-                    f"gap {piv_gap.values[i, j]:.2f}\nagree {piv_ag.values[i, j]*100:.0f}%",
-                    ha="center", va="center", fontsize=7.5, color="white")
-    ax.set_title("LUR vs SMAA: different rule, not a re-description")
-    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label="mean choice distance")
-    save(fig, "fig_smaa_distinct.pdf")
+    source = TAB / "agreement_smaa.csv"
+    df = pd.read_csv(source)
+    distance = df.pivot(index="geometry", columns="m", values="mean_rms_distance")
+    agreement = df.pivot(index="geometry", columns="m", values="agreement")
+    overlap = df.pivot(index="geometry", columns="m", values="tolerance_jaccard")
+    with publication_style():
+        fig, ax = plt.subplots(figsize=(6.8, 4.0))
+        mesh = ax.pcolormesh(
+            np.arange(distance.shape[1] + 1), np.arange(distance.shape[0] + 1),
+            distance.values, cmap="viridis", shading="flat", edgecolors="white", linewidth=0.7,
+            vmin=0, vmax=1,
+        )
+        ax.set_xlim(0, distance.shape[1]); ax.set_ylim(distance.shape[0], 0)
+        ax.set_xticks(np.arange(distance.shape[1]) + 0.5,
+                      [f"m={value}" for value in distance.columns])
+        ax.set_yticks(np.arange(distance.shape[0]) + 0.5, distance.index)
+        for i in range(distance.shape[0]):
+            for j in range(distance.shape[1]):
+                ax.text(j + 0.5, i + 0.5,
+                        f"RMS {distance.values[i,j]:.2f}\nexact {agreement.values[i,j]*100:.0f}%\nset J {overlap.values[i,j]:.2f}",
+                        ha="center", va="center", fontsize=6.8, color="white")
+        ax.set_title("LexUR versus SMAA recommendations")
+        fig.colorbar(mesh, ax=ax, fraction=0.04, pad=0.03,
+                     label="RMS normalized criterion distance")
+        fig.tight_layout()
+        save(fig, "fig_smaa_distinct.pdf", sources=[source])
 
 
-if __name__ == "__main__":
+def fig_stochastic():
+    source = TAB / "stochastic_consistency.csv"
+    df = pd.read_csv(source)
+    with publication_style():
+        fig, ax = plt.subplots(figsize=(5.8, 3.5))
+        for prefix, mean_col, label, color, marker in (
+            ("exact", "exact_recovery", "exact winner", OKABE_ITO["blue"], "o"),
+            ("tolerance", "tolerance_coverage", "$\\tau$-class coverage", OKABE_ITO["orange"], "s"),
+        ):
+            y = df[mean_col]
+            ax.errorbar(df["n_obs"], y,
+                        yerr=np.vstack([y - df[f"{prefix}_lower"], df[f"{prefix}_upper"] - y]),
+                        color=color, marker=marker, capsize=2, label=label)
+        ax.set_xscale("log"); ax.set_ylim(0, 1.02)
+        ax.set_xlabel("observations per criterion $n$ (log scale)")
+        ax.set_ylabel("recovery / coverage rate")
+        ax.set_title("Confidence-aware LexUR recovery ($m=6$, $\\alpha=0.95$)")
+        ax.legend(frameon=False)
+        fig.tight_layout()
+        save(fig, "stochastic_consistency.pdf", sources=[source])
+
+
+def fig_cd_mechanistic():
+    source = TAB / "stats_summary.json"
+    payload = json.loads(source.read_text())
+    tail = payload["tail_loss"]
+    for directory in OUT_DIRS:
+        directory.mkdir(parents=True, exist_ok=True)
+        path = directory / "cd_diagram.pdf"
+        render_cd_diagram(
+            tail["avg_ranks"], tail["cd"], path,
+            title="Tail held-out loss ranks: controlled mechanistic study",
+        )
+        write_sidecar(
+            path,
+            figure_provenance(
+                REPO_ROOT,
+                run_id=None,
+                params={"figure": "cd_diagram.pdf", "sources": _source_metadata([source])},
+            ),
+        )
+    print("wrote cd_diagram.pdf")
+
+
+def main():
     fig_tradeoff()
     fig_perfamily()
     fig_redundancy()
@@ -229,4 +317,9 @@ if __name__ == "__main__":
     fig_probe_reduction()
     fig_ablation()
     fig_smaa_distinct()
-    print("all data figures done")
+    fig_stochastic()
+    fig_cd_mechanistic()
+
+
+if __name__ == "__main__":
+    main()

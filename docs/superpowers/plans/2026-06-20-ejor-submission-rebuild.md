@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Produce an evidence-consistent, reproducible, submission-ready EJOR Decision Support manuscript and ALUR validation package.
+**Goal:** Produce an evidence-consistent, reproducible, submission-ready EJOR Decision Support manuscript and ALexUR validation package.
 
 **Architecture:** A run identity binds configuration, scientific source, environment, and output directory. Strict raw-record validation feeds one authoritative analysis artifact, which feeds claim gates and generated manuscript constants; no reporting layer can override evidence. Experiment fixes are developed with regression tests, then smoke, pilot, and validated full artifacts are executed in that order.
 
@@ -26,7 +26,7 @@
 ### Task 1: Scientific Run Identity
 
 **Files:**
-- Modify: `code/lur/provenance.py`
+- Modify: `code/lexur/provenance.py`
 - Modify: `code/tests/test_provenance.py`
 - Modify: `code/run_protocol.py`
 
@@ -39,8 +39,8 @@
 ```python
 def test_source_fingerprint_changes_when_scientific_code_changes(tmp_path):
     root = tmp_path / "repo"
-    (root / "code" / "lur").mkdir(parents=True)
-    source = root / "code" / "lur" / "methods.py"
+    (root / "code" / "lexur").mkdir(parents=True)
+    source = root / "code" / "lexur" / "methods.py"
     source.write_text("VALUE = 1\n", encoding="utf-8")
     first = source_fingerprint(root)
     source.write_text("VALUE = 2\n", encoding="utf-8")
@@ -49,8 +49,8 @@ def test_source_fingerprint_changes_when_scientific_code_changes(tmp_path):
 
 def test_manifest_run_id_binds_config_and_source(tmp_path):
     root = tmp_path / "repo"
-    (root / "code" / "lur").mkdir(parents=True)
-    (root / "code" / "lur" / "methods.py").write_text("VALUE = 1\n")
+    (root / "code" / "lexur").mkdir(parents=True)
+    (root / "code" / "lexur" / "methods.py").write_text("VALUE = 1\n")
     cfg = root / "code" / "config.yaml"
     cfg.write_text("seed: 17\n")
     manifest = build_manifest(str(cfg), 17, source_root=root)
@@ -69,7 +69,7 @@ Expected: fail because `source_fingerprint` and the extended manifest contract d
 
 ```python
 SCIENTIFIC_PATTERNS = (
-    "code/lur/*.py", "code/run_protocol.py", "code/run_all.py",
+    "code/lexur/*.py", "code/run_protocol.py", "code/run_all.py",
     "code/configs/*.yaml", "code/pyproject.toml",
 )
 
@@ -105,14 +105,14 @@ artifacts to `<output-root>/current/` only after finalization succeeds.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add code/lur/provenance.py code/tests/test_provenance.py code/run_protocol.py
+git add code/lexur/provenance.py code/tests/test_provenance.py code/run_protocol.py
 git commit -m "feat: bind protocol artifacts to scientific run identity"
 ```
 
 ### Task 2: Strict Raw Record and Chunk Validation
 
 **Files:**
-- Modify: `code/lur/records.py`
+- Modify: `code/lexur/records.py`
 - Modify: `code/tests/test_records.py`
 - Modify: `code/run_protocol.py`
 
@@ -171,17 +171,17 @@ Expected: all tests pass.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add code/lur/records.py code/tests/test_records.py code/run_protocol.py
+git add code/lexur/records.py code/tests/test_records.py code/run_protocol.py
 git commit -m "fix: reject incomplete or mixed benchmark evidence"
 ```
 
 ### Task 3: Authoritative Benchmark Analysis and Reporting
 
 **Files:**
-- Create: `code/lur/reporting.py`
+- Create: `code/lexur/reporting.py`
 - Create: `code/tests/test_reporting.py`
 - Modify: `code/run_protocol.py`
-- Modify: `code/lur/analysis.py`
+- Modify: `code/lexur/analysis.py`
 
 **Interfaces:**
 - Consumes: validated raw benchmark frame and frozen config.
@@ -232,14 +232,14 @@ Expected: all tests pass.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add code/lur/reporting.py code/tests/test_reporting.py code/lur/analysis.py code/run_protocol.py
+git add code/lexur/reporting.py code/tests/test_reporting.py code/lexur/analysis.py code/run_protocol.py
 git commit -m "fix: derive protocol reports from authoritative analysis"
 ```
 
 ### Task 4: Honest Claim Registry and Manuscript Checker
 
 **Files:**
-- Modify: `code/lur/claim_gate.py`
+- Modify: `code/lexur/claim_gate.py`
 - Modify: `code/tests/test_claim_gate.py`
 - Rewrite: `code/scripts/check_manuscript_numbers.py`
 - Create: `code/tests/test_manuscript_check.py`
@@ -303,14 +303,14 @@ Expected: all tests pass.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add code/lur/claim_gate.py code/tests/test_claim_gate.py code/scripts/check_manuscript_numbers.py code/tests/test_manuscript_check.py code/Makefile
+git add code/lexur/claim_gate.py code/tests/test_claim_gate.py code/scripts/check_manuscript_numbers.py code/tests/test_manuscript_check.py code/Makefile
 git commit -m "fix: prevent unsupported manuscript claims"
 ```
 
 ### Task 5: Paired Sensitivity and Order-Independent Randomness
 
 **Files:**
-- Modify: `code/lur/gates.py`
+- Modify: `code/lexur/gates.py`
 - Create: `code/tests/test_gates.py`
 - Modify: `code/run_protocol.py`
 
@@ -366,14 +366,14 @@ Expected: all tests pass.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add code/lur/gates.py code/tests/test_gates.py code/run_protocol.py
+git add code/lexur/gates.py code/tests/test_gates.py code/run_protocol.py
 git commit -m "fix: pair sensitivity experiments and random streams"
 ```
 
 ### Task 6: Clean Test and Packaging Baseline
 
 **Files:**
-- Modify: `code/lur/methods.py`
+- Modify: `code/lexur/methods.py`
 - Modify: `code/tests/test_methods.py`
 - Modify: `code/pyproject.toml`
 - Modify: `code/requirements.txt`
@@ -416,7 +416,7 @@ Expected: all tests pass without RuntimeWarning.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add .gitignore README.md code/lur/methods.py code/tests/test_methods.py code/pyproject.toml code/requirements.txt code/requirements-dev.txt
+git add .gitignore README.md code/lexur/methods.py code/tests/test_methods.py code/pyproject.toml code/requirements.txt code/requirements-dev.txt
 git commit -m "chore: establish clean reproducibility baseline"
 ```
 
@@ -435,7 +435,7 @@ git commit -m "chore: establish clean reproducibility baseline"
 
 Run: `cd code && .venv/bin/python -m pytest -W error::RuntimeWarning -q`
 
-Expected: zero failures and zero RuntimeWarning.
+Expected: zero failexures and zero RuntimeWarning.
 
 - [ ] **Step 2: Execute isolated smoke protocol**
 

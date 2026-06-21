@@ -1,0 +1,12 @@
+{
+  "git_commit": "b4f2bf5ca55c7618337be3697588bfef292736c2",
+  "git_dirty": true,
+  "params": {
+    "figure": "cd_diagram.pdf",
+    "sources": {
+      "results/tables/stats_summary.json": "2a28870a195add9b9eec35e940f9c47285fd65916456811b432368fc0e9ec947"
+    }
+  },
+  "params_sha256": "a44700cad3d75090f132e52795d38ecf4a8867cdaa4756247f734de6df69c4a3",
+  "run_id": null
+}

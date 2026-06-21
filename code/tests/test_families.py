@@ -1,4 +1,4 @@
-"""Tests for lur.families — extended utility families for held-out evaluation.
+"""Tests for lexur.families — extended utility families for held-out evaluation.
 
 Covers: build_families (all 10 families), loss_cache, losses_from.
 """
@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 import numpy.testing as npt
 
-from lur.families import build_families, loss_cache, losses_from, ALL_FAMILIES
-from lur.methods import normalize
+from lexur.families import build_families, loss_cache, losses_from, ALL_FAMILIES
+from lexur.methods import normalize
 
 
 # --------------------------------------------------------------------------- #
@@ -21,7 +21,7 @@ def rng():
 @pytest.fixture
 def normalised_front(rng):
     """A 15x3 normalised front in [0, 1]."""
-    from lur.problems import make_candidate_set
+    from lexur.problems import make_candidate_set
     F = make_candidate_set("concave", 15, 3, rng)
     return normalize(F)
 
@@ -29,7 +29,7 @@ def normalised_front(rng):
 @pytest.fixture
 def raw_front(rng):
     """A 15x3 raw (un-normalised) front."""
-    from lur.problems import make_candidate_set
+    from lexur.problems import make_candidate_set
     return make_candidate_set("concave", 15, 3, rng)
 
 

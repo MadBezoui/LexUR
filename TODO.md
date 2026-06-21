@@ -1,4 +1,4 @@
-# TODO.md — Revision Plan for the LUR Manuscript
+# TODO.md — Revision Plan for the LexUR Manuscript
 
 ## Target outcome
 Bring the paper from a promising but vulnerable Major Revision manuscript to a substantially stronger EJOR/Q1-level submission by fixing the following weaknesses:

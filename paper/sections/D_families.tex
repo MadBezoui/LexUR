@@ -1,0 +1,138 @@
+\section{Held-out preference families and broadened-protocol specification}
+\label{app:families}
+
+This appendix gives the formal specification of the held-out evaluation families
+and the broadened audit protocol of \S\ref{sec:protocol}, for reproducibility.
+None of these families is used to construct LexUR probes; they exist only to score
+recommendations out of class.
+
+\paragraph{Notation and scoring.}
+Let $r(x)\in[0,1]^m$ be the active-set normalised criterion vector of alternative
+$x$ (minimisation, lower is better). Each family produces, for $T$ sampled
+parameterisations, a utility $u(\cdot)$ (higher is better); a recommendation is
+scored by the held-out loss of Eq.~\eqref{eq:heldoutloss},
+$L_u(x)=\bigl(u(x^\star_u)-u(x)\bigr)/\bigl(u(x^\star_u)-u(x^-_u)\bigr)$, with
+$x^\star_u,x^-_u$ the in-sample best and worst alternatives for $u$ on $A$. Unless
+stated otherwise, importance weights are drawn from a Dirichlet distribution
+$w\sim\mathrm{Dir}(\alpha\mathbf 1)$, whose shape parameter $\alpha\in\{0.2,1,5\}$
+yields sparse/extreme, uniform-simplex, and balanced preferences respectively.
+
+\paragraph{The ten families.}
+Writing $u(x)$ for the utility (higher better), the families are:
+\begin{itemize}
+\item \textbf{linear:} $u(x)=-w^\top r(x)$, $w\sim\mathrm{Dir}(\alpha\mathbf 1)$.
+\item \textbf{sparse-linear:} as linear but only the $k=\lceil m/3\rceil$ largest
+weights are kept and renormalised to sum to one (a DM attending to a few
+criteria).
+\item \textbf{Chebyshev:} $u(x)=-\max_i w_i r_i(x)$ (weighted Chebyshev / pure
+ASF direction).
+\item \textbf{augmented ASF:} $u(x)=-\bigl(\max_i w_i r_i(x)+0.05\,w^\top r(x)\bigr)$,
+i.e.\ the Chebyshev term plus a small $\rho=0.05$ linear augmentation on the same
+weights.
+\item \textbf{$L_p$ compromise:} $u(x)=-\bigl(\sum_i w_i r_i(x)^p\bigr)^{1/p}$ with
+exponent $p\sim\mathrm{Unif}(1.5,4.0)$ drawn per utility.
+\item \textbf{CES:} $u(x)=-\bigl(\sum_i w_i r_i(x)^{\varrho}\bigr)^{1/\varrho}$ with
+elasticity exponent $\varrho\sim\mathrm{Unif}(2.0,5.0)$ drawn per utility
+(constant-elasticity-of-substitution disutility). We note plainly that the $L_p$
+and CES families are \emph{intentionally adjacent} rather than independent: both
+are norm-like disutilities of the same functional form, differing only in the
+exponent range. Likewise Chebyshev and augmented ASF are near-identical by
+construction (\S\ref{sec:exp}). We therefore do not claim ten \emph{independent}
+preference geometries; the families are chosen to span a graded distance from the
+probe family (in-class to adversarial), not to be mutually orthogonal.
+\item \textbf{OWA:} $u(x)=-\sum_{k=1}^m \omega_k\, r_{[k]}(x)$, where $r_{[k]}$ is
+the $k$-th largest normalised criterion and the ordered weights
+$\omega=\mathrm{sort}^{\downarrow}\!\bigl(\mathrm{Dir}(\mathbf 1)\bigr)$ are a
+descending-sorted uniform-simplex draw (emphasis on worst coordinates).
+\item \textbf{Choquet-inspired ($2$-additive, max-interaction):}
+$u(x)=-\bigl(a^\top r(x)+\sum_{i<j} b_{ij}\max(r_i(x),r_j(x))\bigr)$ with
+non-negative masses $a_i\sim\mathrm{Unif}(0,1)$ on singletons and
+$b_{ij}\sim\mathrm{Unif}(0,0.5)$ on pairs. This is a monotone non-additive
+pairwise-interaction utility in the \emph{spirit} of a $2$-additive Choquet
+integral; we deliberately avoid claiming it is exactly the standard $2$-additive
+Choquet integral (whose Möbius/capacity form involves $\min$ terms for the
+pairwise interactions), and use it only as a genuinely non-additive held-out
+family.
+\item \textbf{satisficing:} $u(x)=-\sum_i \max\bigl(r_i(x)-\vartheta_i,0\bigr)$ with
+per-criterion aspiration thresholds $\vartheta_i\sim\mathrm{Unif}(0.2,0.6)$,
+penalising only exceedances of the aspiration levels.
+\item \textbf{max-min (group regret):} three stakeholder weight vectors
+$w^{(1)},w^{(2)},w^{(3)}\sim\mathrm{Dir}(\alpha\mathbf 1)$ define
+$u(x)=-\max_{s}\, (w^{(s)})^\top r(x)$, the worst-stakeholder linear disutility.
+\end{itemize}
+Families are grouped by distance from the probe family as \emph{in-class}
+(linear, sparse-linear, Chebyshev, augmented ASF), \emph{adjacent}
+($L_p$, CES, OWA), \emph{out-of-class} (Choquet, satisficing) and
+\emph{adversarial} (max-min group regret); this scoping is fixed in the frozen
+config.
+
+\paragraph{Protocol grid.}
+The broadened protocol of \S\ref{sec:protocol} sweeps candidate-set sizes
+$N\in\{100,300,1000\}$, criteria $m\in\{3,5,8,10,15,20\}$, the eight geometries
+(linear, convex, concave, disconnected, degenerate, asymmetric, many-knee,
+irregular), and $50$ replications, for $3\times6\times8\times50=\protocolInstances{}$
+paired instances. A Dirichlet shape $\alpha\in\{0.2,1,5\}$ is assigned to each
+replication by deterministic cycling ($\alpha=\alpha_{\,\mathrm{rep}\bmod 3}$), so
+the three shapes are nearly balanced ($17,17,16$ over the $50$ replications) within each $(N,m,\text{geometry})$ cell. The paired
+non-inferiority confidence intervals (\S\ref{sec:protocol}) use a cluster
+bootstrap with the instance keys as resampling units. The same candidate sets and held-out utility draws are shared across
+all methods within an instance to ensure paired comparisons. All parameter
+distributions above, the random seeds, and the frozen acceptance gates are fixed
+in the released configuration file and reproduced by a single command.
+
+\paragraph{Front geometries.}
+Let $s$ denote a point drawn on the unit simplex (symmetric Dirichlet) and
+$d$ a vector with $d_i=\sqrt{U_i}$, $U_i\sim\mathrm{Unif}(0,1)$; every set is then
+reduced to its non-dominated subset. The eight geometries are:
+\begin{itemize}
+\item \textbf{linear:} $F=0.5\,s$ (hyperplane $\sum_i f_i=0.5$).
+\item \textbf{convex:} $F=s^{\circ 2}$ (componentwise square; convex front
+$\sum_i\sqrt{f_i}=1$).
+\item \textbf{concave:} $F=d/\lVert d\rVert_2$ (concave spherical front
+$\sum_i f_i^2=1$).
+\item \textbf{disconnected:} the concave sphere with the first coordinate offset
+by $0.6\,k$, $k\in\{0,1,2,3\}$, opening gaps between patches.
+\item \textbf{degenerate:} the $s^{\circ 2}$ front with the last criterion
+tied to the first ($f_m\!\leftarrow\! f_1$), giving a lower-dimensional front.
+\item \textbf{asymmetric:} the concave sphere with criteria scaled by
+$\mathrm{linspace}(1,5,m)$ (heterogeneous criterion ranges).
+\item \textbf{many-knee:} the concave sphere warped by $F\!\mapsto\!F+0.15\sin(6F)$
+to create multiple knees, then clipped to $F\ge 0$.
+\item \textbf{irregular:} the concave sphere with multiplicative noise
+$F\!\mapsto\!F\odot(1+0.1\,\mathcal N(0,1))$, then clipped to $F\ge 10^{-3}$ so all
+criterion values stay non-negative.
+\end{itemize}
+All eight constructions yield non-negative criterion values (by clipping where
+noted), so the subsequent active-set normalisation maps them into $[0,1]^m$.
+
+\paragraph{Baseline specification.}
+Table~\ref{tab:baselines} compactly specifies every comparator, all operating on
+the active-set normalised matrix $r\in[0,1]^m$ (minimisation). $w$ denotes
+equal weights $\mathbf 1/m$ unless a method samples weights.
+
+\begin{table}[t]
+\centering\small
+\caption{Baseline selection rules used in \S\ref{sec:exp}. All scores are on the
+normalised matrix $r\in[0,1]^m$ (lower $r$ better). Unless noted, ties are broken
+by the first index attaining the optimum (the default of \texttt{argmin}/\texttt{argmax}).}
+\label{tab:baselines}
+\begin{tabular}{p{1.5cm}p{6.6cm}p{1.4cm}p{3.0cm}}
+\toprule
+Method & Score & Select & Parameters / tie-break \\
+\midrule
+TOPSIS & relative closeness $d^-/(d^-+d^+)$ to ideal/anti-ideal in weighted space & $\arg\max$ & $w=\mathbf 1/m$; first index \\
+CP & $L_p$ distance $(\sum_i w_i r_i^p)^{1/p}$ to ideal & $\arg\min$ & $w=\mathbf 1/m$, $p=2$; first index \\
+VIKOR & $Q=v\frac{S-S^-}{S^+-S^-}+(1-v)\frac{R-R^-}{R^+-R^-}$, $S=\sum_i w_i r_i$, $R=\max_i w_i r_i$ & $\arg\min$ & $w=\mathbf 1/m$, $v=0.5$; first index \\
+Knee & distance below the hyperplane $a^\top r=1$ through the $m$ per-criterion extremes (where $a$ solves $Ea=\mathbf 1$, $E$ the matrix of extreme rows), $1-a^\top r$ & $\arg\max$ & first index; CP fallback if $E$ singular \\
+$\mathrm{HV}_1$ & single-point hypervolume (box volume) $\prod_i\max(1-r_i,0)$ & $\arg\max$ & ref.\ $\mathbf 1$; first index \\
+RW & frequency of being $\arg\min_x w^\top r$ over random weights & $\arg\max$ count & $200$ weights $\sim\mathrm{Dir}(\mathbf 1)$; first index \\
+ASF & augmented Chebyshev $\max_i r_i/w_i+\rho\sum_i r_i$, reference $=$ ideal & $\arg\min$ & $w=\mathbf 1/m$, $\rho=10^{-4}$; first index \\
+SMAA & first-rank acceptability under linear value $-w^\top r$ & $\arg\max$ & $1000$ weights; ties by expected value \\
+MMR & $\max_w\bigl(w^\top r(x)-\min_{y\in A} w^\top r(y)\bigr)$ (Savage regret) & $\arg\min$ & $1000$ weights $\sim\mathrm{Dir}(\mathbf 1)$; first index \\
+ChebMMR & $\max_w\bigl(\max_i w_i r_i(x)-\min_{y\in A}\max_i w_i r_i(y)\bigr)$ & $\arg\min$ & $1000$ weights $\sim\mathrm{Dir}(\mathbf 1)$; first index \\
+LexUR & leximax of the sorted normalised probe disappointments & lex.\ $\min$ & adaptive probes, $\theta=0.6$, $\tau=10^{-4}$; tolerance set \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\clearpage

@@ -1,0 +1,12 @@
+{
+  "git_commit": "b4f2bf5ca55c7618337be3697588bfef292736c2",
+  "git_dirty": true,
+  "params": {
+    "figure": "stochastic_consistency.pdf",
+    "sources": {
+      "results/tables/stochastic_consistency.csv": "33ba7c013c4d35cc6f482a44abfe4ed9b220952806e50b2c1ece54019e79f6d0"
+    }
+  },
+  "params_sha256": "81f0ae7208c3bd422711be44083b843f6793821aac08a000c04ce83b1e24e599",
+  "run_id": null
+}

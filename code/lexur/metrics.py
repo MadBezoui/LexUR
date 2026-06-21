@@ -138,7 +138,7 @@ def out_of_class_loss_grouped(F, groups, base, idx, rng, n_per_family=250,
 def tail_loss(F, idx, rng, n_per_family=250, q=0.90):
     """Worst-case (upper-tail) held-out loss: mean of the worst (1-q) fraction of
     per-utility losses, pooled over all four families (a CVaR-style robustness
-    measure).  This is the metric LUR is designed to minimise."""
+    measure).  This is the metric LexUR is designed to minimise."""
     r = normalize(F)
     m = r.shape[1]
     fams = sample_test_utilities(m, n_per_family, rng)
@@ -153,7 +153,7 @@ def tail_loss(F, idx, rng, n_per_family=250, q=0.90):
 
 
 def worst_case_regret(F, idx, probe_theta=0.6):
-    """Worst disappointment of candidate `idx` over the LUR probe family."""
+    """Worst disappointment of candidate `idx` over the LexUR probe family."""
     from .methods import build_probes, disappointment_matrix
     probes, _ = build_probes(F, theta=probe_theta)
     D = disappointment_matrix(F, probes)

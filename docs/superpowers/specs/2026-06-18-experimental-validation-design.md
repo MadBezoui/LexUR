@@ -2,7 +2,7 @@
 
 **Status:** Approved two-stage design
 
-**Purpose:** Turn the current LUR research package into a claim-driven,
+**Purpose:** Turn the current LexUR research package into a claim-driven,
 reproducible validation program that can first support a defensible EJOR
 submission and then support the full direct, stochastic, multi-stakeholder, and
 real-application contribution.
@@ -13,10 +13,10 @@ The project will use two release gates.
 
 1. **Stage 1, Defensible Core (4-6 weeks):** establish trustworthy provenance,
    correct the statistical design, validate the finite candidate-set rule and
-   adaptive probes, characterize normalization failure, and restrict manuscript
+   adaptive probes, characterize normalization failexure, and restrict manuscript
    claims to evidence that passes explicit gates.
 2. **Stage 2, Full Contribution (8-12 additional weeks):** implement and validate
-   exact direct LP/MILP LUR, calibrated stochastic LUR, non-tautological
+   exact direct LP/MILP LexUR, calibrated stochastic LexUR, non-tautological
    multi-stakeholder evaluation, and a real optimization case with external data.
 
 Stage 2 does not block a Stage 1 submission. Stage 1 must label unfinished Stage
@@ -49,15 +49,15 @@ The pipeline has four layers:
 
 | ID | Contribution | Required evidence | Release gate |
 |---|---|---|---|
-| C1 | Finite-set LUR is Pareto-compatible and invariant | Property tests plus dominated-injection and affine transformations | Zero dominated selections and 100% affine identity, with deterministic tie policy |
-| C2 | LUR has competitive tail robustness | Paired, stratified comparisons across geometry, dimension, size, utility family, and weight shape | Non-inferior to ASF and MMR under one frozen margin; multiplicity-controlled estimates and CIs reported |
+| C1 | Finite-set LexUR is Pareto-compatible and invariant | Property tests plus dominated-injection and affine transformations | Zero dominated selections and 100% affine identity, with deterministic tie policy |
+| C2 | LexUR has competitive tail robustness | Paired, stratified comparisons across geometry, dimension, size, utility family, and weight shape | Non-inferior to ASF and MMR under one frozen margin; multiplicity-controlled estimates and CIs reported |
 | C3 | Adaptive probes approximate the full probe objective | Exact full-family comparison where tractable | Tail gap, worst-certificate gap, tolerance-set overlap, and runtime reported; no claim based only on average loss |
-| C4 | Clustering reduces redundancy sensitivity | Known-group simulations across correlation/noise regimes | Improvement over unclustered LUR and averaging baselines, with group-recovery uncertainty |
-| C5 | LUR is usable under estimated normalization bounds | Realistic bound-estimation and perturbation experiments | Quality and certificate stability remain inside declared limits, or method abstains/returns a stability set |
-| C6 | LUR can be computed directly on structured continuous problems | Exact sequential LP formulation compared with enumerated reference | Same lexicographic certificate within tolerance; scaling, solver calls, time, and failures reported |
-| C7 | LUR can be computed directly on MILPs | Exact epigraph/lexicographic MILP, not a weighted-sum proxy | Exact agreement on small exhaustive cases and bounded-gap scaling results |
-| C8 | Confidence-aware LUR controls stochastic risk | Train/validation/test scenario design with criterion-specific risk | Calibrated coverage and out-of-sample CVaR/chance-risk comparison against stochastic baselines |
-| C9 | Rawlsian LUR improves stakeholder protection | Heterogeneous stakeholder models and metrics not identical to the optimized objective | Trade-off frontier for worst regret, welfare, inequality, and acceptability versus bargaining baselines |
+| C4 | Clustering reduces redundancy sensitivity | Known-group simulations across correlation/noise regimes | Improvement over unclustered LexUR and averaging baselines, with group-recovery uncertainty |
+| C5 | LexUR is usable under estimated normalization bounds | Realistic bound-estimation and perturbation experiments | Quality and certificate stability remain inside declared limits, or method abstains/returns a stability set |
+| C6 | LexUR can be computed directly on structured continuous problems | Exact sequential LP formulation compared with enumerated reference | Same lexicographic certificate within tolerance; scaling, solver calls, time, and failexures reported |
+| C7 | LexUR can be computed directly on MILPs | Exact epigraph/lexicographic MILP, not a weighted-sum proxy | Exact agreement on small exhaustive cases and bounded-gap scaling results |
+| C8 | Confidence-aware LexUR controls stochastic risk | Train/validation/test scenario design with criterion-specific risk | Calibrated coverage and out-of-sample CVaR/chance-risk comparison against stochastic baselines |
+| C9 | Rawlsian LexUR improves stakeholder protection | Heterogeneous stakeholder models and metrics not identical to the optimized objective | Trade-off frontier for worst regret, welfare, inequality, and acceptability versus bargaining baselines |
 | C10 | The certificate aids a real decision | Public optimization case and certificate evaluation | Reproducible physical model plus independent decision-quality or expert-usability evidence |
 
 ## 4. Stage 1 Scope
@@ -105,14 +105,14 @@ certificate, and characterized redundancy/normalization behavior.
 Implement sequential epigraph solves. Each leximax stage fixes the preceding
 ordered regret level within solver tolerance before optimizing the next. Small
 LP and MILP cases are verified against complete feasible/candidate enumeration.
-Scaling includes timeouts and failures, not only successful averages.
+Scaling includes timeouts and failexures, not only successful averages.
 
 ### 5.2 Stochastic extension
 
 Replace the raw-unit maximum threshold with declared criterion-specific loss and
 risk functions. Use independent training, validation, and test scenarios, assess
 confidence-bound calibration, and include distribution shift. Compare against
-deterministic LUR, stochastic ASF/MMR, SAA, and a distributionally robust method.
+deterministic LexUR, stochastic ASF/MMR, SAA, and a distributionally robust method.
 
 ### 5.3 Multi-stakeholder extension
 
@@ -180,7 +180,7 @@ does not validate decision-support value.
 
 ## 9. Risks and Responses
 
-- **LUR fails non-inferiority after corrected analysis:** narrow the empirical
+- **LexUR fails non-inferiority after corrected analysis:** narrow the empirical
   claim to certificate/robustness trade-offs and report conditions where it wins.
 - **Normalization remains unstable:** return a tolerance/stability set, require
   bounds, or abstain; do not hide identity instability behind average quality.

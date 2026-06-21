@@ -1,6 +1,6 @@
 import numpy as np
 import time
-from .methods import lur_variant
+from .methods import lexur_variant
 
 
 def _tolerance_set(D: np.ndarray, tol: float = 1e-9) -> set[int]:
@@ -21,11 +21,11 @@ def _tolerance_set(D: np.ndarray, tol: float = 1e-9) -> set[int]:
 
 def compare_probe_families(F: np.ndarray, tolerance: float = 1e-9, theta: float = 0.6) -> dict:
     t0 = time.perf_counter()
-    i_ada, D_ada, labels_ada, _ = lur_variant(F, variant="adaptive", theta=theta, return_detail=True)
+    i_ada, D_ada, labels_ada, _ = lexur_variant(F, variant="adaptive", theta=theta, return_detail=True)
     t_ada = time.perf_counter() - t0
     
     t0 = time.perf_counter()
-    i_full, D_full, labels_full, _ = lur_variant(F, variant="full", return_detail=True)
+    i_full, D_full, labels_full, _ = lexur_variant(F, variant="full", return_detail=True)
     t_full = time.perf_counter() - t0
     
     set_ada = _tolerance_set(D_ada, tolerance)

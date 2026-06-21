@@ -1,0 +1,12 @@
+{
+  "git_commit": "b4f2bf5ca55c7618337be3697588bfef292736c2",
+  "git_dirty": true,
+  "params": {
+    "figure": "fig_redundancy.pdf",
+    "sources": {
+      "results/tables/redundancy.csv": "be7417f7d62d005325dc177c001725a7f7d616d4a317dbfc17433faa448530df"
+    }
+  },
+  "params_sha256": "84db996591a28842e0f4f2769253b9114c3f797c6b7288c32955835ca4b24c26",
+  "run_id": null
+}

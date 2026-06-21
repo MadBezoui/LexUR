@@ -1,4 +1,4 @@
-# Leximax Universal-Regret (LUR) Core — Reproducibility Package
+# Leximax Universal-Regret (LexUR) Core — Reproducibility Package
 
 Reference implementation, experiments, and manuscript for
 *Beyond Pareto Fronts: A Leximax Universal-Regret Core for Robust Multicriteria
@@ -7,11 +7,11 @@ Decision Support*.
 ## Layout
 
 ```
-ALUR/
+ALexUR/
 ├── code/                 Python package + runner
-│   ├── lur/
+│   ├── lexur/
 │   │   ├── problems.py    Pareto-front + redundant candidate-set generators
-│   │   ├── methods.py     LUR + baselines (TOPSIS, CP, knee, RW, ASF, SMAA, MMR)
+│   │   ├── methods.py     LexUR + baselines (TOPSIS, CP, knee, RW, ASF, SMAA, MMR)
 │   │   ├── metrics.py     held-out mean/tail loss, certificate regret, etc.
 │   │   ├── stats.py       Friedman, Nemenyi CD, Wilcoxon-Holm, Cliff's delta
 │   │   ├── experiments.py benchmark, redundancy, ablation, sensitivity, figures
@@ -98,7 +98,7 @@ unchanged.
 | TOPSIS, CP, Knee, RW, ASF | classical post-processing | weights/thresholds or front required |
 | SMAA | robust MCDA | rank-acceptability over a weight distribution |
 | MMR | robust MCDA | Savage minimax regret over a linear weight set |
-| **LUR** | proposed | leximax of normalised regret over declared monotone probes + certificate |
+| **LexUR** | proposed | leximax of normalised regret over declared monotone probes + certificate |
 
 Held-out evaluation spans **six** preference families — linear, weighted
 Chebyshev, augmented ASF, CES, a non-additive 2-additive **Choquet** integral, and

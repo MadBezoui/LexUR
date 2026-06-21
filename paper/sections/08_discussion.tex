@@ -1,17 +1,18 @@
 \section{Discussion and limitations}
 \label{sec:disc}
 
-\paragraph{What LUR is, and is not.}
-LUR is a robust, certifiable decision rule. On worst-case held-out loss LUR
-is in the best-performing group---practically equivalent to achievement
-scalarisation and linear minimax regret (negligible effect size)---while on average-case loss the classical averaging
-methods do better. LUR's distinctive value is the \emph{combination} it offers
-that no single competitor matches: best-group worst-case robustness across
-additive \emph{and} non-additive preferences, reduced sensitivity to redundant
-criteria, an interpretable certificate, and native stochastic and multi-stakeholder
-extensions. Where a DM cares only about average-case linear performance, a
+\paragraph{What LexUR is, and is not.}
+LexUR is a robust, certifiable decision rule. LexUR is competitive with the strongest robust scalarisations on tail held-out loss---non-inferior to achievement
+scalarisation and sampled linear minimax regret (negligible effect sizes)---while on average-case loss the classical averaging
+methods do better. LexUR's distinctive value is the \emph{combination} it offers
+that no single competitor matches: worst-case robustness competitive with the
+strongest robust scalarisations across additive \emph{and} non-additive
+preferences (within one Nemenyi CD of MMR, VIKOR and ASF, though behind
+the single-point hypervolume score on average rank), reduced sensitivity to redundant
+criteria, an interpretable certificate, and natural stochastic and multi-stakeholder
+extensions (the latter currently exploratory, \ref{app:rawlsian}). Where a DM cares only about average-case linear performance, a
 weighted sum or SMAA is appropriate; where the DM cannot state preferences and
-must defend a single robust, explainable choice, LUR is designed for exactly that
+must defend a single robust, explainable choice, LexUR is designed for exactly that
 situation. Table~\ref{tab:claims} provides a concise summary mapping the central claims of the paper to their theoretical or empirical evidence.
 
 \begin{table}[h]
@@ -34,27 +35,28 @@ Smart-grid applicability & \ref{app:smartgrid} and Figure~\ref{fig:cert} \\
 \end{table}
 
 \paragraph{Relationship to existing rules.}
-LUR generalises rather than replaces. A single grand-maximum probe recovers the
-Chebyshev/ASF rule; a single grand-mean probe recovers the weighted sum; the
+LexUR generalises rather than replaces. A single grand-maximum probe recovers the
+Chebyshev/ASF rule; a single weighted-mean probe recovers a weighted sum, and the
+grand mean recovers its equal-weight case; the
 singleton family recovers lexicographic maximin of normalised regret. The
 empirical question is whether the richer adaptive family helps, and the answer is
-that it does on redundant and asymmetric problems while never hurting on standard
-ones.
+that it does on redundant and asymmetric problems while not materially hurting on
+the tested standard geometries.
 
 \paragraph{Independence of Irrelevant Alternatives (IIA) and Set-Dependence.}
-Because both the normalisation bounds ($\ideal, \nadir$) and the probe anchors ($q^\star, q^w$) are computed empirically over the active candidate set $A$, LUR does not satisfy Independence of Irrelevant Alternatives (IIA). Adding or removing a non-selected, non-dominated alternative that defines an extremum shifts the normalisation for \emph{all} alternatives, which can change the sorted disappointment vectors and cause rank reversal. This is structurally the same vulnerability identified in TOPSIS (\S\ref{sec:intro}). This set-dependence explains the high winner-flip rates observed in our nadir-sensitivity experiments (Table~\ref{tab:gates}). Consequently, while affine-rescaling invariance holds for a fixed set, LUR is highly sensitive to the composition of $A$. This underscores why deploying LUR with fixed, conservative \emph{a priori} bounds (interval-robust LUR) is mandatory when stability against candidate-set perturbations is required.
+Because both the normalisation bounds ($\ideal, \nadir$) and the probe anchors ($q^\star, q^w$) are computed empirically over the active candidate set $A$, LexUR does not satisfy Independence of Irrelevant Alternatives (IIA). Adding or removing a non-selected, non-dominated alternative that defines an extremum shifts the normalisation for \emph{all} alternatives, which can change the sorted disappointment vectors and cause rank reversal. This is structurally the same vulnerability identified in TOPSIS (\S\ref{sec:intro}). This set-dependence explains the high winner-flip rates observed in our nadir-sensitivity experiments (Table~\ref{tab:gates}). We must therefore unequivocally state: unless normalisation bounds are fixed \emph{a priori} by the decision maker, point-estimate normalisation should be avoided in favour of the interval/stability analysis (Option B) defined in \S\ref{sec:core}. Deploying LexUR with conservative interval bounds is mandatory when stability against candidate-set perturbations is required.
 
 \paragraph{The Certificate's Decision Value.}
-While robust scalarisations like ASF provide similar worst-case guarantees, LUR's distinct value lies in its auditable certificate. A standard sensitivity sweep over ASF reference points or a SMAA acceptability index reveals \emph{how often} an alternative wins, but does not explain \emph{why} it loses in specific contexts. In contrast, the LUR certificate explicitly isolates the binding constraints: it names the specific declared probe (e.g., ``the average of cost and emissions'') that forces the maximum disappointment, giving the decision maker a direct semantic justification for the compromise that opaque distributional indices omit. Figure~\ref{fig:certconcept} shows the anatomy of such a certificate.
+While robust scalarisations like ASF provide similar worst-case guarantees, LexUR's distinct value lies in its auditable certificate. A standard sensitivity sweep over ASF reference points or a SMAA acceptability index reveals \emph{how often} an alternative wins, but does not explain \emph{why} it loses in specific contexts. In contrast, the LexUR certificate explicitly isolates the binding constraints: it names the specific declared probe (e.g., ``the average of cost and emissions'') that forces the maximum disappointment, giving the decision maker a direct semantic justification for the compromise that opaque distributional indices omit. Figure~\ref{fig:certconcept} shows the anatomy of such a certificate.
 
 \input{tikz/fig_cert_concept}
 
 \paragraph{Scope, Parameters, and Limitations.}
-LUR is a leximin-refined robust selector. It complements exploratory tools like SMAA by providing a single, auditable point recommendation when the DM must defend a robust choice. The framework relies on several explicit choices, summarised in Table~\ref{tab:params}. LUR's contribution is that these choices are declared and separated from the final recommendation.
+LexUR is a lexicographic minimax regret selector. It complements exploratory tools like SMAA by providing a single, auditable point recommendation when the DM must defend a robust choice. The framework relies on several explicit choices, summarised in Table~\ref{tab:params}. LexUR's contribution is that these choices are declared and separated from the final recommendation.
 
 \begin{table}[h]
 \centering\small
-\caption{Consolidated list of LUR parameters, their roles, and recommended defaults.}
+\caption{Consolidated list of LexUR parameters, their roles, and recommended defaults.}
 \label{tab:params}
 \begin{tabular}{lllp{6cm}}
 \toprule
@@ -64,7 +66,7 @@ $\ideal, \nadir$ & Normalisation bounds & Empirical over $A$ & Must use fixed \e
 $\Q$ & Probe family & Adaptive family & Defines the semantic interpretations of preference. \\
 $\theta$ & Clustering threshold & $0.6$ & Empirically insensitive over $[0.4, 0.8]$. \\
 $\tau$ & Leximax tolerance & $10^{-4}$ & Set to the scale of the disappointment estimation error. \\
-$\varepsilon$ & Strict domination margin & $10^{-6}$ & Small fraction of the smallest non-degenerate criterion range. \\
+$\varepsilon_q$ & Degeneracy / range floor & $10^{-6}$ & Minimum admissible probe/criterion active range; below it the probe/criterion is flagged degenerate. The empirical stability margin $\Delta$ of Theorem~\ref{thm:stab} is an instance property, not a tunable parameter. \\
 $\alpha$ & Stochastic confidence & $0.95$ & Used only in the stochastic extension (\S\ref{sec:ext}). \\
 \bottomrule
 \end{tabular}
@@ -82,9 +84,9 @@ library of real MCDA datasets is future work.
 The certificate could support a future interactive workflow in which the DM
 reviews the binding probes and revises the declared family. For example, a DM
 might relax a cost-focused probe after seeing its effect on the recommendation,
-after which LUR can be recomputed. This possibility has not been evaluated here:
+after which LexUR can be recomputed. This possibility has not been evaluated here:
 removing a separating singleton can weaken Pareto-exclusion guarantees, so an
 interactive protocol would require explicit safeguards and user validation.
 
 \paragraph{Future work.}
-Natural next steps include large-scale empirical validation of the continuous direct formulations (\S\ref{sec:direct}) on high-dimensional problems; and full development and evaluation of the exploratory Rawlsian multi-stakeholder variant. Finally, extending the family to include non-linear probes would significantly broaden LUR's expressive power. For instance, capturing Cobb-Douglas structures (constant elasticity of substitution) could be achieved by evaluating linear probes in log-transformed criterion space, while modelling threshold-based satisficing preferences with interaction terms would require explicitly incorporating boolean conditionals into the anchor computations.
+Natural next steps include large-scale empirical validation of the continuous direct formulations (\S\ref{sec:direct}) on high-dimensional problems; and full development and evaluation of the exploratory Rawlsian multi-stakeholder variant. Finally, extending the family to include non-linear probes would significantly broaden LexUR's expressive power. For instance, capturing Cobb-Douglas structures (constant elasticity of substitution) could be achieved by evaluating linear probes in log-transformed criterion space, while modelling threshold-based satisficing preferences with interaction terms would require explicitly incorporating boolean conditionals into the anchor computations.

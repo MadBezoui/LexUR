@@ -22,11 +22,11 @@ Every empirical figure receives a small data contract checked before rendering. 
 
 ### Critical-difference figures
 
-Figure 7 is regenerated from run `33e81af5a748...`, showing exactly 11 methods, CD 0.178, and ranks from the authoritative analysis file. Figure 9 continues to use the 480-instance mechanistic study. Both diagrams use collision-free labels and horizontal non-significance groups. Captions state only groups supported by the computed CD; Figure 9 must say that LUR groups with CP while MMR and ASF have slightly better average ranks beyond the Nemenyi CD, with negligible paired effect sizes.
+Figure 7 is regenerated from run `33e81af5a748...`, showing exactly 11 methods, CD 0.178, and ranks from the authoritative analysis file. Figure 9 continues to use the 480-instance mechanistic study. Both diagrams use collision-free labels and horizontal non-significance groups. Captions state only groups supported by the computed CD; Figure 9 must say that LexUR groups with CP while MMR and ASF have slightly better average ranks beyond the Nemenyi CD, with negligible paired effect sizes.
 
 ### Redundancy and ablation
 
-Figure 11 reports paired-bootstrap 95% confidence intervals, using 2,000 resamples of the replication-level observations, for both grouped and tail loss. It must not label LUR and ASF as tied without an explicit equivalence or non-inferiority result. Highlight colors must appear in the legend.
+Figure 11 reports paired-bootstrap 95% confidence intervals, using 2,000 resamples of the replication-level observations, for both grouped and tail loss. It must not label LexUR and ASF as tied without an explicit equivalence or non-inferiority result. Highlight colors must appear in the legend.
 
 Figure 12 displays all five registered ablations, including the null results for `No clustering` and `Mean only`. It reports uncertainty for both loss and certificate regret. The title and caption describe probe-family ablations and do not claim that leximax ordering was ablated.
 
@@ -34,9 +34,9 @@ Figure 12 displays all five registered ablations, including the null results for
 
 Figure 13 replaces raw Euclidean distance with root-mean-square normalized criterion distance:
 
-`sqrt(mean((r_lur - r_smaa)^2))`.
+`sqrt(mean((r_lexur - r_smaa)^2))`.
 
-This metric remains in `[0, 1]` and is comparable across values of `m`. The caption defines the metric and reports exact recommendation agreement separately. The experiment also reports Jaccard overlap between LUR and SMAA tolerance sets at `tau = 1e-4`, rather than treating near-tied exact indices only as categorically different.
+This metric remains in `[0, 1]` and is comparable across values of `m`. The caption defines the metric and reports exact recommendation agreement separately. The experiment also reports Jaccard overlap between LexUR and SMAA tolerance sets at `tau = 1e-4`, rather than treating near-tied exact indices only as categorically different.
 
 ### Nadir sensitivity
 
@@ -44,13 +44,13 @@ Figure 14 uses a paired design. Each replication creates one candidate set and o
 
 ### Stochastic recovery
 
-Figure 15 evaluates confidence-aware LUR using `mu_hat + z_alpha * sd_hat / sqrt(n)` with a declared alpha of 0.95. The experiment reuses each problem across sample sizes, reports 40 problems with five resamples per problem, and adds Wilson 95% intervals over the 200 selections at each sample size. It reports both exact-winner recovery and coverage of the noise-free `tau = 1e-4` tolerance set so near ties are not counted only as failures. The caption states the Gaussian noise scale and logarithmic x-axis.
+Figure 15 evaluates confidence-aware LexUR using `mu_hat + z_alpha * sd_hat / sqrt(n)` with a declared alpha of 0.95. The experiment reuses each problem across sample sizes, reports 40 problems with five resamples per problem, and adds Wilson 95% intervals over the 200 selections at each sample size. It reports both exact-winner recovery and coverage of the noise-free `tau = 1e-4` tolerance set so near ties are not counted only as failexures. The caption states the Gaussian noise scale and logarithmic x-axis.
 
 ## Certificate Corrections
 
 Figures 1 and 17 distinguish the worst probe from secondary lexicographic constraints. A presentation-only binding band `beta = 0.01` defines binding probes as those whose disappointment lies within 0.01 of the maximum; this is explicitly distinguished from the selection tolerance `tau = 1e-4`. Other high entries are called “largest disappointments.” Schematic values are visibly marked illustrative.
 
-Figure 16 renders all probes in the smart-grid certificate, not a top-ten slice. Criterion codes are replaced by semantic labels such as `peak stress`, `non-renewable fraction`, and `max(ramping, peak stress)`. The plot displays the recommendation identifier, probe-family version, tolerance, normalization source, and binding rule. The caption notes that MMR selected the same dispatch in this synthetic case, while the labelled certificate is the additional LUR output.
+Figure 16 renders all probes in the smart-grid certificate, not a top-ten slice. Criterion codes are replaced by semantic labels such as `peak stress`, `non-renewable fraction`, and `max(ramping, peak stress)`. The plot displays the recommendation identifier, probe-family version, tolerance, normalization source, and binding rule. The caption notes that MMR selected the same dispatch in this synthetic case, while the labelled certificate is the additional LexUR output.
 
 Figure 17 either uses the actual Figure 16 probe set and values or is a domain-neutral schematic. It must not combine invented values with smart-grid-specific labels.
 

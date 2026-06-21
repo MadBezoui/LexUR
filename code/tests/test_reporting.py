@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from lur.reporting import (
+from lexur.reporting import (
     analyze_benchmark,
     build_gate_report,
     ensure_registered_gates,
@@ -28,7 +28,7 @@ def test_gate_report_uses_current_benchmark_analysis_not_stale_legacy_stats():
                 "ci": [0.0, 0.004],
             },
         },
-        "wilcoxon_vs_LUR": {},
+        "wilcoxon_vs_LexUR": {},
     }
     stale = {
         "run_id": "old",
@@ -65,7 +65,7 @@ def test_gate_report_marks_missing_benchmark_evidence():
 
 def test_gate_report_preserves_failed_adaptive_probe_evidence():
     analysis = {
-        "run_id": "new", "noninferiority": {}, "wilcoxon_vs_LUR": {}
+        "run_id": "new", "noninferiority": {}, "wilcoxon_vs_LexUR": {}
     }
     adaptive = {
         "run_id": "new",
@@ -107,7 +107,7 @@ def test_registered_gate_without_evidence_is_explicitly_missing():
 
 
 def test_analyze_benchmark_records_design_and_noninferiority():
-    methods = ["ASF", "MMR", "LUR"]
+    methods = ["ASF", "MMR", "LexUR"]
     rows = []
     for replication in range(4):
         for method, loss in zip(methods, [0.20, 0.21, 0.205]):
@@ -148,7 +148,7 @@ def test_finalize_does_not_treat_worst_family_scope_as_paired_factor(tmp_path):
         "criteria": [3],
         "geometries": ["linear"],
         "replications": 2,
-        "methods": ["ASF", "MMR", "LUR"],
+        "methods": ["ASF", "MMR", "LexUR"],
         "family_scopes": {"linear": "in_class", "choquet": "out_of_class"},
         "seed": 7,
         "noninferiority": {
@@ -165,7 +165,7 @@ def test_finalize_does_not_treat_worst_family_scope_as_paired_factor(tmp_path):
         for method, family, scope, loss in (
             ("ASF", "linear", "in_class", 0.20),
             ("MMR", "choquet", "out_of_class", 0.21),
-            ("LUR", "linear", "in_class", 0.205),
+            ("LexUR", "linear", "in_class", 0.205),
         ):
             rows.append({
                 "run_id": "run-a", "config_sha256": "cfg-a", "seed": 1,

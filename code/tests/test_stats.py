@@ -2,7 +2,7 @@ import warnings
 
 import numpy as np
 
-from lur.stats import holm_adjust, wilcoxon_holm
+from lexur.stats import holm_adjust, wilcoxon_holm
 
 
 def test_holm_adjust_is_monotone_in_sorted_order():
@@ -28,5 +28,5 @@ def test_small_paired_wilcoxon_does_not_leak_scipy_warning():
     ])
     with warnings.catch_warnings():
         warnings.simplefilter("error", UserWarning)
-        result = wilcoxon_holm(losses, ["LUR", "A", "B"], "LUR")
+        result = wilcoxon_holm(losses, ["LexUR", "A", "B"], "LexUR")
     assert set(result) == {"A", "B"}

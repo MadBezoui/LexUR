@@ -19,11 +19,11 @@ journal: "European Journal of Operational Research"
 
 Pareto optimality is a safety property, not a complete decision rule: an efficient set tells a decision maker (DM) which alternatives are not obviously bad, but offers no principled way to choose one. Practice fills this gap with post hoc devices—weighted sums, TOPSIS, compromise programming, knee selection, outranking thresholds, and hypervolume-based rules—each of which requires additional modelling choices such as weights, metrics, thresholds, exponents, or reference points. These choices are legitimate but may be hard to justify when preference information is intentionally incomplete.
 
-We propose the **Leximax Universal-Regret (LUR) core**, a declared-probe robust MCDA rule that ranks feasible alternatives by the lexicographically sorted vector of normalised disappointments over a finite family of monotone probes. LUR returns a single recommendation or a small tolerance-induced indifference class, together with a labelled regret certificate identifying the most binding criteria coalitions. We prove existence and completeness, Pareto compatibility under a separation condition, dominated-solution exclusion, stability of the tolerance-based leximax rule under bounded perturbations, and a probe perturbation bound with explicit constants.
+We propose the **Leximax Universal-Regret (LexUR) core**, a declared-probe robust MCDA rule that ranks feasible alternatives by the lexicographically sorted vector of normalised disappointments over a finite family of monotone probes. LexUR returns a single recommendation or a small tolerance-induced indifference class, together with a labelled regret certificate identifying the most binding criteria coalitions. We prove existence and completeness, Pareto compatibility under a separation condition, dominated-solution exclusion, stability of the tolerance-based leximax rule under bounded perturbations, and a probe perturbation bound with explicit constants.
 
 We provide an adaptive correlation-clustering construction empirically reducing, without eliminating, sensitivity to redundant criteria. Finally, we allow stochastic and multi-stakeholder variants, which we treat as initial extensions rather than complete standalone theories.
 
-In a replicated benchmark and a pre-registered broadened protocol covering 11 methods, 10 held-out preference families, 8 front geometries, and $m$ up to 20, LUR is practically equivalent to the best robust scalarisations on tail held-out loss, while remaining clearly ahead of distance-based and Monte-Carlo single-choice baselines.
+In a replicated benchmark and a pre-registered broadened protocol covering 11 methods, 10 held-out preference families, 8 front geometries, and $m$ up to 20, LexUR is practically equivalent to the best robust scalarisations on tail held-out loss, while remaining clearly ahead of distance-based and Monte-Carlo single-choice baselines.
 
 **Keywords:** multiobjective optimization, Pareto front, minimax regret, lexicographic ordering, robust decision-making, multi-criteria decision analysis, achievement scalarizing functions, ordered weighted aggregation.
 
@@ -52,33 +52,33 @@ Our central thesis is that the Pareto front is often insufficient as a final dec
 
 This transforms the optimization object from a *set* to a *certificate*. The certificate tells the DM exactly which questions are most disappointed and by how much, providing a decision narrative rather than a cloud of points.
 
-It is crucial to note what this approach does and does not do. LUR is not parameter-free. It replaces a single preference vector by an explicit family of admissible probes, and it requires normalisation bounds and tolerance settings for numerical implementation. Its contribution is that these choices are declared, auditable, and separated from the final recommendation, not that they disappear.
+It is crucial to note what this approach does and does not do. LexUR is not parameter-free. It replaces a single preference vector by an explicit family of admissible probes, and it requires normalisation bounds and tolerance settings for numerical implementation. Its contribution is that these choices are declared, auditable, and separated from the final recommendation, not that they disappear.
 
-### 1.3 The Leximax Universal-Regret (LUR) Core
+### 1.3 The Leximax Universal-Regret (LexUR) Core
 
-We formalize this intuition as the **Leximax Universal-Regret (LUR) Core**. Given a feasible set $X$ and a declared class of admissible monotone probes $\mathcal{Q}$, the LUR solution is the one that minimizes, lexicographically, the sorted vector of normalized regrets over all probes in $\mathcal{Q}$.
+We formalize this intuition as the **Leximax Universal-Regret (LexUR) Core**. Given a feasible set $X$ and a declared class of admissible monotone probes $\mathcal{Q}$, the LexUR solution is the one that minimizes, lexicographically, the sorted vector of normalized regrets over all probes in $\mathcal{Q}$.
 
 The framework rests on three principles:
 
 1. **Declared admissibility:** The probe family $\mathcal{Q}$ is explicitly declared, not hidden. The DM knows exactly which rational questions are being considered.
-2. **Pareto compatibility:** If a solution dominates another, it is never ranked worse under LUR (provided all probes are monotone).
-3. **Direct computability:** The LUR solution can be found by solving a sequence of minimax-regret constraints, without necessarily enumerating the Pareto front.
+2. **Pareto compatibility:** If a solution dominates another, it is never ranked worse under LexUR (provided all probes are monotone).
+3. **Direct computability:** The LexUR solution can be found by solving a sequence of minimax-regret constraints, without necessarily enumerating the Pareto front.
 
 ### 1.4 Contribution to OR
 
-This paper introduces a novel approach to the application of OR in Decision Support. Unlike methods that evaluate solutions over a feasible preference space (like SMAA) or a robust utility set (like ROR or PRO), LUR takes the lexicographic minimax of normalized regret over a declared class of monotone probes. This provides decision analysts with a single robust recommendation and an auditable certificate, requiring no ex ante weights and bypassing Pareto front enumeration.
+This paper introduces a novel approach to the application of OR in Decision Support. Unlike methods that evaluate solutions over a feasible preference space (like SMAA) or a robust utility set (like ROR or PRO), LexUR takes the lexicographic minimax of normalized regret over a declared class of monotone probes. This provides decision analysts with a single robust recommendation and an auditable certificate, requiring no ex ante weights and bypassing Pareto front enumeration.
 
 The specific contributions of this paper are:
 
-- **Core theoretical contribution:** We define the LUR order and its auditable certificate, proving existence, completeness, Pareto compatibility, dominated-solution exclusion, and stability of the tolerance-based rule under bounded perturbations.
+- **Core theoretical contribution:** We define the LexUR order and its auditable certificate, proving existence, completeness, Pareto compatibility, dominated-solution exclusion, and stability of the tolerance-based rule under bounded perturbations.
 - **Computational contribution:** We present an exact candidate-set algorithm based on sequential lexicographic sorts, and outline a conditional formulation for structured continuous cases.
 - **Probe construction:** We propose an adaptive, redundancy-aware correlation-clustering probe family with empirical redundancy tests.
-- **Empirical validation:** We validate LUR on a broadened benchmark suite with held-out additive and non-additive preferences, and apply it to a smart-grid case study.
+- **Empirical validation:** We validate LexUR on a broadened benchmark suite with held-out additive and non-additive preferences, and apply it to a smart-grid case study.
 - **Extensions:** We outline stochastic and multi-stakeholder variants as initial extensions demonstrating the framework's flexibility.
 
 ### 1.5 Organization
 
-Section 2 reviews related work. Section 3 formalizes the LUR core and proves its foundational properties. Section 4 presents the direct optimization formulation. Section 5 introduces adaptive nonnegative probe generation. Section 6 extends to stochastic objectives and multiple stakeholders. Section 7 describes the experimental evaluation. Section 8 discusses limitations. Section 9 concludes. All proofs are in Appendix A.
+Section 2 reviews related work. Section 3 formalizes the LexUR core and proves its foundational properties. Section 4 presents the direct optimization formulation. Section 5 introduces adaptive nonnegative probe generation. Section 6 extends to stochastic objectives and multiple stakeholders. Section 7 describes the experimental evaluation. Section 8 discusses limitations. Section 9 concludes. All proofs are in Appendix A.
 
 ---
 
@@ -97,7 +97,7 @@ Because the front is typically large, practitioners apply post-processing method
 - **ELECTRE [5] and PROMETHEE [6]:** Outranking methods requiring concordance/discordance thresholds.
 - **Hypervolume contribution [7]:** Selects points maximizing hypervolume. Computationally expensive and may favor extremes.
 
-All these methods require **additional parameters** after the Pareto front is generated. LUR avoids this by integrating the selection criterion into the optimization itself.
+All these methods require **additional parameters** after the Pareto front is generated. LexUR avoids this by integrating the selection criterion into the optimization itself.
 
 ### 2.2 Achievement Scalarizing Functions
 
@@ -106,47 +106,47 @@ Achievement scalarizing functions (ASF), developed by Wierzbicki [8] and extende
 - A parameter controlling the metric shape (arbitrary);
 - Pareto front generation before projection.
 
-LUR can be viewed as a **parameter-free, reference-point-free ASF** where the "metric" is the leximax regret over all rational coalitions. The reference point is the ideal vector $z^*$ (computed, not imposed), and the "metric" is learned from the objective structure rather than specified by the analyst.
+LexUR can be viewed as a **parameter-free, reference-point-free ASF** where the "metric" is the leximax regret over all rational coalitions. The reference point is the ideal vector $z^*$ (computed, not imposed), and the "metric" is learned from the objective structure rather than specified by the analyst.
 
 ### 2.3 Ordered Weighted Aggregation and Lexicographic Methods
 
 Yager [10] introduced Ordered Weighted Averaging (OWA) operators, which apply decreasing weights to sorted objective values. OWA can model optimism, pessimism, and various attitudes between them. Ogryczak and Sliwinski [11] extended OWA to importance-weighted settings. Ogryczak [12] established the link between OWA and lexicographic minimax optimization.
 
-LUR differs from OWA in two critical ways:
-1. **Regret vs. raw objectives:** LUR sorts *regret values* (dimensionless, normalized) rather than raw objective values (different scales and units).
-2. **Probe-based vs. objective-based:** LUR's aggregation units are *rational decision questions* (probes), not raw objectives. This avoids the Condorcet cycles that arise when objectives are treated as voters.
+LexUR differs from OWA in two critical ways:
+1. **Regret vs. raw objectives:** LexUR sorts *regret values* (dimensionless, normalized) rather than raw objective values (different scales and units).
+2. **Probe-based vs. objective-based:** LexUR's aggregation units are *rational decision questions* (probes), not raw objectives. This avoids the Condorcet cycles that arise when objectives are treated as voters.
 
 ### 2.4 Minimax Regret and Robust Decision-Making
 
 Regret-based decision-making has roots in Savage [13] and Loomes & Sugden [14]. In optimization, minimax regret seeks solutions that minimize the maximum difference from the best achievable value. Chen [15] recently introduced multiobjective regret equilibria.
 
-LUR extends minimax regret in three directions:
+LexUR extends minimax regret in three directions:
 1. **Lexicographic:** After minimizing the worst regret, minimize the second-worst, etc.
 2. **Probe-based:** Regret is computed over rational coalitions, not individual objectives.
-3. **Direct:** The LUR solution can be found without generating the Pareto front.
+3. **Direct:** The LexUR solution can be found without generating the Pareto front.
 
 ### 2.5 Robust Multiobjective Optimization
 
-Robust optimization, pioneered by Ben-Tal and Nemirovski [16], seeks solutions that perform well under uncertainty. In multiobjective settings, robustness is typically addressed by considering worst-case objective values over uncertainty sets [17]. LUR connects to this literature by treating the probe selection as a worst-case analysis: the solution must perform well under *all* declared rational probes.
+Robust optimization, pioneered by Ben-Tal and Nemirovski [16], seeks solutions that perform well under uncertainty. In multiobjective settings, robustness is typically addressed by considering worst-case objective values over uncertainty sets [17]. LexUR connects to this literature by treating the probe selection as a worst-case analysis: the solution must perform well under *all* declared rational probes.
 
 ### 2.6 Robust MCDA (SMAA, ROR, and PRO)
 
-LUR is conceptually closest to the robust-MCDA literature, which evaluates solutions over a set of rational interpretations rather than a single set of weights.
+LexUR is conceptually closest to the robust-MCDA literature, which evaluates solutions over a set of rational interpretations rather than a single set of weights.
 - **Stochastic Multicriteria Acceptability Analysis (SMAA):** Evaluates solutions by integrating over a feasible weight or preference space to compute acceptability indices.
 - **Robust Ordinal Regression (ROR) and UTA methods:** Recommend solutions by considering all value functions compatible with decision-maker preference information.
 - **Preference Robust Optimization (PRO):** Optimizes for the worst-case utility over an ambiguity set of preference models.
 
-While SMAA relies on Monte Carlo integration over a weight space and ROR/PRO rely on utility ambiguity sets, LUR computes the lexicographic minimax of normalized regret over a **declared class of monotone probes**. LUR's regret profile provides a robust certificate analogous to SMAA acceptability indices but without requiring numerical integration over a continuous space.
+While SMAA relies on Monte Carlo integration over a weight space and ROR/PRO rely on utility ambiguity sets, LexUR computes the lexicographic minimax of normalized regret over a **declared class of monotone probes**. LexUR's regret profile provides a robust certificate analogous to SMAA acceptability indices but without requiring numerical integration over a continuous space.
 
 ### 2.7 Social Choice and Fairness
 
-The problem of aggregating multiple criteria resembles social choice. However, using objectives as voters leads to Condorcet cycles. LUR avoids this by using *rational decision questions* as the basis for regret, not raw objectives as voters.
+The problem of aggregating multiple criteria resembles social choice. However, using objectives as voters leads to Condorcet cycles. LexUR avoids this by using *rational decision questions* as the basis for regret, not raw objectives as voters.
 
-For multi-stakeholder settings, we draw on Rawls [18] and Nash [19]. The Rawlsian maximin principle -- maximize the welfare of the worst-off -- inspires our multi-stakeholder extension. However, we do not claim uniqueness theorems; we only show that LUR satisfies natural fairness properties.
+For multi-stakeholder settings, we draw on Rawls [18] and Nash [19]. The Rawlsian maximin principle -- maximize the welfare of the worst-off -- inspires our multi-stakeholder extension. However, we do not claim uniqueness theorems; we only show that LexUR satisfies natural fairness properties.
 
 ### 2.8 Gap Analysis
 
-Table 1 summarizes the positioning of LUR relative to classical and robust MCDA methods.
+Table 1 summarizes the positioning of LexUR relative to classical and robust MCDA methods.
 
 | Method | Requires Weights | Requires Thresholds | Requires Front | Single Solution | Pareto Compatible | Evaluates Robustly |
 |--------|-----------------|---------------------|----------------|-----------------|-------------------|--------------------|
@@ -158,11 +158,11 @@ Table 1 summarizes the positioning of LUR relative to classical and robust MCDA 
 | ROR/UTA | Preference Info | No | No | Yes | Yes | Yes |
 | PRO | Ambiguity Set | No | No | Yes | Yes | Yes |
 | Minimax Regret | No | No | No | Yes | No* | Yes |
-| **LUR (Ours)** | **No** | **No** | **No** | **Yes** | **Yes** | **Yes** |
+| **LexUR (Ours)** | **No** | **No** | **No** | **Yes** | **Yes** | **Yes** |
 
 *Standard minimax regret on raw objectives may violate Pareto compatibility if objectives are not normalized consistently.
 
-*Table 1: Comparison of multiobjective decision methods. LUR is the only method that requires no weights, no preference information, no thresholds, no Pareto front, evaluates robustly, and still produces a single Pareto-compatible solution.*
+*Table 1: Comparison of multiobjective decision methods. LexUR is the only method that requires no weights, no preference information, no thresholds, no Pareto front, evaluates robustly, and still produces a single Pareto-compatible solution.*
 
 ---
 
@@ -182,7 +182,7 @@ $$r_i(x) = \frac{f_i(x) - z_i^\star}{z_i^N - z_i^\star + \varepsilon}$$
 
 where $z_i^\star = \min_{x \in X} f_i(x)$ is the ideal value, $z_i^N$ is a nadir or anti-ideal estimate, and $\varepsilon > 0$ prevents division by zero. The normalized vector is $r(x) = (r_1(x), \dots, r_m(x)) \in [0, 1]^m$.
 
-**Remark:** LUR is invariant to positive affine rescaling of objectives, provided normalization bounds are transformed consistently. It is *not* invariant to arbitrary monotone transformations (e.g., $f_i \mapsto f_i^2$), which would change the relative distances that define regret.
+**Remark:** LexUR is invariant to positive affine rescaling of objectives, provided normalization bounds are transformed consistently. It is *not* invariant to arbitrary monotone transformations (e.g., $f_i \mapsto f_i^2$), which would change the relative distances that define regret.
 
 ### 3.3 Admissible Probes
 
@@ -225,34 +225,34 @@ $$D^\downarrow(x) = \text{sort}_\downarrow(D(x)) = (D_{[1]}(x), D_{[2]}(x), \dot
 where $D_{[1]}(x) \geq D_{[2]}(x) \geq \dots \geq D_{[K]}(x)$.
 
 The **Leximax Universal-Regret order** is:
-$$x \preceq_{LUR} y \quad \Longleftrightarrow \quad D^\downarrow(x) \leq_{\text{lex}} D^\downarrow(y)$$
+$$x \preceq_{LexUR} y \quad \Longleftrightarrow \quad D^\downarrow(x) \leq_{\text{lex}} D^\downarrow(y)$$
 
 That is, $x$ is preferred to $y$ if its worst disappointment is smaller; if tied, its second-worst is smaller; and so on lexicographically.
 
 The **Leximax Universal-Regret Solution** is:
-$$x^{LUR} \in \arg\min_{x \in X}^{\text{lex}} D^\downarrow(x)$$
+$$x^{LexUR} \in \arg\min_{x \in X}^{\text{lex}} D^\downarrow(x)$$
 
 ### 3.6 Foundational Properties
 
-**Lemma 1 (Existence and Completeness).** For any finite candidate set $A$ and finite probe family $\mathcal{Q}$, the LUR solution $x^{LUR}$ exists and the relation $\preceq_{LUR}$ is a complete preorder on $A$.
+**Lemma 1 (Existence and Completeness).** For any finite candidate set $A$ and finite probe family $\mathcal{Q}$, the LexUR solution $x^{LexUR}$ exists and the relation $\preceq_{LexUR}$ is a complete preorder on $A$.
 
 *Proof.* For each $x \in A$, $D^\downarrow(x)$ is a well-defined real vector in $[0,1]^K$. Lexicographic comparison of real vectors is a complete preorder on $\mathbb{R}^K$. Since $A$ is finite, the minimum exists. ∎
 
-**Theorem 2 (Pareto Compatibility).** If $x$ strictly Pareto-dominates $y$ and all probes $q \in \mathcal{Q}$ are monotone non-decreasing in each normalized objective, then $D_q(x) < D_q(y)$ for all $q$ with strict inequality for at least one $q$, and therefore $x \prec_{LUR} y$.
+**Theorem 2 (Pareto Compatibility).** If $x$ strictly Pareto-dominates $y$ and all probes $q \in \mathcal{Q}$ are monotone non-decreasing in each normalized objective, then $D_q(x) < D_q(y)$ for all $q$ with strict inequality for at least one $q$, and therefore $x \prec_{LexUR} y$.
 
 *Proof.* If $x \prec_P y$, then $r_i(x) \leq r_i(y)$ for all $i$ with strict inequality for at least one $j$. Since each probe $q$ is monotone in the $r_i$, we have $q(r(x)) \leq q(r(y))$ for all $q$, with strict inequality for any probe that depends on $r_j$. Since $q^\star$ and $q^-$ are independent of $x$ and $y$, the disappointment $D_q(x) \leq D_q(y)$ for all $q$, with strict inequality for at least one $q$. Therefore $D^\downarrow(x) <_{\text{lex}} D^\downarrow(y)$. ∎
 
-**Corollary 2.1 (Dominated Exclusion).** If $x$ is Pareto-dominated by $y$ and $y$ is feasible, then $x$ cannot be LUR-optimal.
+**Corollary 2.1 (Dominated Exclusion).** If $x$ is Pareto-dominated by $y$ and $y$ is feasible, then $x$ cannot be LexUR-optimal.
 
-*Proof.* By Theorem 2, $y \prec_{LUR} x$. Since the LUR solution is the minimum of $\preceq_{LUR}$, $x$ cannot be optimal. ∎
+*Proof.* By Theorem 2, $y \prec_{LexUR} x$. Since the LexUR solution is the minimum of $\preceq_{LexUR}$, $x$ cannot be optimal. ∎
 
 **Theorem 3 (Stability).** Let $\hat{D}_q(x)$ be estimates of $D_q(x)$ with maximum error $\eta = \max_{x,q} |\hat{D}_q(x) - D_q(x)|$. Let $\delta_{\min}$ be the minimum lexicographic gap between distinct candidates under true regrets:
 $$\delta_{\min} = \min_{x \neq y} \max_k \{D_{[k]}(x) - D_{[k]}(y) : D_{[j]}(x) = D_{[j]}(y) \, \forall j < k\}$$
-If $2\eta < \delta_{\min}$, then the LUR winner under $\hat{D}$ equals the true LUR winner.
+If $2\eta < \delta_{\min}$, then the LexUR winner under $\hat{D}$ equals the true LexUR winner.
 
-*Proof.* If $2\eta < \delta_{\min}$, then for any pair $(x, y)$ with true lexicographic ordering $x \prec_{LUR} y$, the estimated ordering satisfies $\hat{D}^\downarrow(x) <_{\text{lex}} \hat{D}^\downarrow(y)$. The maximum perturbation in any component is $\eta$, and the lexicographic gap exceeds $2\eta$, so the ordering is preserved. ∎
+*Proof.* If $2\eta < \delta_{\min}$, then for any pair $(x, y)$ with true lexicographic ordering $x \prec_{LexUR} y$, the estimated ordering satisfies $\hat{D}^\downarrow(x) <_{\text{lex}} \hat{D}^\downarrow(y)$. The maximum perturbation in any component is $\eta$, and the lexicographic gap exceeds $2\eta$, so the ordering is preserved. ∎
 
-**Remark on Continuous $X$:** For continuous $X$, existence requires compactness of $X$ and continuity of all probes. The LUR solution exists if $X$ is compact and each $q \circ r$ is continuous. Uniqueness is not guaranteed; there may be a small equivalence class of solutions with identical regret vectors.
+**Remark on Continuous $X$:** For continuous $X$, existence requires compactness of $X$ and continuity of all probes. The LexUR solution exists if $X$ is compact and each $q \circ r$ is continuous. Uniqueness is not guaranteed; there may be a small equivalence class of solutions with identical regret vectors.
 
 ### 3.7 The Algorithm for Finite Candidates
 
@@ -270,13 +270,13 @@ For a finite candidate set $A = \{x_1, \dots, x_N\}$:
 
 ---
 
-## 4. Direct Optimization: Computing LUR Without Pareto-Front Enumeration
+## 4. Direct Optimization: Computing LexUR Without Pareto-Front Enumeration
 
-A key claim of LUR is that it can be computed **directly**, without first generating a Pareto front. This section formalizes this claim.
+A key claim of LexUR is that it can be computed **directly**, without first generating a Pareto front. This section formalizes this claim.
 
 ### 4.1 The Sequential Minimax-Regret Formulation
 
-For continuous $X$ (or large discrete $X$), we formulate LUR as a sequence of minimax-regret optimization problems:
+For continuous $X$ (or large discrete $X$), we formulate LexUR as a sequence of minimax-regret optimization problems:
 
 **Stage 1:** Minimize the worst regret:
 $$\min_{x \in X} \max_{q \in \mathcal{Q}} D_q(x)$$
@@ -323,11 +323,11 @@ This **probe-active-set SCP** is analogous to SQP methods. Convergence to a loca
 
 ### 4.4 The Real Operational Breakthrough
 
-The direct optimization formulation is the real operational advantage of LUR:
+The direct optimization formulation is the real operational advantage of LexUR:
 
-> **Instead of approximating the Pareto front and then selecting one point, LUR directly searches for the least fragile compromise across all declared rational probes.**
+> **Instead of approximating the Pareto front and then selecting one point, LexUR directly searches for the least fragile compromise across all declared rational probes.**
 
-This eliminates the two-stage process (front generation + post-processing) that dominates current practice. The DM specifies the probe family, and LUR returns the robust solution directly.
+This eliminates the two-stage process (front generation + post-processing) that dominates current practice. The DM specifies the probe family, and LexUR returns the robust solution directly.
 
 ---
 
@@ -367,13 +367,13 @@ An alternative to correlation clustering uses PCA loadings with nonnegativity co
 
 These probes are guaranteed monotone because all weights are nonnegative.
 
-**Lemma 2 (Nonnegative Probe Pareto Compatibility).** If all probes in $\mathcal{Q}$ are defined with nonnegative weights ($w_i \geq 0$ for all $i$), then LUR is Pareto compatible.
+**Lemma 2 (Nonnegative Probe Pareto Compatibility).** If all probes in $\mathcal{Q}$ are defined with nonnegative weights ($w_i \geq 0$ for all $i$), then LexUR is Pareto compatible.
 
 *Proof.* Immediate from Theorem 2, since nonnegative weighted sums and maxima are monotone non-decreasing in each $r_i$. ∎
 
 ### 5.4 Approximation Guarantee
 
-**Theorem 5 (Probe Approximation).** Let $\mathcal{Q}_{\text{full}}$ be the full coalition probe family and $\mathcal{Q}_{\text{reduced}}$ be the reduced family (cluster-based or nonnegative PCA). Let $L$ be the Lipschitz constant of all probes. If the maximum reconstruction error of the reduced family is $\eta$ (i.e., for every $q \in \mathcal{Q}_{\text{full}}$ there exists $q' \in \mathcal{Q}_{\text{reduced}}$ with $|q(r) - q'(r)| \leq \eta$ for all $r$), then the LUR regret values under $\mathcal{Q}_{\text{reduced}}$ differ from those under $\mathcal{Q}_{\text{full}}$ by at most $L\eta$.
+**Theorem 5 (Probe Approximation).** Let $\mathcal{Q}_{\text{full}}$ be the full coalition probe family and $\mathcal{Q}_{\text{reduced}}$ be the reduced family (cluster-based or nonnegative PCA). Let $L$ be the Lipschitz constant of all probes. If the maximum reconstruction error of the reduced family is $\eta$ (i.e., for every $q \in \mathcal{Q}_{\text{full}}$ there exists $q' \in \mathcal{Q}_{\text{reduced}}$ with $|q(r) - q'(r)| \leq \eta$ for all $r$), then the LexUR regret values under $\mathcal{Q}_{\text{reduced}}$ differ from those under $\mathcal{Q}_{\text{full}}$ by at most $L\eta$.
 
 *Proof.* For any $x$ and $q \in \mathcal{Q}_{\text{full}}$, let $q'$ be the approximating probe in $\mathcal{Q}_{\text{reduced}}$. Then:
 $$|D_q(x) - D_{q'}(x)| = \left|\frac{q(x) - q^\star}{q^- - q^\star + \varepsilon} - \frac{q'(x) - q'^\star}{q'^- - q'^\star + \varepsilon}\right|$$
@@ -413,10 +413,10 @@ $$D_q^\alpha(x) = \frac{\mu_q(x) + z_\alpha \cdot \sigma_q(x) - q^\star}{q^- - q
 
 where $z_\alpha$ is the standard normal quantile (e.g., 1.96 for 95%). This penalizes both high mean regret and high uncertainty.
 
-The **stochastic LUR solution** is:
-$$x^{LUR-S} \in \arg\min_{x \in X}^{\text{lex}} \text{sort}_\downarrow(D_{q_1}^\alpha(x), \dots, D_{q_K}^\alpha(x))$$
+The **stochastic LexUR solution** is:
+$$x^{LexUR-S} \in \arg\min_{x \in X}^{\text{lex}} \text{sort}_\downarrow(D_{q_1}^\alpha(x), \dots, D_{q_K}^\alpha(x))$$
 
-**Theorem 6 (Stochastic Consistency).** Let $\hat{\mu}_i(x)$ be the sample mean of $n$ independent observations. Under Lipschitz continuity of probes and finite fourth moments, if the minimum lexicographic gap $\delta_{\min}$ exceeds the maximum sampling error, then $x^{LUR-S}_n = x^{LUR}$ with probability approaching 1 as $n \to \infty$.
+**Theorem 6 (Stochastic Consistency).** Let $\hat{\mu}_i(x)$ be the sample mean of $n$ independent observations. Under Lipschitz continuity of probes and finite fourth moments, if the minimum lexicographic gap $\delta_{\min}$ exceeds the maximum sampling error, then $x^{LexUR-S}_n = x^{LexUR}$ with probability approaching 1 as $n \to \infty$.
 
 *Proof.* Similar to Theorem 3, using the fact that sample means converge at $O(1/\sqrt{n})$ and the union bound over finitely many candidates and probes. ∎
 
@@ -427,9 +427,9 @@ Let $\mathcal{S} = \{1, \dots, S\}$ be stakeholders. Each stakeholder $s$ has im
 The **stakeholder-specific regret** is:
 $$D_q^s(x) = \frac{q(r(x); w_s) - q^\star(w_s)}{q^-(w_s) - q^\star(w_s) + \varepsilon}$$
 
-The **Rawlsian LUR** minimizes the worst stakeholder regret lexicographically:
+The **Rawlsian LexUR** minimizes the worst stakeholder regret lexicographically:
 
-$$x^{LUR-R} \in \arg\min_{x \in X}^{\text{lex}} \text{sort}_\downarrow\left( \max_{s \in \mathcal{S}} D_{q_1}^s(x), \dots, \max_{s \in \mathcal{S}} D_{q_K}^s(x) \right)$$
+$$x^{LexUR-R} \in \arg\min_{x \in X}^{\text{lex}} \text{sort}_\downarrow\left( \max_{s \in \mathcal{S}} D_{q_1}^s(x), \dots, \max_{s \in \mathcal{S}} D_{q_K}^s(x) \right)$$
 
 with fairness constraints:
 $$D_q^s(x) \leq (1 + \beta) \cdot \rho_1 \quad \forall s \in \mathcal{S}, \, \forall q \in \mathcal{Q}$$
@@ -449,7 +449,7 @@ We do **not** claim uniqueness or IIA. These properties are sufficient for pract
 
 ### 7.1 Experimental Design
 
-We evaluate LUR on:
+We evaluate LexUR on:
 
 **Benchmark Problems:**
 - DTLZ1--DTLZ7 [22]: scalable objectives, various geometries
@@ -472,7 +472,7 @@ We evaluate LUR on:
 
 We use a **held-out evaluation** to test generalization:
 
-**Phase 1 (Training):** LUR is computed using its declared probe family (cluster-based monotone probes).
+**Phase 1 (Training):** LexUR is computed using its declared probe family (cluster-based monotone probes).
 
 **Phase 2 (Testing):** The selected solution is evaluated under **preference models not used during optimization**:
 - Random linear utilities: $U_w(x) = -\sum_i w_i r_i(x)$ with random $w \in \Delta^m$
@@ -487,7 +487,7 @@ This is a non-negative regret measure (lower is better), normalized to $[0, 1]$.
 
 ### 7.4 Internal Metrics
 
-- **Worst-case LUR regret (WCR):** $\max_{q \in \mathcal{Q}} D_q(x)$
+- **Worst-case LexUR regret (WCR):** $\max_{q \in \mathcal{Q}} D_q(x)$
 - **Regret uniformity (RU):** $\text{std}(D^\downarrow(x))$
 - **Critical probe count:** Number of probes with regret $> 0.8 \cdot \rho_1$
 - **Certificate size:** Number of distinct regret values in $D^\downarrow(x)$
@@ -505,9 +505,9 @@ This is a non-negative regret measure (lower is better), normalized to $[0, 1]$.
 | ASF | 0.95 | 0.23 | 0.27 | N/A |
 | **SMAA** | 0.95 | 0.36 | 0.45 | N/A |
 | **MMR** | 0.92 | 0.21 | 0.26 | N/A |
-| **LUR** | **0.71** | **0.22** | **0.27** | **12** |
+| **LexUR** | **0.71** | **0.22** | **0.27** | **12** |
 
-LUR achieves significantly lower worst-case regret (0.71 vs. 0.90--0.97) than all classical and robust baselines (Friedman $p < 10^{-100}$, Wilcoxon-Holm $p < 10^{-5}$). The uniformity of the regret profile (RU = 0.22) guarantees balanced performance across perspectives. Notably, LUR matches or outperforms the Out-of-Class Loss of methods like SMAA and MMR, proving strong generalization to unobserved preference functions.
+LexUR achieves significantly lower worst-case regret (0.71 vs. 0.90--0.97) than all classical and robust baselines (Friedman $p < 10^{-100}$, Wilcoxon-Holm $p < 10^{-5}$). The uniformity of the regret profile (RU = 0.22) guarantees balanced performance across perspectives. Notably, LexUR matches or outperforms the Out-of-Class Loss of methods like SMAA and MMR, proving strong generalization to unobserved preference functions.
 
 **Table 3: Probe Reduction Effectiveness**
 
@@ -519,7 +519,7 @@ LUR achieves significantly lower worst-case regret (0.71 vs. 0.90--0.97) than al
 | 10 | 3,051 | 12 | 254.2x |
 | 15 | 98,273 | 17 | 5,780.8x |
 
-Cluster-based probe generation achieves dramatic reduction, preventing exponential explosion and keeping LUR computationally tractable even for $m=15$.
+Cluster-based probe generation achieves dramatic reduction, preventing exponential explosion and keeping LexUR computationally tractable even for $m=15$.
 
 ### 7.6 Results on Smart Grid
 
@@ -528,12 +528,12 @@ Cluster-based probe generation achieves dramatic reduction, preventing exponenti
 | Method | Cost | Emissions | Unreliability | Ramping | Non-Renewable | Peak Gap | Out-of-Class Loss |
 |--------|------|-----------|---------------|---------|---------------|----------|-------------------|
 | TOPSIS, CP, SMAA | **249.6** | **2769.5** | 0.0 | 28.9 | **0.56** | 2.65 | **0.13** |
-| MMR, **LUR** | 251.1 | 3477.8 | 0.0 | **26.4** | 0.64 | **1.88** | 0.14 |
+| MMR, **LexUR** | 251.1 | 3477.8 | 0.0 | **26.4** | 0.64 | **1.88** | 0.14 |
 
 **Managerial Insight**: 
-Methods like TOPSIS, CP, and SMAA aggressively favor reducing emissions and non-renewable generation. In contrast, LUR (and MMR) select a different compromise that yields slightly higher emissions but significantly improved *ramping* capabilities and a much tighter *peak gap* (1.88 vs. 2.65). 
+Methods like TOPSIS, CP, and SMAA aggressively favor reducing emissions and non-renewable generation. In contrast, LexUR (and MMR) select a different compromise that yields slightly higher emissions but significantly improved *ramping* capabilities and a much tighter *peak gap* (1.88 vs. 2.65). 
 
-When analyzing the LUR certificate, the DM can identify the *critical objective coalitions*. In this case, the certificate confirms that the maximal regret across any rational viewpoint is exactly 0.402 (driven purely by the peak gap $f_6$), whereas alternatives expose stakeholders to much higher regrets on operational constraints. The DM is given the narrative: *"This dispatch plan is the least fragile compromise. Any alternative plan will cause at least a 40% normalized regret for some rational stakeholder perspective."*
+When analyzing the LexUR certificate, the DM can identify the *critical objective coalitions*. In this case, the certificate confirms that the maximal regret across any rational viewpoint is exactly 0.402 (driven purely by the peak gap $f_6$), whereas alternatives expose stakeholders to much higher regrets on operational constraints. The DM is given the narrative: *"This dispatch plan is the least fragile compromise. Any alternative plan will cause at least a 40% normalized regret for some rational stakeholder perspective."*
 
 ### 7.7 Ablation Study
 
@@ -541,7 +541,7 @@ When analyzing the LUR certificate, the DM can identify the *critical objective 
 
 | Configuration | WCR $\downarrow$ | Out-of-Class Loss $\downarrow$ |
 |---------------|------------------|--------------------------------|
-| Full LUR | 0.70 | 0.47 |
+| Full LexUR | 0.70 | 0.47 |
 | No clustering | 0.70 | 0.47 |
 | No singletons | 0.78 | 0.48 |
 | Mean only | 0.70 | 0.47 |
@@ -556,9 +556,9 @@ Key findings:
 
 ## 8. Discussion and Limitations
 
-### 8.1 Parameters in LUR
+### 8.1 Parameters in LexUR
 
-LUR is not parameter-free. It requires:
+LexUR is not parameter-free. It requires:
 - Normalization bounds $z_i^\star, z_i^N$
 - Numerical tolerance $\varepsilon$
 - Probe family specification (clustering threshold $\theta$ or PCA rank)
@@ -567,11 +567,11 @@ LUR is not parameter-free. It requires:
 
 The honest claim is:
 
-> LUR avoids a single ex ante weight vector and replaces it with a transparent, auditable class of rational probes. The parameters are interpretable and have natural defaults.
+> LexUR avoids a single ex ante weight vector and replaces it with a transparent, auditable class of rational probes. The parameters are interpretable and have natural defaults.
 
-### 8.2 When LUR is Not Appropriate
+### 8.2 When LexUR is Not Appropriate
 
-LUR is designed for multiobjective decision-making where the DM needs a single robust solution. It is not appropriate when:
+LexUR is designed for multiobjective decision-making where the DM needs a single robust solution. It is not appropriate when:
 - The DM genuinely wants to explore the trade-off surface (e.g., for sensitivity analysis).
 - The objectives are fundamentally incommensurable (e.g., monetary cost vs. human lives).
 - The feasible set is extremely large and the objective correlation structure is unknown.
@@ -594,18 +594,18 @@ The probe family $\mathcal{Q}$ is declared explicitly, but what is "rational" is
 
 ## 9. Conclusion
 
-We have presented the **Leximax Universal-Regret (LUR) Core**, a Pareto-compatible decision framework that replaces the Pareto front as the final decision object with a **regret certificate**. The framework ranks feasible solutions by the lexicographically sorted vector of normalized regrets over a declared class of monotone rational probes.
+We have presented the **Leximax Universal-Regret (LexUR) Core**, a Pareto-compatible decision framework that replaces the Pareto front as the final decision object with a **regret certificate**. The framework ranks feasible solutions by the lexicographically sorted vector of normalized regrets over a declared class of monotone rational probes.
 
-LUR satisfies three properties that no existing post-Pareto method simultaneously achieves:
+LexUR satisfies three properties that no existing post-Pareto method simultaneously achieves:
 1. **No ex ante weights:** The probe family is declared, not imposed as a single scalarization.
 2. **Pareto respect:** The leximax order never prefers a dominated solution over its dominator.
-3. **Direct computability:** The LUR solution can be found by sequential minimax-regret optimization, without Pareto-front enumeration.
+3. **Direct computability:** The LexUR solution can be found by sequential minimax-regret optimization, without Pareto-front enumeration.
 
 We proved existence, completeness, Pareto compatibility, dominated exclusion, and stability under bounded perturbations. We introduced adaptive nonnegative probe generation that preserves Pareto compatibility while reducing computation, stochastic regret certificates for noisy objectives, and a multi-stakeholder extension with fairness guarantees.
 
-Experimental evaluation on standard benchmarks and a real-world smart-grid case study demonstrates that LUR achieves lower worst-case regret under held-out preference models than TOPSIS, compromise programming, knee-point selection, and random weight scalarization.
+Experimental evaluation on standard benchmarks and a real-world smart-grid case study demonstrates that LexUR achieves lower worst-case regret under held-out preference models than TOPSIS, compromise programming, knee-point selection, and random weight scalarization.
 
-The central message is this: **Pareto efficiency is a safety property, not a decision object.** The LUR framework absorbs Pareto rationality into a complete, robust, and explainable decision rule. The decision-maker receives a certificate:
+The central message is this: **Pareto efficiency is a safety property, not a decision object.** The LexUR framework absorbs Pareto rationality into a complete, robust, and explainable decision rule. The decision-maker receives a certificate:
 
 > *"This solution is the least fragile compromise across all declared rational interpretations of your objectives. No other feasible solution improves the worst-case regret, and the regret profile is certified."*
 
@@ -684,17 +684,17 @@ For any probe $q$ that depends on $r_j$ (i.e., partial derivative of q with resp
 
 ### A.3 Proof of Corollary 2.1 (Dominated Exclusion)
 
-*Proof.* If $x$ is dominated by $y$, then by Theorem 2, $y \prec_{LUR} x$. The LUR solution is $x^{LUR} \in \arg\min_{x} D^\downarrow(x)$. Since $D^\downarrow(y) <_{lex} D^\downarrow(x)$, $x$ cannot be a minimizer. ∎
+*Proof.* If $x$ is dominated by $y$, then by Theorem 2, $y \prec_{LexUR} x$. The LexUR solution is $x^{LexUR} \in \arg\min_{x} D^\downarrow(x)$. Since $D^\downarrow(y) <_{lex} D^\downarrow(x)$, $x$ cannot be a minimizer. ∎
 
 ### A.4 Proof of Theorem 3 (Stability)
 
-*Proof.* Let $\hat{D}_q(x) = D_q(x) + \delta_q(x)$ where $|\delta_q(x)| \leq \eta$ for all $x, q$. For any pair $(x, y)$ with $x \prec_{LUR} y$, let $k$ be the first index where $D_{[k]}(x) < D_{[k]}(y)$. Then $D_{[j]}(x) = D_{[j]}(y)$ for all $j < k$ and $D_{[k]}(x) \leq D_{[k]}(y) - \delta_{\min}$.
+*Proof.* Let $\hat{D}_q(x) = D_q(x) + \delta_q(x)$ where $|\delta_q(x)| \leq \eta$ for all $x, q$. For any pair $(x, y)$ with $x \prec_{LexUR} y$, let $k$ be the first index where $D_{[k]}(x) < D_{[k]}(y)$. Then $D_{[j]}(x) = D_{[j]}(y)$ for all $j < k$ and $D_{[k]}(x) \leq D_{[k]}(y) - \delta_{\min}$.
 
 Under perturbation:
 $$\hat{D}_{[k]}(x) \leq D_{[k]}(x) + \eta \leq D_{[k]}(y) - \delta_{\min} + \eta$$
 $$\hat{D}_{[k]}(y) \geq D_{[k]}(y) - \eta$$
 
-Since $2\eta < \delta_{\min}$, we have $\hat{D}_{[k]}(x) < \hat{D}_{[k]}(y)$. For $j < k$, $|\hat{D}_{[j]}(x) - \hat{D}_{[j]}(y)| \leq 2\eta < \delta_{\min}$, but since $D_{[j]}(x) = D_{[j]}(y)$, the ordering at $j$ may change only if the perturbation reverses the tie. However, since $2\eta < \delta_{\min}$ and the gap at $k$ exceeds $2\eta$, the lexicographic comparison is decided at $k$ regardless of ties at $j < k$. Therefore $\hat{x}^{LUR} = x^{LUR}$. ∎
+Since $2\eta < \delta_{\min}$, we have $\hat{D}_{[k]}(x) < \hat{D}_{[k]}(y)$. For $j < k$, $|\hat{D}_{[j]}(x) - \hat{D}_{[j]}(y)| \leq 2\eta < \delta_{\min}$, but since $D_{[j]}(x) = D_{[j]}(y)$, the ordering at $j$ may change only if the perturbation reverses the tie. However, since $2\eta < \delta_{\min}$ and the gap at $k$ exceeds $2\eta$, the lexicographic comparison is decided at $k$ regardless of ties at $j < k$. Therefore $\hat{x}^{LexUR} = x^{LexUR}$. ∎
 
 ### A.5 Proof of Lemma 2 (Nonnegative Probe Pareto Compatibility)
 
@@ -724,7 +724,7 @@ Since all probes in $\mathcal{Q}_{\text{full}}$ are $L$-Lipschitz with respect t
 
 $$|\hat{q}(x) - q(x)| \leq L \sum_{i=1}^m |\hat{\mu}_i(x) - \mu_i(x)| = O_p(1/\sqrt{n})$$
 
-The regret difference satisfies $|\hat{D}_q(x) - D_q(x)| = O_p(1/\sqrt{n})$. Let $\eta_n = C/\sqrt{n}$ be a uniform bound (by the union bound and concentration inequalities, holding with high probability for finite $A$ and $\mathcal{Q}$). If $2\eta_n < \delta_{\min}$, then by Theorem 3, the LUR winner is preserved. As $n \to \infty$, $\eta_n \to 0$, so the condition holds for sufficiently large $n$. ∎
+The regret difference satisfies $|\hat{D}_q(x) - D_q(x)| = O_p(1/\sqrt{n})$. Let $\eta_n = C/\sqrt{n}$ be a uniform bound (by the union bound and concentration inequalities, holding with high probability for finite $A$ and $\mathcal{Q}$). If $2\eta_n < \delta_{\min}$, then by Theorem 3, the LexUR winner is preserved. As $n \to \infty$, $\eta_n \to 0$, so the condition holds for sufficiently large $n$. ∎
 
 ---
 

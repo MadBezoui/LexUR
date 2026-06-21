@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Deliver a submission-safe, claim-driven validation package first, then validate the full direct, stochastic, multi-stakeholder, and real-application LUR contribution.
+**Goal:** Deliver a submission-safe, claim-driven validation package first, then validate the full direct, stochastic, multi-stakeholder, and real-application LexUR contribution.
 
 **Architecture:** Experiments emit immutable tidy records with provenance; analysis modules consume those records; claim gates evaluate frozen thresholds; manuscript tables are generated only from gate outputs. Work is split into a six-week defensible-core release and an additional eight-to-twelve-week full-contribution release.
 
@@ -34,7 +34,7 @@
 - Modify: `README.md`
 
 **Interfaces:**
-- Consumes: existing `lur` package and `_smoke.yaml`.
+- Consumes: existing `lexur` package and `_smoke.yaml`.
 - Produces: `make test`, `make smoke`, and a documented Python 3.11 environment.
 
 - [ ] **Step 1: Add a failing import and deterministic-selection test**
@@ -43,14 +43,14 @@
 # code/tests/test_smoke.py
 import numpy as np
 
-from lur import methods, problems
+from lexur import methods, problems
 
 
 def test_seeded_candidate_selection_is_deterministic():
     f1 = problems.make_candidate_set("concave", 40, 4, np.random.default_rng(19))
     f2 = problems.make_candidate_set("concave", 40, 4, np.random.default_rng(19))
     assert np.array_equal(f1, f2)
-    assert methods.lur(f1) == methods.lur(f2)
+    assert methods.lexur(f1) == methods.lexur(f2)
 ```
 
 - [ ] **Step 2: Run the isolated test and confirm the unconfigured harness fails**
@@ -84,7 +84,7 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["lur*"]
+include = ["lexur*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -125,7 +125,7 @@ git commit -m "test: establish reproducible validation environment"
 
 **Files:**
 - Create: `code/configs/claims.yaml`
-- Create: `code/lur/provenance.py`
+- Create: `code/lexur/provenance.py`
 - Create: `code/tests/test_provenance.py`
 - Modify: `code/run_protocol.py`
 
@@ -140,7 +140,7 @@ git commit -m "test: establish reproducible validation environment"
 import json
 from pathlib import Path
 
-from lur.provenance import build_manifest, sha256_file
+from lexur.provenance import build_manifest, sha256_file
 
 
 def test_manifest_contains_reproducibility_fields(tmp_path: Path):
@@ -167,12 +167,12 @@ def test_manifest_round_trip(tmp_path: Path):
 
 Run: `cd code && python -m pytest tests/test_provenance.py -v`
 
-Expected: `ModuleNotFoundError: No module named 'lur.provenance'`.
+Expected: `ModuleNotFoundError: No module named 'lexur.provenance'`.
 
 - [ ] **Step 3: Implement the manifest**
 
 ```python
-# code/lur/provenance.py
+# code/lexur/provenance.py
 from __future__ import annotations
 
 import hashlib
@@ -222,11 +222,11 @@ def build_manifest(config_path: str, seed: int) -> dict:
 # code/configs/claims.yaml
 claims:
   C1:
-    statement: finite-set LUR excludes dominated alternatives and is positive-affine invariant
+    statement: finite-set LexUR excludes dominated alternatives and is positive-affine invariant
     stage: core
     gates: [dominated_injection, affine_invariance]
   C2:
-    statement: LUR is non-inferior to ASF and MMR on tail held-out loss
+    statement: LexUR is non-inferior to ASF and MMR on tail held-out loss
     stage: core
     gates: [tail_noninferiority_asf, tail_noninferiority_mmr]
   C3:
@@ -238,13 +238,13 @@ claims:
     stage: core
     gates: [redundancy_grouped_loss, cluster_recovery]
   C5:
-    statement: LUR reports instability when normalization bounds are unreliable
+    statement: LexUR reports instability when normalization bounds are unreliable
     stage: core
     gates: [normalization_quality, normalization_certificate, normalization_abstention]
-  C6: {statement: exact direct LP LUR matches exhaustive reference, stage: extension, gates: [direct_lp_exactness]}
-  C7: {statement: exact direct MILP LUR matches exhaustive reference, stage: extension, gates: [direct_milp_exactness]}
-  C8: {statement: stochastic LUR controls calibrated out-of-sample risk, stage: extension, gates: [stochastic_calibration]}
-  C9: {statement: Rawlsian LUR protects stakeholders across independent metrics, stage: extension, gates: [stakeholder_tradeoff]}
+  C6: {statement: exact direct LP LexUR matches exhaustive reference, stage: extension, gates: [direct_lp_exactness]}
+  C7: {statement: exact direct MILP LexUR matches exhaustive reference, stage: extension, gates: [direct_milp_exactness]}
+  C8: {statement: stochastic LexUR controls calibrated out-of-sample risk, stage: extension, gates: [stochastic_calibration]}
+  C9: {statement: Rawlsian LexUR protects stakeholders across independent metrics, stage: extension, gates: [stakeholder_tradeoff]}
   C10: {statement: the certificate aids a real decision, stage: extension, gates: [real_case_reproducibility, certificate_utility]}
 ```
 
@@ -262,14 +262,14 @@ Expected: all tests pass and `run_manifest.json` contains the current commit and
 - [ ] **Step 7: Commit the evidence contract**
 
 ```bash
-git add code/configs/claims.yaml code/lur/provenance.py code/tests/test_provenance.py code/run_protocol.py
+git add code/configs/claims.yaml code/lexur/provenance.py code/tests/test_provenance.py code/run_protocol.py
 git commit -m "feat: register claims and experiment provenance"
 ```
 
 ### Task 3: Tidy Raw Results and Exact Protocol Accounting
 
 **Files:**
-- Create: `code/lur/records.py`
+- Create: `code/lexur/records.py`
 - Create: `code/tests/test_records.py`
 - Modify: `code/run_protocol.py`
 - Modify: `code/configs/ejor_final.yaml`
@@ -282,7 +282,7 @@ git commit -m "feat: register claims and experiment provenance"
 
 ```python
 # code/tests/test_records.py
-from lur.records import expected_benchmark_cells, validate_benchmark_frame
+from lexur.records import expected_benchmark_cells, validate_benchmark_frame
 
 
 def test_expected_full_protocol_count():
@@ -299,12 +299,12 @@ def test_expected_full_protocol_count():
 
 Run: `cd code && python -m pytest tests/test_records.py -v`
 
-Expected: missing `lur.records`.
+Expected: missing `lexur.records`.
 
 - [ ] **Step 3: Implement schema validation and expected counts**
 
 ```python
-# code/lur/records.py
+# code/lexur/records.py
 REQUIRED_BENCHMARK_COLUMNS = {
     "run_id", "config_sha256", "seed", "N", "m", "geometry",
     "replication", "dirichlet_alpha", "method", "utility_scope",
@@ -352,17 +352,17 @@ Expected: raw records pass schema validation and printed expected/observed cell 
 - [ ] **Step 7: Commit raw-data accounting**
 
 ```bash
-git add code/lur/records.py code/tests/test_records.py code/run_protocol.py code/configs/ejor_final.yaml
+git add code/lexur/records.py code/tests/test_records.py code/run_protocol.py code/configs/ejor_final.yaml
 git commit -m "feat: preserve tidy benchmark records and factor accounting"
 ```
 
 ### Task 4: Correct Statistical Inference
 
 **Files:**
-- Create: `code/lur/analysis.py`
+- Create: `code/lexur/analysis.py`
 - Create: `code/tests/test_stats.py`
-- Modify: `code/lur/stats.py`
-- Modify: `code/lur/gates.py`
+- Modify: `code/lexur/stats.py`
+- Modify: `code/lexur/gates.py`
 - Modify: `code/configs/ejor_final.yaml`
 
 **Interfaces:**
@@ -373,7 +373,7 @@ git commit -m "feat: preserve tidy benchmark records and factor accounting"
 ```python
 # code/tests/test_stats.py
 import numpy as np
-from lur.stats import holm_adjust
+from lexur.stats import holm_adjust
 
 
 def test_holm_adjust_is_monotone_in_sorted_order():
@@ -440,16 +440,16 @@ Expected: Holm tests pass; pilot report includes global and stratified uncertain
 - [ ] **Step 8: Commit corrected inference**
 
 ```bash
-git add code/lur/analysis.py code/lur/stats.py code/lur/gates.py code/tests/test_stats.py code/configs/ejor_final.yaml
+git add code/lexur/analysis.py code/lexur/stats.py code/lexur/gates.py code/tests/test_stats.py code/configs/ejor_final.yaml
 git commit -m "fix: use blocked inference and correct Holm adjustment"
 ```
 
 ### Task 5: Adaptive Probe Approximation Study
 
 **Files:**
-- Create: `code/lur/probe_validation.py`
+- Create: `code/lexur/probe_validation.py`
 - Create: `code/tests/test_probe_validation.py`
-- Modify: `code/lur/methods.py`
+- Modify: `code/lexur/methods.py`
 - Modify: `code/run_protocol.py`
 
 **Interfaces:**
@@ -460,7 +460,7 @@ git commit -m "fix: use blocked inference and correct Holm adjustment"
 ```python
 # code/tests/test_probe_validation.py
 import numpy as np
-from lur.probe_validation import compare_probe_families
+from lexur.probe_validation import compare_probe_families
 
 
 def test_two_criterion_complete_adaptive_family_has_zero_regret_gap():
@@ -470,10 +470,10 @@ def test_two_criterion_complete_adaptive_family_has_zero_regret_gap():
     assert 0.0 <= result["tolerance_jaccard"] <= 1.0
 ```
 
-- [ ] **Step 2: Expose probe details for every LUR variant**
+- [ ] **Step 2: Expose probe details for every LexUR variant**
 
-Add `lur_variant(..., return_detail=True)` returning selected index,
-disappointment matrix, labels, and probes, matching `lur`.
+Add `lexur_variant(..., return_detail=True)` returning selected index,
+disappointment matrix, labels, and probes, matching `lexur`.
 
 - [ ] **Step 3: Implement decision-set and certificate comparisons**
 
@@ -498,34 +498,34 @@ predictive quality, certificate approximation, and decision-set agreement.
 Run: `cd code && python -m pytest tests/test_probe_validation.py -v && python run_protocol.py --config configs/ejor_pilot.yaml --stage probes`
 
 ```bash
-git add code/lur/probe_validation.py code/tests/test_probe_validation.py code/lur/methods.py code/run_protocol.py
+git add code/lexur/probe_validation.py code/tests/test_probe_validation.py code/lexur/methods.py code/run_protocol.py
 git commit -m "feat: validate adaptive probes against full certificates"
 ```
 
 ### Task 6: Normalization Stability and Abstention
 
 **Files:**
-- Create: `code/lur/normalization.py`
+- Create: `code/lexur/normalization.py`
 - Create: `code/tests/test_normalization.py`
-- Modify: `code/lur/methods.py`
-- Modify: `code/lur/gates.py`
+- Modify: `code/lexur/methods.py`
+- Modify: `code/lexur/gates.py`
 - Modify: `code/configs/ejor_final.yaml`
 
 **Interfaces:**
-- Produces: `normalization_stability(F, bound_samples, tolerance) -> StabilityResult` and `lur_stable(...) -> recommendation | stability set | abstention`.
+- Produces: `normalization_stability(F, bound_samples, tolerance) -> StabilityResult` and `lexur_stable(...) -> recommendation | stability set | abstention`.
 
 - [ ] **Step 1: Write invariant and instability tests**
 
 ```python
 # code/tests/test_normalization.py
 import numpy as np
-from lur.normalization import lur_stable
+from lexur.normalization import lexur_stable
 
 
 def test_stable_result_returns_single_recommendation():
     F = np.array([[0.0, 1.0], [0.5, 0.5], [1.0, 0.0]])
     bounds = [(F.min(0), F.max(0))] * 10
-    result = lur_stable(F, bounds, min_identity_rate=0.9, max_set_size=2)
+    result = lexur_stable(F, bounds, min_identity_rate=0.9, max_set_size=2)
     assert result.status == "recommend"
     assert len(result.indices) == 1
 
@@ -536,7 +536,7 @@ def test_unstable_result_does_not_claim_unique_recommendation():
         (np.zeros(2), np.array([1.0, 1.0])),
         (np.zeros(2), np.array([1.0, 3.0])),
     ]
-    result = lur_stable(F, bounds, min_identity_rate=0.9, max_set_size=1)
+    result = lexur_stable(F, bounds, min_identity_rate=0.9, max_set_size=1)
     assert result.status in {"set", "abstain"}
 ```
 
@@ -563,14 +563,14 @@ nadir gate in the output for historical comparison.
 Run: `cd code && python -m pytest tests/test_normalization.py -v && python run_protocol.py --config configs/ejor_pilot.yaml --stage gates`
 
 ```bash
-git add code/lur/normalization.py code/tests/test_normalization.py code/lur/methods.py code/lur/gates.py code/configs/ejor_final.yaml
+git add code/lexur/normalization.py code/tests/test_normalization.py code/lexur/methods.py code/lexur/gates.py code/configs/ejor_final.yaml
 git commit -m "feat: expose normalization stability and abstention"
 ```
 
 ### Task 7: Stage 1 Claim Gate and Manuscript Synchronization
 
 **Files:**
-- Create: `code/lur/claim_gate.py`
+- Create: `code/lexur/claim_gate.py`
 - Create: `code/scripts/check_manuscript_numbers.py`
 - Create: `code/tests/test_claim_gate.py`
 - Modify: `code/run_protocol.py`
@@ -587,7 +587,7 @@ git commit -m "feat: expose normalization stability and abstention"
 
 ```python
 # code/tests/test_claim_gate.py
-from lur.claim_gate import summarize_claim
+from lexur.claim_gate import summarize_claim
 
 
 def test_failed_required_gate_prevents_supported_status():
@@ -630,7 +630,7 @@ Expected: tests pass; every C1-C5 status is present; C6-C10 are exploratory; fai
 - [ ] **Step 7: Commit Stage 1 integration**
 
 ```bash
-git add code/lur/claim_gate.py code/scripts/check_manuscript_numbers.py code/tests/test_claim_gate.py code/run_protocol.py paper/sections PROTOCOL_COMPLIANCE.md
+git add code/lexur/claim_gate.py code/scripts/check_manuscript_numbers.py code/tests/test_claim_gate.py code/run_protocol.py paper/sections PROTOCOL_COMPLIANCE.md
 git commit -m "docs: synchronize manuscript claims with validation gates"
 ```
 
@@ -690,12 +690,12 @@ git commit -m "research: record stage one validation audit"
 
 ## Stage 2: Full Contribution
 
-### Task 9: Exact Direct LP LUR
+### Task 9: Exact Direct LP LexUR
 
 **Files:**
-- Create: `code/lur/direct_lp.py`
+- Create: `code/lexur/direct_lp.py`
 - Create: `code/tests/test_direct_lp.py`
-- Modify: `code/lur/directopt.py`
+- Modify: `code/lexur/directopt.py`
 - Modify: `code/run_protocol.py`
 
 **Interfaces:**
@@ -704,7 +704,7 @@ git commit -m "research: record stage one validation audit"
 - [ ] **Step 1: Write an exhaustive-reference test**
 
 Construct a two-variable bounded LP whose vertices can be enumerated. Assert that
-direct and vertex-enumerated LUR have identical sorted certificate vectors within
+direct and vertex-enumerated LexUR have identical sorted certificate vectors within
 `1e-7`.
 
 - [ ] **Step 2: Implement anchor solves and first epigraph stage**
@@ -721,26 +721,26 @@ level, and optimize the next distinct regret level until all probes are ordered.
 
 Run: `cd code && python -m pytest tests/test_direct_lp.py -v`
 
-Expected: all certificate comparisons pass; failures include serialized problem data.
+Expected: all certificate comparisons pass; failexures include serialized problem data.
 
 - [ ] **Step 5: Add scaling experiment**
 
 Use variables `{10,50,100,500}`, constraints `{10,50,200}`, objectives
-`{3,5,8,10}`, and report median/IQR time, calls, memory, failures, and quality.
+`{3,5,8,10}`, and report median/IQR time, calls, memory, failexures, and quality.
 
 - [ ] **Step 6: Commit exact LP support**
 
 ```bash
-git add code/lur/direct_lp.py code/tests/test_direct_lp.py code/lur/directopt.py code/run_protocol.py
-git commit -m "feat: solve exact direct LP LUR lexicographically"
+git add code/lexur/direct_lp.py code/tests/test_direct_lp.py code/lexur/directopt.py code/run_protocol.py
+git commit -m "feat: solve exact direct LP LexUR lexicographically"
 ```
 
-### Task 10: Exact Direct MILP LUR
+### Task 10: Exact Direct MILP LexUR
 
 **Files:**
-- Create: `code/lur/direct_milp.py`
+- Create: `code/lexur/direct_milp.py`
 - Create: `code/tests/test_direct_milp.py`
-- Modify: `code/lur/directopt.py`
+- Modify: `code/lexur/directopt.py`
 - Modify: `code/run_protocol.py`
 
 **Interfaces:**
@@ -749,7 +749,7 @@ git commit -m "feat: solve exact direct LP LUR lexicographically"
 - [ ] **Step 1: Replace the four-weight proxy test with exhaustive binary cases**
 
 For facility-location instances with at most five facilities, enumerate all
-feasible opening sets and assignments, compute exact finite LUR, and compare the
+feasible opening sets and assignments, compute exact finite LexUR, and compare the
 MILP decision/certificate.
 
 - [ ] **Step 2: Build the epigraph MILP**
@@ -776,21 +776,21 @@ replications, and fixed 600-second limit. Report success and timeout rates.
 - [ ] **Step 6: Commit exact MILP support**
 
 ```bash
-git add code/lur/direct_milp.py code/tests/test_direct_milp.py code/lur/directopt.py code/run_protocol.py
+git add code/lexur/direct_milp.py code/tests/test_direct_milp.py code/lexur/directopt.py code/run_protocol.py
 git commit -m "feat: replace direct MILP proxy with exact formulation"
 ```
 
-### Task 11: Calibrated Stochastic LUR
+### Task 11: Calibrated Stochastic LexUR
 
 **Files:**
-- Create: `code/lur/stochastic.py`
+- Create: `code/lexur/stochastic.py`
 - Create: `code/tests/test_stochastic.py`
-- Modify: `code/lur/extras_validation.py`
+- Modify: `code/lexur/extras_validation.py`
 - Modify: `code/configs/ejor_final.yaml`
 - Modify: `code/run_protocol.py`
 
 **Interfaces:**
-- Produces: criterion-specific `RiskSpecification`, `fit_stochastic_lur`, and `evaluate_out_of_sample`.
+- Produces: criterion-specific `RiskSpecification`, `fit_stochastic_lexur`, and `evaluate_out_of_sample`.
 
 - [ ] **Step 1: Add unit-consistency tests**
 
@@ -816,7 +816,7 @@ against nominal confidence.
 
 - [ ] **Step 5: Add stochastic comparators**
 
-Compare deterministic LUR, stochastic LUR, stochastic ASF, stochastic MMR, SAA,
+Compare deterministic LexUR, stochastic LexUR, stochastic ASF, stochastic MMR, SAA,
 and a distributionally robust baseline under shared scenarios.
 
 - [ ] **Step 6: Verify and commit**
@@ -824,16 +824,16 @@ and a distributionally robust baseline under shared scenarios.
 Run: `cd code && python -m pytest tests/test_stochastic.py -v && python run_protocol.py --config configs/ejor_pilot.yaml --stage stochastic`
 
 ```bash
-git add code/lur/stochastic.py code/tests/test_stochastic.py code/lur/extras_validation.py code/configs/ejor_final.yaml code/run_protocol.py
-git commit -m "feat: validate stochastic LUR with calibrated risk"
+git add code/lexur/stochastic.py code/tests/test_stochastic.py code/lexur/extras_validation.py code/configs/ejor_final.yaml code/run_protocol.py
+git commit -m "feat: validate stochastic LexUR with calibrated risk"
 ```
 
 ### Task 12: Independent Multi-Stakeholder Evaluation
 
 **Files:**
-- Create: `code/lur/stakeholders.py`
+- Create: `code/lexur/stakeholders.py`
 - Create: `code/tests/test_stakeholders.py`
-- Modify: `code/lur/extras_validation.py`
+- Modify: `code/lexur/extras_validation.py`
 - Modify: `code/run_protocol.py`
 
 **Interfaces:**
@@ -852,7 +852,7 @@ minority blocs; and unequal declared importance.
 - [ ] **Step 3: Implement comparison rules**
 
 Include utilitarian, Nash bargaining, Kalai-Smorodinsky, max-min, minimax regret,
-and Rawls-LUR with deterministic tie handling.
+and Rawls-LexUR with deterministic tie handling.
 
 - [ ] **Step 4: Evaluate independent outcomes**
 
@@ -865,20 +865,20 @@ rather than declaring one universal winner.
 Run: `cd code && python -m pytest tests/test_stakeholders.py -v && python run_protocol.py --config configs/ejor_pilot.yaml --stage multistakeholder`
 
 ```bash
-git add code/lur/stakeholders.py code/tests/test_stakeholders.py code/lur/extras_validation.py code/run_protocol.py
+git add code/lexur/stakeholders.py code/tests/test_stakeholders.py code/lexur/extras_validation.py code/run_protocol.py
 git commit -m "feat: evaluate stakeholder tradeoffs independently"
 ```
 
 ### Task 13: Public Real Optimization Case
 
 **Files:**
-- Create: `code/lur/cases/grid/model.py`
-- Create: `code/lur/cases/grid/data.py`
-- Create: `code/lur/cases/grid/scenarios.py`
-- Create: `code/lur/cases/grid/evaluate.py`
+- Create: `code/lexur/cases/grid/model.py`
+- Create: `code/lexur/cases/grid/data.py`
+- Create: `code/lexur/cases/grid/scenarios.py`
+- Create: `code/lexur/cases/grid/evaluate.py`
 - Create: `code/tests/test_grid_case.py`
 - Create: `data/grid/README.md`
-- Modify: `code/lur/smartgrid.py`
+- Modify: `code/lexur/smartgrid.py`
 - Modify: `paper/sections/B_smartgrid.tex`
 
 **Interfaces:**
@@ -922,7 +922,7 @@ only if explicitly labeled.
 Run: `cd code && python -m pytest tests/test_grid_case.py -v`
 
 ```bash
-git add code/lur/cases/grid code/tests/test_grid_case.py data/grid/README.md code/lur/smartgrid.py paper/sections/B_smartgrid.tex
+git add code/lexur/cases/grid code/tests/test_grid_case.py data/grid/README.md code/lexur/smartgrid.py paper/sections/B_smartgrid.tex
 git commit -m "feat: replace grid illustration with public constrained case"
 ```
 
@@ -1042,7 +1042,7 @@ git commit -m "research: complete full contribution evidence audit"
 
 If Stage 2 is delayed, submit only after M3 with this contribution boundary:
 
-- exact finite candidate-set LUR;
+- exact finite candidate-set LexUR;
 - transparent certificate and tolerance/stability reporting;
 - corrected paired, stratified tail-quality evidence;
 - validated redundancy behavior;

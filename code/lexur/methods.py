@@ -9,7 +9,7 @@ Implemented:
                                 random_weights, asf
     Robust MCDA               : smaa, minimax_regret   (Savage regret over a
                                 linear weight set)
-    Proposed                  : lur  (Leximax Universal-Regret core, with
+    Proposed                  : lexur  (Leximax Universal-Regret core, with
                                 adaptive correlation-clustering probes)
 """
 from __future__ import annotations
@@ -127,7 +127,7 @@ def chebyshev_mmr(F, n_weights=1000, rng=None, **kw):
 # --------------------------------------------------------------------------- #
 # robust-MCDA baselines
 # --------------------------------------------------------------------------- #
-def smaa(F, n_weights=1000, rng=None, **kw):
+def smaa(F, n_weights=1000, rng=None, return_detail=False, **kw):
     """SMAA-2 style: Monte-Carlo over the uniform weight simplex with additive
     (linear) value; recommend the alternative with the highest first-rank
     acceptability index (ties broken by expected value)."""
@@ -140,7 +140,10 @@ def smaa(F, n_weights=1000, rng=None, **kw):
     a1 = np.bincount(first, minlength=n) / n_weights     # rank-1 acceptability
     exp_val = V.mean(axis=1)
     order = np.lexsort((exp_val, a1))                     # primary a1, tie exp_val
-    return int(order[-1])
+    winner = int(order[-1])
+    if return_detail:
+        return winner, a1, exp_val
+    return winner
 
 
 def minimax_regret(F, n_weights=1000, rng=None, **kw):
@@ -158,7 +161,7 @@ def minimax_regret(F, n_weights=1000, rng=None, **kw):
 
 
 # --------------------------------------------------------------------------- #
-# LUR — Leximax Universal-Regret core
+# LexUR — Leximax Universal-Regret core
 # --------------------------------------------------------------------------- #
 def correlation_clusters(F: np.ndarray, theta: float = 0.6) -> list[list[int]]:
     """Group *redundant* objectives, i.e. those with strong POSITIVE Pearson
@@ -215,7 +218,7 @@ def build_probes(F, theta=0.6, use_singletons=True, use_mean=True,
     When objectives are redundant (positively correlated), correlation
     clustering adds one mean and one max probe per cluster, so a redundant group
     is asked about *once* rather than once per member -- this is what protects
-    LUR from the redundancy bias that distorts averaging methods, while keeping
+    LexUR from the redundancy bias that distorts averaging methods, while keeping
     the probe count linear in m and the number of clusters.
 
     All probes are monotone non-decreasing in each r_i (nonneg weights / max),
@@ -270,7 +273,7 @@ def leximax_argmin(D: np.ndarray, tol: float = 1e-9) -> int:
     return int(best)
 
 
-def lur(F, theta=0.6, ideal=None, nadir=None, return_detail=False,
+def lexur(F, theta=0.6, ideal=None, nadir=None, return_detail=False,
         probe_kwargs=None, **kw):
     probe_kwargs = probe_kwargs or {}
     probes, labels = build_probes(F, theta=theta, **probe_kwargs)
@@ -281,8 +284,8 @@ def lur(F, theta=0.6, ideal=None, nadir=None, return_detail=False,
     return idx
 
 
-def lur_interval(F, n_bounds=100, bounds_std=0.1, rng=None, theta=0.6, return_set=False, **kw):
-    """Interval-robust LUR: re-evaluates LUR over a hyperbox of plausible nadir/ideal bounds.
+def lexur_interval(F, n_bounds=100, bounds_std=0.1, rng=None, theta=0.6, return_set=False, **kw):
+    """Interval-robust LexUR: re-evaluates LexUR over a hyperbox of plausible nadir/ideal bounds.
     Returns the most frequently selected candidate. If return_set=True, also returns the stability set."""
     rng = np.random.default_rng(0) if rng is None else rng
     m = F.shape[1]
@@ -296,7 +299,7 @@ def lur_interval(F, n_bounds=100, bounds_std=0.1, rng=None, theta=0.6, return_se
         jitter_n = rng.uniform(0, bounds_std, size=m)
         ideal = ideal_base - jitter_i * range_base
         nadir = nadir_base + jitter_n * range_base
-        winners.append(lur(F, theta=theta, ideal=ideal, nadir=nadir))
+        winners.append(lexur(F, theta=theta, ideal=ideal, nadir=nadir))
 
     counts = np.bincount(winners, minlength=F.shape[0])
     best = int(np.argmax(counts))
@@ -344,8 +347,8 @@ def build_random_probes(F, k, rng):
     return probes, labels
 
 
-def lur_variant(F, variant="adaptive", rng=None, theta=0.6, return_detail=False, ideal=None, nadir=None, **kw):
-    """LUR probe-design controls used in the ablation/probe study."""
+def lexur_variant(F, variant="adaptive", rng=None, theta=0.6, return_detail=False, ideal=None, nadir=None, **kw):
+    """LexUR probe-design controls used in the ablation/probe study."""
     rng = np.random.default_rng(0) if rng is None else rng
     if variant == "adaptive":
         probes, labels = build_probes(F, theta=theta)
@@ -389,9 +392,9 @@ METHODS = {
     "SMAA": smaa,
     "MMR": minimax_regret,
     "ChebMMR": chebyshev_mmr,
-    "LUR": lur,
-    "LUR-noclust": lambda F, **kw: lur_variant(F, variant="no_clusters", **kw),
-    "LUR-interval": lur_interval,
+    "LexUR": lexur,
+    "LexUR-noclust": lambda F, **kw: lexur_variant(F, variant="no_clusters", **kw),
+    "LexUR-interval": lexur_interval,
 }
 CLASSICAL = ["TOPSIS", "CP", "VIKOR", "Knee", "HV", "DistIdeal", "RW", "ASF"]
 ROBUST = ["SMAA", "MMR", "ChebMMR"]

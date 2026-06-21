@@ -1,10 +1,10 @@
 """Acceptance gates and paired statistics for the EJOR validation protocol.
 
 Gates (each returns a dict with a boolean `pass` and the supporting numbers):
-    gate_dominated_injection : LUR never selects a dominated alternative.
-    gate_affine_invariance   : LUR choice is invariant to positive affine rescaling.
+    gate_dominated_injection : LexUR never selects a dominated alternative.
+    gate_affine_invariance   : LexUR choice is invariant to positive affine rescaling.
     gate_nadir_error         : quality stable / choice-change reported under nadir error.
-    noninferiority           : paired non-inferiority of LUR vs a control on tail loss.
+    noninferiority           : paired non-inferiority of LexUR vs a control on tail loss.
 """
 from __future__ import annotations
 import numpy as np
@@ -15,7 +15,7 @@ from .methods import normalize
 
 # --------------------------------------------------------------------------- #
 def gate_dominated_injection(ratios, trials=150, n=200, seed=5):
-    """Inject dominated alternatives at several ratios; LUR must never pick one,
+    """Inject dominated alternatives at several ratios; LexUR must never pick one,
     and we also report how often the chosen non-dominated solution changes when
     bounds are recomputed after injection."""
     rng = np.random.default_rng(seed)
@@ -27,7 +27,7 @@ def gate_dominated_injection(ratios, trials=150, n=200, seed=5):
         m = int(rng.integers(3, 9))
         g = geoms[int(rng.integers(0, len(geoms)))]
         F0 = problems.make_candidate_set(g, n, m, rng)
-        base_idx = methods.lur(F0)
+        base_idx = methods.lexur(F0)
         base_choice = F0[base_idx].copy()
         total += 1
         for r in ratios:
@@ -37,7 +37,7 @@ def gate_dominated_injection(ratios, trials=150, n=200, seed=5):
             anchors = F0[rng.integers(0, F0.shape[0], size=k)]
             dom = anchors + rng.uniform(0.05, 0.4, size=anchors.shape)  # strictly worse
             F = np.vstack([F0, dom])
-            idx = methods.lur(F)
+            idx = methods.lexur(F)
             # dominated-selection check
             f = F[idx]
             dommask = np.all(F <= f, axis=1) & np.any(F < f, axis=1)
@@ -55,7 +55,7 @@ def gate_dominated_injection(ratios, trials=150, n=200, seed=5):
 
 def gate_affine_invariance(tests=3000, n=150, seed=9, tol=0):
     """Random positive affine rescaling f_i' = a_i f_i + b_i (a_i>0). With bounds
-    recomputed consistently, LUR must select the SAME alternative."""
+    recomputed consistently, LexUR must select the SAME alternative."""
     rng = np.random.default_rng(seed)
     geoms = problems.GEOMETRIES
     same = 0
@@ -63,11 +63,11 @@ def gate_affine_invariance(tests=3000, n=150, seed=9, tol=0):
         m = int(rng.integers(3, 9))
         g = geoms[int(rng.integers(0, len(geoms)))]
         F = problems.make_candidate_set(g, n, m, rng)
-        i0 = methods.lur(F)
+        i0 = methods.lexur(F)
         actual_m = F.shape[1]
         a = rng.uniform(0.2, 5.0, size=actual_m)
         b = rng.uniform(-2.0, 2.0, size=actual_m)
-        i1 = methods.lur(F * a + b)
+        i1 = methods.lexur(F * a + b)
         same += int(i0 == i1)
     rate = same / tests
     return dict(name="affine_invariance", identical_rate=round(rate, 4),
@@ -85,7 +85,7 @@ def gate_nadir_error(errors, reps=30, n=250, m=8, seed=37, n_test=300):
         F = problems.make_candidate_set(geometry, n, m, rng)
         ideal = F.min(0)
         nadir = F.max(0)
-        baseline_index = methods.lur(F, ideal=ideal, nadir=nadir)
+        baseline_index = methods.lexur(F, ideal=ideal, nadir=nadir)
         cache_seed = int(rng.integers(0, 2**31))
         cache = families.loss_cache(
             F, normalize, np.random.default_rng(cache_seed), n_per_family=n_test
@@ -97,7 +97,7 @@ def gate_nadir_error(errors, reps=30, n=250, m=8, seed=37, n_test=300):
             perturbed_nadir = np.maximum(
                 nadir * (1 + error * perturbation), ideal + 1e-3
             )
-            index = methods.lur(F, ideal=ideal, nadir=perturbed_nadir)
+            index = methods.lexur(F, ideal=ideal, nadir=perturbed_nadir)
             loss = families.losses_from(cache, index)[1]
             flip = float(index != baseline_index)
             degradation = float(loss - baseline_loss)
@@ -146,30 +146,30 @@ def bootstrap_ci(diff, B=5000, seed=0):
     return float(np.percentile(means, 2.5)), float(np.percentile(means, 97.5))
 
 
-def noninferiority(lur_loss, ctrl_loss, margin=0.01, margin_rel=0.02, name="ctrl"):
-    """Paired non-inferiority of LUR vs control on (tail) loss. Per the
+def noninferiority(lexur_loss, ctrl_loss, margin=0.01, margin_rel=0.02, name="ctrl"):
+    """Paired non-inferiority of LexUR vs control on (tail) loss. Per the
     pre-registered protocol the margin is `0.01 normalized OR 2% relative`; we
     report both and declare non-inferiority if EITHER holds (upper 95% bootstrap
-    bound of mean(LUR-ctrl) below the margin)."""
-    lur_loss = np.asarray(lur_loss); ctrl_loss = np.asarray(ctrl_loss)
-    diff = lur_loss - ctrl_loss
+    bound of mean(LexUR-ctrl) below the margin)."""
+    lexur_loss = np.asarray(lexur_loss); ctrl_loss = np.asarray(ctrl_loss)
+    diff = lexur_loss - ctrl_loss
     lo, hi = bootstrap_ci(diff)
     try:
-        _, p = sps.wilcoxon(lur_loss, ctrl_loss)
+        _, p = sps.wilcoxon(lexur_loss, ctrl_loss)
     except ValueError:
         p = 1.0
     rel_margin = margin_rel * float(ctrl_loss.mean())
     eff_margin = max(margin, rel_margin)
     return dict(control=name, mean_diff=round(float(diff.mean()), 4),
                 ci95=[round(lo, 4), round(hi, 4)], wilcoxon_p=float(p),
-                delta=round(stats.cliffs_delta(lur_loss, ctrl_loss), 3),
+                delta=round(stats.cliffs_delta(lexur_loss, ctrl_loss), 3),
                 margin_abs=margin, margin_rel2pct=round(rel_margin, 4),
                 noninferior_abs=bool(hi < margin),
                 noninferior=bool(hi < eff_margin))
 
 
-def noninferiority_cluster(frame, ctrl_name, lur_name, ni_cfg, seed=0):
-    from lur.analysis import cluster_bootstrap_difference
+def noninferiority_cluster(frame, ctrl_name, lexur_name, ni_cfg, seed=0):
+    from lexur.analysis import cluster_bootstrap_difference
     
     metric = ni_cfg["metric"]
     margin = ni_cfg["margin_absolute"]
@@ -178,18 +178,18 @@ def noninferiority_cluster(frame, ctrl_name, lur_name, ni_cfg, seed=0):
     unit = ni_cfg["bootstrap_unit"]
     
     # In analysis, cluster_bootstrap_difference returns diffs = control - treatment.
-    # We want diff = LUR - control. So let treatment=LUR, control=ctrl_name.
-    # Then diffs = ctrl - LUR. Wait, if we want LUR - ctrl, we should pass control=LUR, treatment=ctrl_name.
-    # diffs = LUR - ctrl.
+    # We want diff = LexUR - control. So let treatment=LexUR, control=ctrl_name.
+    # Then diffs = ctrl - LexUR. Wait, if we want LexUR - ctrl, we should pass control=LexUR, treatment=ctrl_name.
+    # diffs = LexUR - ctrl.
     md, ci_l, ci_u, rev = cluster_bootstrap_difference(
-        frame, control=lur_name, treatment=ctrl_name,
+        frame, control=lexur_name, treatment=ctrl_name,
         cluster_columns=unit, seed=seed, n_boot=n_boot, alpha=1.0 - conf
     )
     # Actually, cluster_bootstrap_difference:
     # diffs = pivot[control] - pivot[treatment]
-    # So if control=lur_name, diffs = LUR - ctrl.
+    # So if control=lexur_name, diffs = LexUR - ctrl.
     
-    # Non-inferiority condition: upper confidence interval of LUR - ctrl < margin
+    # Non-inferiority condition: upper confidence interval of LexUR - ctrl < margin
     noninferior = bool(ci_u < margin)
     
     return dict(control=ctrl_name, mean_diff=round(md, 4),
@@ -213,7 +213,7 @@ def gate_normalization_stability(reps=10, n_samples=20, n=250, m=8, seed=42, n_t
             g = problems.GEOMETRIES[int(rng.integers(0, 4))]
             F = problems.make_candidate_set(g, n, m, rng)
             
-            i_base, D_base, _, _ = methods.lur_variant(F, return_detail=True)
+            i_base, D_base, _, _ = methods.lexur_variant(F, return_detail=True)
             cert_base = -np.sort(-D_base[i_base])
             set_base = _tolerance_set(D_base)
             
@@ -224,7 +224,7 @@ def gate_normalization_stability(reps=10, n_samples=20, n=250, m=8, seed=42, n_t
             
             # evaluate over bounds
             for ideal, nadir in bounds:
-                i_b, D_b, _, _ = methods.lur_variant(F, ideal=ideal, nadir=nadir, return_detail=True)
+                i_b, D_b, _, _ = methods.lexur_variant(F, ideal=ideal, nadir=nadir, return_detail=True)
                 identities.append(int(i_b == i_base))
                 
                 set_b = _tolerance_set(D_b)

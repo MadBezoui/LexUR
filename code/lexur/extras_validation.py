@@ -8,17 +8,17 @@ from .methods import normalize, EPS
 # --------------------------------------------------------------------------- #
 # Stochastic: select on training scenarios, evaluate out-of-sample
 # --------------------------------------------------------------------------- #
-def _stochastic_lur(mu, sd, z):
-    """alpha-confidence LUR: leximax over disappointments of mu + z*sd."""
-    F = mu + z * sd
-    return methods.lur(F)
+def _stochastic_lexur(mu, sd, z, n_obs):
+    """Alpha-confidence LexUR using uncertainty in the estimated mean."""
+    F = mu + z * sd / np.sqrt(n_obs)
+    return methods.lexur(F)
 
 
 def run_stochastic(train_scenarios=50, test_scenarios=3000, alphas=(0.5, 0.8, 0.95),
                    reps=15, n=120, m=6, seed=71):
     rng = np.random.default_rng(seed)
     zmap = {0.5: 0.0, 0.8: 0.8416, 0.95: 1.6449}
-    methods_list = ["det-LUR"] + [f"LUR-a{a}" for a in alphas] + ["TOPSIS", "SMAA"]
+    methods_list = ["det-LexUR"] + [f"LexUR-a{a}" for a in alphas] + ["TOPSIS", "SMAA"]
     acc = {nm: {"mean": [], "tail": [], "risk": []} for nm in methods_list}
     for _ in range(reps):
         g = problems.GEOMETRIES[int(rng.integers(0, 4))]
@@ -31,9 +31,15 @@ def run_stochastic(train_scenarios=50, test_scenarios=3000, alphas=(0.5, 0.8, 0.
         cache = families.loss_cache(mu, normalize, np.random.default_rng(7),
                                     n_per_family=300)
         risk_thr = 0.8                                            # worst-criterion risk
-        picks = {"det-LUR": _stochastic_lur(mu_hat, sd_hat, 0.0)}
+        picks = {
+            "det-LexUR": _stochastic_lexur(
+                mu_hat, sd_hat, 0.0, train_scenarios
+            )
+        }
         for a in alphas:
-            picks[f"LUR-a{a}"] = _stochastic_lur(mu_hat, sd_hat, zmap[a])
+            picks[f"LexUR-a{a}"] = _stochastic_lexur(
+                mu_hat, sd_hat, zmap[a], train_scenarios
+            )
         picks["TOPSIS"] = methods.topsis(mu_hat)
         picks["SMAA"] = methods.smaa(mu_hat, rng=np.random.default_rng(3))
         # out-of-sample test scenarios
@@ -68,7 +74,7 @@ def run_multistakeholder(stakeholders=(3, 5, 10, 20), reps=20, n=200, m=6, seed=
     out = []
     for S in stakeholders:
         agg = {nm: {"worst": [], "mean": [], "gini": []}
-               for nm in ["Rawls-LUR", "AvgUtil", "Nash", "MaxMin"]}
+               for nm in ["Rawls-LexUR", "AvgUtil", "Nash", "MaxMin"]}
         for _ in range(reps):
             g = problems.GEOMETRIES[int(rng.integers(0, 4))]
             F = problems.make_candidate_set(g, n, m, rng)
@@ -78,7 +84,7 @@ def run_multistakeholder(stakeholders=(3, 5, 10, 20), reps=20, n=200, m=6, seed=
             # stakeholder regret = normalised cost gap to each stakeholder's best
             reg = (cost - cost.min(0)) / (cost.max(0) - cost.min(0) + EPS)
             picks = {
-                "Rawls-LUR": methods.leximax_argmin(reg),   # leximax over stakeholder regrets
+                "Rawls-LexUR": methods.leximax_argmin(reg),   # leximax over stakeholder regrets
                 "AvgUtil": int(np.argmin(cost.mean(1))),
                 "Nash": int(np.argmax(np.log(1 - reg + 1e-6).sum(1))),
                 "MaxMin": int(np.argmin(cost.max(1))),

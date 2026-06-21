@@ -1,7 +1,7 @@
 \section{Exact candidate-set computation and conditional direct formulations}
 \label{sec:direct}
 
-LUR is primarily a candidate-set selection rule, and that is the setting of our
+LexUR is primarily a candidate-set selection rule, and that is the setting of our
 experiments. We first present the exact finite algorithm. We then develop, more tentatively, how the recommendation can
 in principle be computed \emph{directly} on a continuous feasible set, replacing
 the usual two-stage pipeline by a
@@ -11,34 +11,35 @@ to future work.
 
 \subsection{Exact algorithm for finite candidate sets}
 
-The finite-set procedure is summarised in Algorithm~\ref{alg:finite}.
+The finite-set procedure is summarised in Figure~\ref{alg:finite}.
 \begin{figure}[h]
 \centering
 \fbox{
 \begin{minipage}{0.9\textwidth}
-\textbf{Algorithm 1:} Exact LUR recommendation on a finite candidate set\vspace{2mm}\\
-\textbf{Input:} Candidate set $A=\{x_1,\dots,x_N\}$; objectives $F(x)$; monotone probe family $\Q=\{q_1,\dots,q_K\}$; tolerance $\tau \ge 0$.\\
-\textbf{Output:} LUR winner $x^{\mathrm{LUR}}$ and its certificate $\reg^{\downarrow}(x^{\mathrm{LUR}})$.\vspace{2mm}\\
+\textbf{Procedure (Figure~\ref{alg:finite}): Exact finite-set LexUR ($\tau=0$) and tolerance reporting}\vspace{2mm}\\
+\textbf{Input:} Candidate set $A=\{x_1,\dots,x_N\}$; objectives $F(x)$; labelled monotone probe family $\Q=\{q_1,\dots,q_K\}$; degeneracy threshold $\epsilon_q$.\\
+\textbf{Output:} Exact minimiser set and labelled certificates; optionally a numerical $\tau$-class.\vspace{2mm}\\
 \textbf{1. Dominance filter:} Remove any Pareto-dominated $x \in A$.\\
 \textbf{2. Normalisation:} For each criterion $i$:
 \begin{itemize}
     \item Compute active range $\ideal_i = \min_A f_i(x)$ and $\nadir_i = \max_A f_i(x)$.
-    \item If non-degenerate, compute $r_i(x) = (f_i(x) - \ideal_i) / (\nadir_i - \ideal_i)$.
+    \item If $\nadir_i-\ideal_i>\epsilon_q$, compute $r_i(x)=(f_i(x)-\ideal_i)/(\nadir_i-\ideal_i)$; otherwise flag the criterion and require external bounds or exclude probes that use it.
 \end{itemize}
 \textbf{3. Anchor bounds:} For each probe $q \in \Q$:
 \begin{itemize}
     \item Evaluate $V_{iq} = q(r(x_i))$ for all active $x_i \in A$.
-    \item Find $q^\star = \min_i V_{iq}$ and $q^{\mathrm w} = \max_i V_{iq}$.
+    \item Find $q^\star = \min_i V_{iq}$ and $q^{\mathrm w} = \max_i V_{iq}$; flag and exclude a probe when $q^{\mathrm w}-q^\star\le\epsilon_q$.
 \end{itemize}
 \textbf{4. Regret evaluation:} For each $x \in A$ and each valid probe $q \in \Q$:
 \begin{itemize}
     \item Compute $\reg_q(x) = (V_{iq} - q^\star) / (q^{\mathrm w} - q^\star)$.
 \end{itemize}
-\textbf{5. Certificate sorting:} For each $x$, sort its regrets descending to get $\reg^{\downarrow}(x)$.\\
-\textbf{6. Selection:} Return the lexicographically smallest row under $\tau$-tolerance.
+\textbf{5. Certificate sorting:} For each $x$, sort the labelled pairs $(\reg_q(x),q)$ descending to obtain $\reg^{\downarrow}(x)$ without discarding probe names.\\
+\textbf{6. Exact selection:} With $\tau=0$, return every row attaining the lexicographic minimum.\\
+\textbf{7. Numerical reporting (optional):} Around the exact minimiser $x^\star$, report $W_\tau$ or the stability set $C_\tau(x^\star)$ defined in \S\ref{sec:core}; do not treat this tolerance relation as a preorder or call it an equivalence class.
 \end{minipage}
 }
-\caption{Finite-set LUR procedure.}
+\caption{Finite-set LexUR procedure.}
 \label{alg:finite}
 \end{figure}
 
@@ -57,6 +58,17 @@ substantial bottleneck and is not assumed cheaper than front approximation in
 all continuous cases.
 
 \subsection{Front-free formulation for structured cases}
-Lexicographic minimisation of the sorted vector over a continuous set $\X$ is exactly equivalent to sequentially minimising the cumulative sums of the $p$ largest disappointments ($p = 1,\dots,K$), which admits an exact ordered-value linearisation \citep{ogryczak2006}. Alternatively, the nested maximum can be handled via a single-stage heuristic surrogate using a strictly decreasing weight schedule $M^{-(k-1)}$, or via a smoothed log-sum-exp approximation for continuous gradients.
+By formulating LexUR directly on $\X$, a front-free computation is theoretically available for structured cases (e.g., linear multiobjective problems), as we demonstrate empirically in \S\ref{sec:exp}. Lexicographic minimisation of the sorted regret vector over a continuous set $\X$ is exactly equivalent to sequentially minimising the cumulative sums of the $p$ largest disappointments, $S_p(\reg(x))=\sum_{k=1}^p \reg_{[k]}(x)$. For $p = 1,\dots,K$, this admits an exact ordered-value linearisation \citep{ogryczak2006}:
+\begin{equation}
+S_p(\reg(x)) = \min_{\alpha \in \R, u \in \R^K} \left[ p\alpha + \sum_{q \in \Q} u_q \right] \quad \text{s.t.} \quad u_q \ge \reg_q(x) - \alpha, \quad u_q \ge 0 \quad \forall q \in \Q.
+\end{equation}
 
-By formulating LUR directly on $\X$, a front-free computation is theoretically \emph{available} for structured cases (e.g., linear multiobjective problems), as we demonstrate empirically in \S\ref{sec:exp}. However, because computing the per-probe anchor $q^{\mathrm w} = \max_{x \in \X} q(r(x))$ requires maximising a convex function over a convex set, these $2K$ global anchor subproblems may be no cheaper than front generation in the general case. We are careful not to overclaim: the core contribution of this paper remains the finite-set \emph{post hoc} selection rule, and we do not claim LUR as a general front-free mixed-integer solver.
+Lexicographic minimisation is implemented sequentially:
+\begin{align}
+\gamma_1 &= \min_{x \in \X} S_1(\reg(x)), \\
+\gamma_p &= \min_{x \in \X} S_p(\reg(x)) \quad \text{s.t.} \quad S_j(\reg(x)) \le \gamma_j \quad \forall j < p.
+\end{align}
+
+If $\X$ is polyhedral and the probes are linear, each stage $p$ can be solved as an LP (or MILP, if $\X$ contains integer variables) over the decision variables $x$, the scalar $\alpha$, and the $K$ auxiliary continuous variables $u_q$. Max-linear probes (e.g., $q(r) = \max_i w_i r_i$) are easily incorporated into this LP by enforcing $u_q \ge w_i r_i(x) - \alpha$ for all $i$.
+
+However, because computing the per-probe anchor $q^{\mathrm w} = \max_{x \in \X} q(r(x))$ requires maximising a convex function over a convex set, these $2K$ global anchor subproblems may be no cheaper than front generation in the general case. In the continuous empirical demonstration (\S\ref{sec:exp}), there are $m=3$ criteria and an adaptive family of $K=7$ probes. Computing the $q^\star$ and $q^{\mathrm w}$ anchors requires $2K = 14$ global optimisation calls. The sequential lexicographic selection then evaluates up to $K=5$ active solver calls (since degenerate probes are excluded), producing the reported $19$ solver calls. We are careful not to overclaim: the core contribution of this paper remains the finite-set \emph{post hoc} selection rule, and we do not claim LexUR as a general front-free mixed-integer solver.

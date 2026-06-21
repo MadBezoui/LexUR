@@ -11,7 +11,7 @@ fully resolvable now are marked **Deferred** with justification.
    Fixed. Split into **weak** (monotonicity only) and **strict** (requires a
    *separating* family; singletons suffice). Added Definition of "separating
    family", a counterexample in-text, and corrected the dominated-exclusion
-   corollary to require separation. LUR always includes singletons, so it
+   corollary to require separation. LexUR always includes singletons, so it
    separates. (§3, Appendix A.)
 
 2. **Stability theorem (Thm 3) false under exact lexicographic comparison.** *(R1, R3)*
@@ -54,12 +54,12 @@ fully resolvable now are marked **Deferred** with justification.
    distance/Monte-Carlo methods; abstract and §7 corrected accordingly.
 
 9. **"Flattest profile" claim contradicted by Table 4 (CP is flatter).** *(R1)*
-   Fixed. Claim **removed**; replaced with an honest statement that LUR sits
+   Fixed. Claim **removed**; replaced with an honest statement that LexUR sits
    between the averaging and worst-case camps and is robust across additive *and*
    non-additive families (CP is flatter and has lower mean on that setting).
 
 10. **Nemenyi grouping inconsistent (3.54−2.92 = 0.62 > CD 0.48).** *(R1)*
-    Fixed. Recomputed and restated rigorously: LUR is statistically tied with CP
+    Fixed. Recomputed and restated rigorously: LexUR is statistically tied with CP
     and very slightly behind MMR/ASF (gaps just beyond CD) but at **negligible
     effect size** (|δ| ≤ 0.034); significantly better than TOPSIS/knee/RW/SMAA.
 
@@ -70,7 +70,7 @@ fully resolvable now are marked **Deferred** with justification.
 
 12. **Direct computation underdeveloped; q\*/q⁻ cost; M-surrogate not exact for
     continuous; OWA constraints; "front-free" not demonstrated.** *(all three)*
-    Fixed/tempered. §4 now: LUR is primarily a candidate-set rule (matches the
+    Fixed/tempered. §4 now: LexUR is primarily a candidate-set rule (matches the
     experiments); finite case exact; continuous case presented with assumptions;
     added the **cost of the anchors**; added the exact finite-M condition and the
     **cumulative-sum-of-top-p** convex reformulation (Ogryczak); explicit
@@ -82,7 +82,7 @@ fully resolvable now are marked **Deferred** with justification.
     Fixed. Added **two non-additive held-out families** — a 2-additive **Choquet**
     integral (criterion interactions) and a **satisficing/threshold** utility —
     so six families now span additive and non-additive preferences. All tables
-    re-run; LUR remains in the best group on tail loss.
+    re-run; LexUR remains in the best group on tail loss.
 
 14. **Stochastic extension never evaluated.** *(R2, R3)* Fixed. New experiment
     (§7.7, `stochastic_demo`): true-winner recovery rises 0.04→0.79 as
@@ -128,7 +128,7 @@ fully resolvable now are marked **Deferred** with justification.
   uniqueness/IIA characterization; noted as future work.
 
 ## Net effect on claims
-The revised paper claims LUR is **in the best-performing group on worst-case loss
+The revised paper claims LexUR is **in the best-performing group on worst-case loss
 (practically equivalent to the strongest robust scalarisations), far better than
 the averaging/Monte-Carlo methods used in practice, with an interpretable
 certificate, reduced redundancy sensitivity, and native stochastic/fairness

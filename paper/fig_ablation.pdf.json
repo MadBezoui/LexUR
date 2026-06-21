@@ -1,0 +1,12 @@
+{
+  "git_commit": "b4f2bf5ca55c7618337be3697588bfef292736c2",
+  "git_dirty": true,
+  "params": {
+    "figure": "fig_ablation.pdf",
+    "sources": {
+      "results/tables/ablation_concave_m8.csv": "87e28fa2b32f1bd4dda64747676d7e0cee6fd1177549aad30024ddacc56f6e86"
+    }
+  },
+  "params_sha256": "f329cd75f73466a5b81330127cb9ae126997b117d254c18df4cd4ece1188b984",
+  "run_id": null
+}

@@ -10,7 +10,7 @@ from pathlib import Path
 
 PACKAGES = ("numpy", "scipy", "pandas", "scikit-learn", "matplotlib", "PyYAML", "PuLP", "statsmodels")
 SCIENTIFIC_PATTERNS = (
-    "code/lur/*.py",
+    "code/lexur/*.py",
     "code/run_protocol.py",
     "code/run_all.py",
     "code/configs/*.yaml",

@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from lur.manuscript import (  # noqa: E402
+from lexur.manuscript import (  # noqa: E402
     check_manuscript,
     load_publication_evidence,
     write_generated_inputs,
@@ -20,16 +20,17 @@ def main() -> int:
         description="Generate manuscript evidence inputs and reject stale claims"
     )
     parser.add_argument("--paper", required=True, type=Path)
-    parser.add_argument("--results", required=True, type=Path)
     parser.add_argument("--project-root", type=Path,
                         default=Path(__file__).resolve().parents[2])
-    parser.add_argument("--config", type=Path,
-                        default=Path(__file__).resolve().parents[1] / "configs" / "ejor_final.yaml")
+    parser.add_argument("--results", type=Path, default=None,
+                        help="output directory for claim_status.json "
+                             "(default: <project-root>/results/protocol)")
     parser.add_argument("--claims", type=Path,
                         default=Path(__file__).resolve().parents[1] / "configs" / "claims.yaml")
     args = parser.parse_args()
 
-    evidence = load_publication_evidence(args.results, args.config, args.claims)
+    # Evidence is pinned to the immutable authoritative run, never a mutable config.
+    evidence = load_publication_evidence(args.project_root, args.claims)
     write_generated_inputs(evidence, args.paper / "generated")
     paths = sorted(args.paper.rglob("*.tex"))
     paths.extend(
@@ -41,7 +42,9 @@ def main() -> int:
         if path.exists()
     )
     result = check_manuscript(paths, evidence)
-    (args.results / "claim_status.json").write_text(
+    results_out = args.results or (args.project_root / "results" / "protocol")
+    results_out.mkdir(parents=True, exist_ok=True)
+    (results_out / "claim_status.json").write_text(
         json.dumps(evidence.claims, indent=2) + "\n", encoding="utf-8"
     )
     if result.errors:

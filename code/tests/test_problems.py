@@ -1,4 +1,4 @@
-"""Tests for lur.problems — candidate-set generation and Pareto-front geometries.
+"""Tests for lexur.problems — candidate-set generation and Pareto-front geometries.
 
 Covers: sample_front (all 8 geometries), non_dominated, make_candidate_set,
 make_redundant_set, and edge cases (m=2, m=1-like, n=1).
@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 import numpy.testing as npt
 
-from lur.problems import (
+from lexur.problems import (
     sample_front, non_dominated, make_candidate_set, make_redundant_set,
 )
 

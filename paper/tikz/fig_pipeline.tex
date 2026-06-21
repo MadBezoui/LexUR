@@ -1,13 +1,13 @@
-% LUR end-to-end pipeline schematic
+% LexUR end-to-end pipeline schematic
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}[node distance=6mm and 9mm]
 \node[stage] (A) {Candidate set\\$A=\{x_1,\dots,x_N\}$\\\scriptsize(non-dominated)};
 \node[stage, right=of A] (N) {Normalise\\$r_i=\dfrac{f_i-\ideal_i}{\nadir_i-\ideal_i}$\\\scriptsize to $[0,1]^m$};
-\node[accent, right=of N] (Q) {Declared probes\\$\Q=\{q_1,\dots,q_K\}$\\\scriptsize singletons + clusters};
+\node[accent, right=of N] (Q) {Declared probes\\$\Q=\{q_1,\dots,q_K\}$\\\scriptsize singletons + clusters; $\theta$ declared};
 \node[stage, right=of Q] (D) {Disappointment\\matrix $\reg\in[0,1]^{N\times K}$\\\scriptsize $\reg_q(x)$, Eq.~(2)};
 \node[stage, below=10mm of D] (S) {Leximax sort\\$\reg^{\downarrow}(x)$\\\scriptsize worst-first};
-\node[win, left=14mm of S] (W) {Recommendation\\$x^{\mathrm{LUR}}$ + certificate\\\scriptsize binding probes named};
+\node[win, left=14mm of S] (W) {Recommendation or\\stability class + certificate\\\scriptsize $\tau$ and probes reported};
 
 \draw[flow] (A) -- (N);
 \draw[flow] (N) -- (Q);
@@ -15,13 +15,14 @@
 \draw[flow] (D) -- (S);
 \draw[flow] (S) -- (W);
 
-\node[font=\scriptsize\itshape, lurslate, below=1mm of A] {inputs};
-\node[font=\scriptsize\itshape, lurblue, below=1mm of Q] {declared, auditable};
-\node[font=\scriptsize\itshape, lurcrimson, above=1mm of W] {output};
+\node[font=\scriptsize\itshape, lexurslate, below=1mm of A] {inputs};
+\node[font=\scriptsize\itshape, lexurblue, below=1mm of Q] {declared, auditable};
+\node[font=\scriptsize\itshape, lexurcrimson, above=1mm of W] {output};
 \end{tikzpicture}
-\caption{The LUR pipeline. Modelling choices are confined to the \emph{declared}
-probe family $\Q$ and the normalisation bounds; the selection itself is an exact,
-deterministic leximax over the disappointment matrix, and the output is a single
-recommendation accompanied by an auditable regret certificate.}
+\caption{The LexUR pipeline. Declared inputs include the candidate set,
+normalisation bounds, probe family $\Q$, clustering rule $\theta$, and numerical
+tolerance $\tau$. Exact leximax comparison uses $\tau=0$; numerical reporting
+returns a stability class unless a verified margin supports a unique
+recommendation. Every output retains the labelled regret certificate.}
 \label{fig:pipeline}
 \end{figure}

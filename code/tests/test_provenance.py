@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from lur.provenance import build_manifest, sha256_file, source_fingerprint
+from lexur.provenance import build_manifest, sha256_file, source_fingerprint
 from run_protocol import configure_output_root, publish_current_run
 
 
@@ -27,7 +27,7 @@ def test_manifest_round_trip(tmp_path: Path):
 
 def test_source_fingerprint_changes_when_scientific_code_changes(tmp_path: Path):
     root = tmp_path / "repo"
-    source_dir = root / "code" / "lur"
+    source_dir = root / "code" / "lexur"
     source_dir.mkdir(parents=True)
     source = source_dir / "methods.py"
     source.write_text("VALUE = 1\n", encoding="utf-8")
@@ -40,7 +40,7 @@ def test_source_fingerprint_changes_when_scientific_code_changes(tmp_path: Path)
 
 def test_manifest_run_id_binds_config_and_source(tmp_path: Path):
     root = tmp_path / "repo"
-    source_dir = root / "code" / "lur"
+    source_dir = root / "code" / "lexur"
     source_dir.mkdir(parents=True)
     (source_dir / "methods.py").write_text("VALUE = 1\n", encoding="utf-8")
     cfg = root / "code" / "config.yaml"

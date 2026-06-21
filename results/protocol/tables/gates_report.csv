@@ -5,6 +5,6 @@ Nadir-error stability,CHECK,max quality degradation 0.1533
 tail_noninferiority_asf,CHECK,"diff 0.0492 CI [0.0251, 0.0744]"
 tail_noninferiority_mmr,CHECK,"diff 0.0445 CI [0.022, 0.0683]"
 Better than practical baselines (tail),CHECK,TOPSIS:d=+0.17; CP:d=+0.14; Knee:d=+0.75; RW:d=+0.97; SMAA:d=+0.97
-redundancy_grouped_loss,PASS,LUR 0.256 vs avg 0.359
+redundancy_grouped_loss,PASS,LexUR 0.256 vs avg 0.359
 Direct computation demonstrated (LP+MILP),PASS,LP direct calls 19 vs enum 150
-Stochastic LUR <= deterministic LUR (tail),PASS,best-alpha 0.383 vs det 0.383
+Stochastic LexUR <= deterministic LexUR (tail),PASS,best-alpha 0.383 vs det 0.383

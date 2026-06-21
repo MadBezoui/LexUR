@@ -1,14 +1,14 @@
-"""Tests for lur.directopt — direct LUR computation via LP formulation.
+"""Tests for lexur.directopt — direct LexUR computation via LP formulation.
 
-Covers: random_linear_mop, direct_lur_linear, enumerate_then_select,
+Covers: random_linear_mop, direct_lexur_linear, enumerate_then_select,
 and consistency between direct and enumerated approaches.
 """
 import numpy as np
 import pytest
 import numpy.testing as npt
 
-from lur.directopt import (
-    _solve_lp, random_linear_mop, direct_lur_linear, enumerate_then_select,
+from lexur.directopt import (
+    _solve_lp, random_linear_mop, direct_lexur_linear, enumerate_then_select,
 )
 
 
@@ -66,17 +66,17 @@ def test_failed_lp_raises_instead_of_returning_invalid_result():
 
 
 # --------------------------------------------------------------------------- #
-# direct_lur_linear
+# direct_lexur_linear
 # --------------------------------------------------------------------------- #
 class TestDirectLurLinear:
-    """Tests for direct_lur_linear() LP formulation."""
+    """Tests for direct_lexur_linear() LP formulation."""
 
     def test_returns_valid_solution(self, small_mop):
         """Should return a feasible x in [0, 1]^n."""
         C, A, b = small_mop
         m, n = C.shape
         pw = np.vstack([np.eye(m), np.ones(m) / m])
-        x, info = direct_lur_linear(C, A, b, pw)
+        x, info = direct_lexur_linear(C, A, b, pw)
         assert x.shape == (n,)
         # x should be in [0, 1]
         assert np.all(x >= -1e-6)
@@ -87,7 +87,7 @@ class TestDirectLurLinear:
         C, A, b = small_mop
         m = C.shape[0]
         pw = np.vstack([np.eye(m), np.ones(m) / m])
-        x, info = direct_lur_linear(C, A, b, pw)
+        x, info = direct_lexur_linear(C, A, b, pw)
         violations = A @ x - b
         assert np.all(violations <= 1e-6)
 
@@ -96,7 +96,7 @@ class TestDirectLurLinear:
         C, A, b = small_mop
         m = C.shape[0]
         pw = np.vstack([np.eye(m), np.ones(m) / m])
-        _, info = direct_lur_linear(C, A, b, pw)
+        _, info = direct_lexur_linear(C, A, b, pw)
         assert "solver_calls" in info
         assert "rho1" in info
         assert "f_ideal" in info
@@ -108,7 +108,7 @@ class TestDirectLurLinear:
         C, A, b = small_mop
         m = C.shape[0]
         pw = np.vstack([np.eye(m), np.ones(m) / m])
-        _, info = direct_lur_linear(C, A, b, pw)
+        _, info = direct_lexur_linear(C, A, b, pw)
         assert np.all(info["f_ideal"] <= info["f_nadir"] + 1e-6)
 
     def test_rho1_non_negative(self, small_mop):
@@ -116,7 +116,7 @@ class TestDirectLurLinear:
         C, A, b = small_mop
         m = C.shape[0]
         pw = np.vstack([np.eye(m), np.ones(m) / m])
-        _, info = direct_lur_linear(C, A, b, pw)
+        _, info = direct_lexur_linear(C, A, b, pw)
         assert info["rho1"] >= -1e-6
 
 
@@ -150,21 +150,21 @@ class TestDirectVsEnumerated:
     """The direct solution should be comparable to enumerated+post-processed."""
 
     def test_direct_objective_quality(self, rng):
-        """Direct LUR objective values should not be much worse than enumerated
-        LUR selection on a small problem."""
+        """Direct LexUR objective values should not be much worse than enumerated
+        LexUR selection on a small problem."""
         C, A, b = random_linear_mop(m=3, n=6, n_constr=4, rng=rng)
         m, n = C.shape
         pw = np.vstack([np.eye(m), np.ones(m) / m])
 
         # Direct
-        x_dir, _ = direct_lur_linear(C, A, b, pw)
+        x_dir, _ = direct_lexur_linear(C, A, b, pw)
         f_dir = C @ x_dir
 
-        # Enumerated + LUR post-processing
-        from lur.methods import lur as lur_select, normalize
+        # Enumerated + LexUR post-processing
+        from lexur.methods import lexur as lexur_select, normalize
         F, _ = enumerate_then_select(C, A, b, n_weights=100,
                                      rng=np.random.default_rng(42))
-        i_sel = lur_select(F)
+        i_sel = lexur_select(F)
         f_enum = F[i_sel]
 
         # Both should be feasible (finite)
@@ -181,6 +181,6 @@ class TestDirectVsEnumerated:
         """With singleton-only probes the direct LP should still be feasible."""
         C, A, b = random_linear_mop(m=2, n=5, n_constr=3, rng=rng)
         pw = np.eye(C.shape[0])  # singleton probes only
-        x, info = direct_lur_linear(C, A, b, pw)
+        x, info = direct_lexur_linear(C, A, b, pw)
         assert np.all(x >= -1e-6)
         assert np.all(x <= 1.0 + 1e-6)

@@ -21,26 +21,26 @@
 
 % --- unsorted bars ---
 \foreach \v/\i in {0.2/0,0.9/1,0.4/2,0.7/3,0.3/4}{
-  \fill[lurslate!50] (\Lx+\i*0.5,\rowA) rectangle ++(\barw,{\v*\sc});}
+  \fill[lexurslate!50] (\Lx+\i*0.5,\rowA) rectangle ++(\barw,{\v*\sc});}
 \foreach \v/\i in {0.6/0,0.8/1,0.5/2,0.8/3,0.2/4}{
-  \fill[lurslate!50] (\Lx+\i*0.5,\rowB) rectangle ++(\barw,{\v*\sc});}
+  \fill[lexurslate!50] (\Lx+\i*0.5,\rowB) rectangle ++(\barw,{\v*\sc});}
 
 % --- sorted bars (A wins/loses comparison) ---
 \foreach \v/\i in {0.9/0,0.7/1,0.4/2,0.3/3,0.2/4}{
-  \fill[lurslate!50] (\Rx+\i*0.5,\rowA) rectangle ++(\barw,{\v*\sc});}
+  \fill[lexurslate!50] (\Rx+\i*0.5,\rowA) rectangle ++(\barw,{\v*\sc});}
 \foreach \v/\i in {0.8/0,0.8/1,0.6/2,0.5/3,0.2/4}{
-  \fill[lurslate!50] (\Rx+\i*0.5,\rowB) rectangle ++(\barw,{\v*\sc});}
+  \fill[lexurslate!50] (\Rx+\i*0.5,\rowB) rectangle ++(\barw,{\v*\sc});}
 % highlight the deciding first coordinate
-\draw[lurcrimson, line width=1pt] (\Rx,\rowA) rectangle ++(\barw,{0.9*\sc});
-\node[lurcrimson, font=\scriptsize] at (\Rx+\barw/2,\rowA+0.9*\sc+0.18) {$0.9$};
-\draw[lurgreen!60!black, line width=1pt] (\Rx,\rowB) rectangle ++(\barw,{0.8*\sc});
-\node[lurgreen!60!black, font=\scriptsize] at (\Rx+\barw/2,\rowB+0.8*\sc+0.18) {$0.8$};
+\draw[lexurcrimson, line width=1pt] (\Rx,\rowA) rectangle ++(\barw,{0.9*\sc});
+\node[lexurcrimson, font=\scriptsize] at (\Rx+\barw/2,\rowA+0.9*\sc+0.18) {$0.9$};
+\draw[lexurgreen!60!black, line width=1pt] (\Rx,\rowB) rectangle ++(\barw,{0.8*\sc});
+\node[lexurgreen!60!black, font=\scriptsize] at (\Rx+\barw/2,\rowB+0.8*\sc+0.18) {$0.8$};
 
 % --- comparison note (to the right, clear of bars) ---
-\node[anchor=west, font=\scriptsize, align=left, lurslate] at (\Rx+2.9,2.3)
+\node[anchor=west, font=\scriptsize, align=left, lexurslate] at (\Rx+2.9,2.3)
   {compare worst-first:\\[1pt]
-   $0.8<0.9 \;\Rightarrow\; B\prec_{\mathrm{LUR}}A$};
-\draw[flow, draw=lurcrimson] (\Rx+2.85,2.3) -- (\Rx+0.5,2.5);
+   $0.8<0.9 \;\Rightarrow\; B\prec_{\mathrm{LexUR}}A$};
+\draw[flow, draw=lexurcrimson] (\Rx+2.85,2.3) -- (\Rx+0.5,2.5);
 
 % --- verdict box ---
 \node[win, font=\scriptsize, align=center] at (\Rx+0.0,0.45)

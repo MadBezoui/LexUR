@@ -1,0 +1,43 @@
+{
+  "git_commit": "b4f2bf5ca55c7618337be3697588bfef292736c2",
+  "git_dirty": true,
+  "params": {
+    "evidence": {
+      "analysis_path": "/sessions/nice-vigilant-dijkstra/mnt/ALexUR/results/protocol/runs/33e81af5a748796ef2103fc0dd280bb7cb3aff6758e86ac49877cc632f036749/tables/benchmark_analysis.json",
+      "average_ranks": {
+        "ASF": 4.774930555555556,
+        "CP": 5.276597222222223,
+        "ChebMMR": 5.032430555555556,
+        "HV": 4.339097222222223,
+        "Knee": 7.318263888888889,
+        "LexUR": 4.671875,
+        "MMR": 4.574861111111111,
+        "RW": 9.207847222222222,
+        "SMAA": 9.259236111111111,
+        "TOPSIS": 6.834375,
+        "VIKOR": 4.710486111111111
+      },
+      "config_sha256": "bad0323d7de5ade85715a3995c042d2b09a29447765c133984123d3536f7a546",
+      "method_names": [
+        "TOPSIS",
+        "CP",
+        "VIKOR",
+        "Knee",
+        "HV",
+        "RW",
+        "ASF",
+        "SMAA",
+        "MMR",
+        "ChebMMR",
+        "LexUR"
+      ],
+      "n_instances": 7200,
+      "nemenyi_cd": 0.1779369200025672,
+      "raw_path": "/sessions/nice-vigilant-dijkstra/mnt/ALexUR/results/protocol/runs/33e81af5a748796ef2103fc0dd280bb7cb3aff6758e86ac49877cc632f036749/raw/benchmark.parquet",
+      "run_id": "33e81af5a748796ef2103fc0dd280bb7cb3aff6758e86ac49877cc632f036749"
+    },
+    "figure": "cd_protocol"
+  },
+  "params_sha256": "f1079592d5ddad74c9d058522920159fb5cf7f8b94709326eee7d33ba32f9520",
+  "run_id": "33e81af5a748796ef2103fc0dd280bb7cb3aff6758e86ac49877cc632f036749"
+}

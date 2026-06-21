@@ -10,15 +10,7 @@ It is, however, \emph{decisionally incomplete}. For $m$ conflicting criteria the
 efficient set is typically large or infinite, and the decision maker (DM) is left
 with a cloud of efficient alternatives and no principled rule for selecting one.
 
-Confronted with this gap, practice resorts to \emph{post hoc} selection devices,
-each of which reintroduces the very preference information the DM was unable to
-supply: a weighted sum requires weights and cannot reach non-convex parts of the
-front \citep{miettinen1999}; TOPSIS \citep{hwang1981} requires a distance metric
-and weights; compromise programming \citep{zeleny1982} requires a metric exponent
-and weights; knee-point rules \citep{branke2008} are scale sensitive; outranking
-methods such as ELECTRE \citep{roy1991} and PROMETHEE \citep{brans2016} require
-concordance/discordance thresholds; and hypervolume-based selection
-\citep{zitzler1999} favours extremes and is costly. These methods are valid and widely used, but they require the analyst or DM to commit to additional modelling choices---weights, metrics, thresholds, exponents, or reference points---that may be difficult to justify when preference information is intentionally incomplete. The fundamental issue is that \textbf{the Pareto front is a safety filter, not a complete decision rule}.
+Confronted with this gap, established decision-support frameworks employ various selection devices to integrate preference information: a weighted sum requires weights \citep{miettinen1999}; TOPSIS \citep{hwang1981} requires a distance metric and weights; compromise programming \citep{zeleny1982} requires a metric exponent and weights; outranking methods such as ELECTRE \citep{roy1991} and PROMETHEE \citep{brans2016} require concordance/discordance thresholds; and hypervolume-based selection \citep{zitzler1999} requires a reference point. These methods are robust and widely used, each with different preference assumptions. However, they require the analyst or DM to commit to additional modelling choices---weights, metrics, thresholds, exponents, or reference points---that may be difficult to justify when preference information is intentionally incomplete. The fundamental issue remains that \textbf{the Pareto front is a safety filter, not a complete decision rule}.
 
 \subsection{From a front to a certificate}
 We argue that, for the purpose of \emph{choosing}, the efficient set is often insufficient as a final decision object. We propose supplementing it with a \emph{regret certificate}: a vector of
@@ -33,14 +25,14 @@ This turns the output of the analysis from a \emph{set} into a \emph{certified
 stability class}: a robust set of alternatives (often a singleton, if bounds are verified and margins hold) accompanied
 by an explanation of which questions remain most severely binding.
 
-It is crucial to note what this approach does and does not do. LUR is not parameter-free; preferences are represented by an explicit auditable probe family, and it requires normalisation bounds and tolerance settings for numerical implementation. Its contribution is that these choices are declared, auditable, and separated from the final recommendation, not that they disappear. Figure~\ref{fig:paretocert} contrasts the efficient set as a safety filter with the regret certificate as the decision object.
+It is crucial to note what this approach does and does not do. LexUR is not parameter-free; preferences are represented by an explicit auditable probe family, and it requires normalisation bounds and tolerance settings for numerical implementation. Its contribution is that these choices are declared, auditable, and separated from the final recommendation, not that they disappear. Figure~\ref{fig:paretocert} contrasts the efficient set as a safety filter with the regret certificate as the decision object.
 
 \input{tikz/fig_pareto_cert}
 
 \subsection{The Leximax Universal-Regret core}
-We formalise this as the \textbf{Leximax Universal-Regret (LUR) core}. At its core, LUR is a \emph{leximin-refined preference-robust selection rule} operating over a structured, declared, monotone scalarisation family. Given a
+We formalise this as the \textbf{Leximax Universal-Regret (LexUR) core}.\footnote{The qualifier ``Universal'' denotes universality \emph{over the declared probe family}---LexUR controls regret uniformly across every declared question---\emph{not} robustness over all admissible preferences. We repeat this qualification where the distinction matters.} At its core, LexUR is a \emph{lexicographic minimax regret} selection rule operating over a structured, declared, monotone scalarisation family. Given a
 feasible set and a \emph{declared} class $\Q$ of admissible monotone probes
-(scalar ``rational questions'' over the normalised criteria), LUR treats each probe as an achievement function, ranks
+(scalar ``rational questions'' over the normalised criteria), LexUR treats each probe as an achievement function, ranks
 alternatives by the lexicographically sorted vector of their normalised disappointments
 across $\Q$, and returns the lexicographic minimiser together with its
 certificate. The construction rests on three principles: (i) \emph{declared
@@ -50,27 +42,14 @@ dominated alternative is never preferred to its dominator; and (iii) \emph{direc
 finite computation}---the method is primarily a \emph{post hoc} robust selection rule operating exactly on a finite candidate set, though we also provide exact front-free formulations for structured continuous cases (\S\ref{sec:direct}).
 
 \subsection{Positioning and contribution}
-LUR belongs to \emph{robust} multicriteria decision analysis. Its closest
-relatives are stochastic multicriteria acceptability analysis (SMAA)
-\citep{lahdelma1998,tervonen2007}, which integrates acceptability over a
-preference distribution; robust ordinal regression
-\citep{greco2008,figueira2009}, which reasons over the set of value functions
-compatible with elicited holistic judgements; and preference robust optimisation
-\citep{armbruster2015,hu2015}, which optimises against an ambiguity set of utility
-functions. LUR differs from all three in object and output: it computes the
-\emph{lexicographic minimax} (leximin) of normalised achievement shortfalls over an explicit, monotone
-probe family and returns an interpretable certificate; it requires no preference
-distribution, no elicited judgements, and no single scalarisation. We show that
-achievement scalarisation \citep{wierzbicki1980}, the weighted sum, and the
-lexicographic maximin \citep{ogryczak1997} are recovered as special cases of the
-probe family. Ultimately, LUR provides a concrete synthesis of these established aggregation mechanisms into a single, auditable robust selection rule equipped with a linear-size probe family.
+LexUR belongs to \emph{robust} multicriteria decision analysis. Its closest relatives are stochastic multicriteria acceptability analysis (SMAA) \citep{lahdelma1998,tervonen2007}, which integrates acceptability over a preference distribution; robust ordinal regression \citep{greco2008,figueira2009}, which reasons over the set of value functions compatible with elicited holistic judgements; and preference robust optimisation \citep{armbruster2015,hu2015}, which optimises against an ambiguity set of utility functions. Rather than replacing these methods, LexUR targets the specific setting where the analyst can declare admissible monotone questions but does not wish to elicit precise weights, thresholds, or a probability distribution over preferences. LexUR differs in object and output: it is a complementary finite-candidate robust selector that computes the \emph{lexicographic minimax} of normalised achievement shortfalls over an explicit, monotone probe family, returning an interpretable certificate. We show that achievement scalarisation \citep{wierzbicki1980}, the weighted sum, and the lexicographic maximin \citep{ogryczak1997} are recovered as special cases of the probe family. Ultimately, LexUR provides a concrete synthesis of these established aggregation mechanisms into a single, auditable robust selection rule equipped with a linear-size probe family.
 
 Our contributions are:
 \begin{itemize}
-\item \textbf{Core theoretical contribution:} We define the LUR order and its auditable certificate, proving existence, completeness, Pareto compatibility \emph{under an explicit separation condition}, dominated-solution exclusion, and stability of the tolerance-based rule under bounded perturbations (\S\ref{sec:core}).
+\item \textbf{Core theoretical contribution:} We define the LexUR order and its auditable certificate, proving existence, completeness, Pareto compatibility \emph{under an explicit separation condition}, dominated-solution exclusion, and stability of the tolerance-based rule under bounded perturbations (\S\ref{sec:core}).
 \item \textbf{Computational contribution:} We present an exact candidate-set algorithm based on sequential lexicographic sorts, and outline a conditional formulation for structured continuous cases (\S\ref{sec:direct}).
 \item \textbf{Probe construction:} We propose an adaptive, redundancy-aware correlation-clustering probe family with empirical redundancy tests and a perturbation bound (\S\ref{sec:probes}).
-\item \textbf{Empirical validation:} We validate LUR on a broadened benchmark suite with held-out additive and non-additive preferences, and apply it to a stochastic smart-grid dispatch case study (\S\ref{sec:exp}).
+\item \textbf{Empirical validation:} We validate LexUR on a broadened benchmark suite with held-out additive and non-additive preferences, and apply it to a stochastic smart-grid dispatch case study (\S\ref{sec:exp}).
 \item \textbf{Extensions:} We outline stochastic and multi-stakeholder variants as initial extensions demonstrating the framework's flexibility (\S\ref{sec:ext}).
 \end{itemize}
 

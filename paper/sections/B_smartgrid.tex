@@ -1,23 +1,33 @@
 \section{Smart-grid economic dispatch formulation}
 \label{app:smartgrid}
-The case study in \S\ref{sec:exp} formulates a 24-hour stochastic economic dispatch with recourse on a 14-generator test case (derived from the IEEE 14-bus structure). The first-stage decision variables are the day-ahead unit commitment status $u_{gt}$. The second-stage (recourse) variables under scenario $\omega$ are the scheduled power $p_{gt}(\omega)$, renewable curtailment $c_t^{\mathrm{ren}}(\omega)$, and load shedding $s_t^{\mathrm{shed}}(\omega)$. The uncertain parameters are the demand $d_t(\omega)$, non-dispatchable renewable generation $w_t(\omega)$ (wind) and $s_t(\omega)$ (solar) under scenario $\omega$, and line losses $\ell_t(\omega)$.
+The case study in \S\ref{sec:exp} evaluates a 24-hour multi-objective economic dispatch on a synthetic 14-generator instance constructed using the IEEE 14-bus demand/generator template. To prevent any misreading of the model's fidelity, we describe the actual implementation precisely; it is deliberately a lightweight \emph{priority-dispatch heuristic}, \emph{not} a binary unit-commitment MILP and \emph{not} a network-constrained AC/DC optimal power flow. It is an \emph{aggregate} (single-bus) dispatch: the IEEE 14-bus data supplies the demand profile and the generator cost/emission/ramp template only, and no nodal power-flow, transmission-limit, line-loss, or binary commitment constraints are modelled (the dispatch balances the hourly demand $d_t(\omega)$ directly).
 
-The power-balance constraint ensures that total generation meets demand and losses:
+\paragraph{Candidate policy and dispatch rule.}
+A candidate policy is a non-negative \emph{dispatch-priority} vector $\pi\in\mathbb{R}^{14}_{\ge 0}$, normalised to $\sum_g\pi_g=1$; there are no binary commitment variables, and all generators are treated as available (renewable units have hour- and scenario-dependent available capacity). For each hour $t$ and scenario $\omega$, let $C_{gt}(\omega)$ be the available capacity ($C_{gt}=P_g^{\max}$ for thermal units, and the renewable cap scaled by the realised solar/wind availability for renewable units). The dispatch is computed by a two-pass priority rule:
 \begin{equation}
-\sum_g p_{gt}(\omega) + w_t(\omega) + s_t(\omega) - c_t^{\mathrm{ren}}(\omega) + s_t^{\mathrm{shed}}(\omega) = d_t(\omega) + \ell_t(\omega), \quad \forall t, \omega.
+p_{gt}(\omega)=\min\!\bigl(\pi_g\,d_t(\omega),\,C_{gt}(\omega)\bigr)\ \text{(nominal share, capped)},
 \end{equation}
-Generators are subject to minimum and maximum capacity bounds and ramping constraints $R_g$:
+after which any residual demand $d_t(\omega)-\sum_g p_{gt}(\omega)$ is filled greedily in proportion to the remaining headroom $C_{gt}(\omega)-p_{gt}(\omega)$, up to capacity. No ramp constraint is enforced; inter-hour ramping is \emph{measured} as the wear objective below, not constrained. Renewable energy beyond what is dispatched is simply not used (there is no explicit curtailment variable). Any demand that still cannot be met is recorded as load shedding,
 \begin{equation}
-P_g^{\min}u_{gt} \le p_{gt}(\omega) \le P_g^{\max}u_{gt}, \qquad |p_{g,t}(\omega)-p_{g,t-1}(\omega)| \le R_g, \quad \forall \omega.
+s_t^{\mathrm{shed}}(\omega)=\max\!\Bigl(d_t(\omega)-\textstyle\sum_g p_{gt}(\omega),\,0\Bigr),
 \end{equation}
-The six objectives to be minimised are:
+which feeds the unreliability objective. Every sampled policy is therefore \emph{feasible by construction}: capacity violations are impossible (dispatch is capped) and any supply shortfall is absorbed as load shedding rather than discarded or repaired.
+
+The six objectives to be minimised are given below, each up to a fixed positive
+scaling constant that does not affect ranking or active-set normalisation. Let
+$G_{\mathrm{th}}$ and $G_{\mathrm{ren}}$ denote the thermal and renewable generator
+sets, $c_g,e_g$ the fuel-cost and emission coefficients, and $R_g$ the ramp scale.
 \begin{enumerate}
-    \item \textbf{Cost:} Expected total fuel cost.
-    \item \textbf{Emissions:} Expected total $\mathrm{CO}_2$ emissions.
-    \item \textbf{Unreliability:} Loss of load probability $f_3(x)=\mathbb{P}\left(\sum_t s_t^{\mathrm{shed}}(\omega)>0\right)$.
-    \item \textbf{Ramping wear:} Expected absolute generation change $\mathbb{E}[\sum_{g,t} |p_{g,t}(\omega)-p_{g,t-1}(\omega)|]$.
-    \item \textbf{Non-renewable fraction:} Expected ratio of thermal to total generation.
-    \item \textbf{Peak stress:} Expected difference between the maximum and average dispatch-dependent net load on the thermal fleet.
+    \item \textbf{Cost:} $f_1(x)=\mathbb{E}_\omega\!\left[\sum_{t}\sum_{g} c_g\,p_{gt}(\omega)\right]$.
+    \item \textbf{Emissions:} $f_2(x)=\mathbb{E}_\omega\!\left[\sum_{t}\sum_{g} e_g\,p_{gt}(\omega)\right]$.
+    \item \textbf{Unreliability:} Loss-of-load probability, the fraction of scenarios in which any load is shed,
+    \[ f_3(x)=\frac{1}{|\Omega|}\sum_{\omega\in\Omega}\mathbf 1\!\left[\sum_t s_t^{\mathrm{shed}}(\omega)>0\right]. \]
+    \item \textbf{Ramping wear:} expected ramp magnitude normalised by the per-generator ramp scale $R_g$ (a wear normaliser, \emph{not} an enforced ramp limit),
+    \[ f_4(x)=\mathbb{E}_\omega\!\left[\sum_{g}\sum_{t>1} \frac{|p_{g,t}(\omega)-p_{g,t-1}(\omega)|}{R_g}\right]. \]
+    \item \textbf{Non-renewable fraction:} expectation \emph{of the per-scenario ratio} of thermal to total dispatched energy (an expectation of a ratio, not a ratio of expectations),
+    \[ f_5(x)=\mathbb{E}_\omega\!\left[\frac{\sum_{t}\sum_{g\in G_{\mathrm{th}}} p_{gt}(\omega)}{\sum_{t}\sum_{g} p_{gt}(\omega)+\varepsilon}\right]. \]
+    \item \textbf{Peak stress:} a peak-shaving proxy equal to the peak demand scaled by the priority weight \emph{not} pre-allocated to thermal generators,
+    \[ f_6(x)=d^{\mathrm{peak}}\,\max\!\Bigl(1-\textstyle\sum_{g\in G_{\mathrm{th}}}\pi_g,\,0\Bigr). \]
 \end{enumerate}
 
-The model is evaluated using a Monte-Carlo sample-average approximation over 100 scenarios. All parameter values (generator data, costs, emissions, ramp limits, and scenario bounds) are available in the open-source repository. This formulation serves as an illustrative application of the robust certificate framework.
+Each candidate policy is evaluated by Monte-Carlo sample-average approximation over $20$ renewable scenarios drawn from the scenario model. The candidate set is generated \emph{a priori}, independently of LexUR: we sample a population of $250$ dispatch policies as Dirichlet-weighted generator allocations ($\mathrm{Dir}(0.6\cdot\mathbf 1)$ over the $14$ generators, seed $2024$), evaluate each under the scenarios, and retain the $163$ non-dominated policies as the efficient candidate set. No evolutionary operators (selection, crossover, mutation) are used; a population metaheuristic such as NSGA-II could be substituted without changing LexUR's role as a post-hoc selector. All parameter values (generator data, costs, emissions, ramp-wear coefficients $R_g$, and scenario bounds), random seeds, and the exact scenario count are fixed in the open-source repository. This formulation serves as an illustrative application of the robust certificate framework.

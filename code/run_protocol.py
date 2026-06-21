@@ -16,8 +16,8 @@ import numpy as np, pandas as pd, yaml
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from lur import problems, methods, families, stats as st, gates, directopt, extras_validation
-from lur.methods import normalize
+from lexur import problems, methods, families, stats as st, gates, directopt, extras_validation
+from lexur.methods import normalize
 
 DEFAULT_OUTPUT_ROOT = Path(__file__).resolve().parents[1] / "results" / "protocol"
 ROOT = str(DEFAULT_OUTPUT_ROOT)
@@ -172,7 +172,7 @@ def stage_bfinalize(cfg):
     if not files:
         raise SystemExit("no benchmark chunks found in tmp/")
 
-    from lur.records import load_validated_chunks
+    from lexur.records import load_validated_chunks
     manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
     combined = load_validated_chunks(files, cfg, manifest.get("run_id", ""))
     print(f"  combined {len(files)} chunks -> {len(combined)} records")
@@ -180,9 +180,9 @@ def stage_bfinalize(cfg):
 
 def _benchmark_finalize_from_records(cfg, records):
     import pandas as pd
-    from lur.records import validate_benchmark_frame
-    from lur.analysis import cluster_bootstrap_difference
-    from lur.reporting import analyze_benchmark
+    from lexur.records import validate_benchmark_frame
+    from lexur.analysis import cluster_bootstrap_difference
+    from lexur.reporting import analyze_benchmark
     
     df = records.copy() if isinstance(records, pd.DataFrame) else pd.DataFrame(records)
     
@@ -218,9 +218,9 @@ def _benchmark_finalize_from_records(cfg, records):
             cells = sub[["N", "m", "geometry", "replication"]].drop_duplicates()
             n_cells = len(cells)
             for mtd in M:
-                if mtd == "LUR": continue
+                if mtd == "LexUR": continue
                 md, ci_l, ci_u, rev = cluster_bootstrap_difference(
-                    sub, control="LUR", treatment=mtd,
+                    sub, control="LexUR", treatment=mtd,
                     cluster_columns=["N", "m", "geometry", "replication"],
                     seed=42, n_boot=1000
                 )
@@ -281,7 +281,7 @@ def stage_redundancy(cfg):
                dict(run_id=run_id,
                     mean_cluster_recovery=float(np.mean(cluster_recovery))))
     print(f"  cluster recovery={np.mean(cluster_recovery):.3f}; "
-          f"LUR grp={df.set_index('method').loc['LUR','grouped_loss']:.3f}")
+          f"LexUR grp={df.set_index('method').loc['LexUR','grouped_loss']:.3f}")
     return df
 
 
@@ -295,7 +295,7 @@ def _cluster_match(lab, truth):
 
 
 def stage_probes(cfg):
-    from lur.probe_validation import compare_probe_families
+    from lexur.probe_validation import compare_probe_families
 
     rng = np.random.default_rng(cfg["seed"] + 2)
     probe_cfg = cfg["probe_validation"]
@@ -405,7 +405,7 @@ def stage_multistakeholder(cfg):
 
 def stage_report(cfg):
     """Assemble the acceptance-gate table from persisted stage outputs."""
-    from lur.reporting import build_gate_report, ensure_registered_gates
+    from lexur.reporting import build_gate_report, ensure_registered_gates
 
     manifest = _load_json(os.path.join(ROOT, "run_manifest.json"))
     run_id = manifest.get("run_id", "")
@@ -454,8 +454,8 @@ def stage_report(cfg):
         if set(rd["run_id"]) != {run_id}:
             raise ValueError("redundancy evidence run_id does not match report")
         avg = rd.loc[["TOPSIS", "SMAA", "RW"], "grouped_loss"].mean()
-        add("redundancy_grouped_loss", rd.loc["LUR", "grouped_loss"] < avg,
-            f"LUR {rd.loc['LUR','grouped_loss']:.3f} vs avg {avg:.3f}")
+        add("redundancy_grouped_loss", rd.loc["LexUR", "grouped_loss"] < avg,
+            f"LexUR {rd.loc['LexUR','grouped_loss']:.3f} vs avg {avg:.3f}")
         extra = _load_json(f"{TAB}/redundancy_extra.json")
         if extra.get("run_id") != run_id:
             raise ValueError("cluster evidence run_id does not match report")
@@ -487,11 +487,11 @@ def stage_report(cfg):
         sd = pd.read_csv(f"{TAB}/stochastic.csv").set_index("method")
         if set(sd["run_id"]) != {run_id}:
             raise ValueError("stochastic evidence run_id does not match report")
-        best_alpha = sd.filter(like="LUR-a", axis=0)["tail_loss"].min()
+        best_alpha = sd.filter(like="LexUR-a", axis=0)["tail_loss"].min()
         add_check("stochastic_calibration",
             "train/test illustration lacks a registered confidence-coverage calibration test",
             {"best_alpha_tail": best_alpha,
-             "deterministic_tail": sd.loc["det-LUR", "tail_loss"]})
+             "deterministic_tail": sd.loc["det-LexUR", "tail_loss"]})
     except Exception as e:
         import logging
         logging.warning(f"Failed to load multi-stakeholder or stochastic CSV: {e}")
@@ -552,7 +552,7 @@ def main():
     cfg["_geoms"] = [x.strip() for x in args.geoms.split(",")] if args.geoms else None
     if args.utils:
         cfg["utilities_per_family"] = args.utils
-    from lur.provenance import build_manifest
+    from lexur.provenance import build_manifest
     cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.config)
     manifest = build_manifest(cfg_path, seed=cfg.get("seed", 42))
     configure_output_root(args.output_root, manifest["run_id"])

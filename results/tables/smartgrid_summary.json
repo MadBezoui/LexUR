@@ -6,7 +6,7 @@
     "Knee": 40,
     "SMAA": 114,
     "MMR": 104,
-    "LUR": 104
+    "LexUR": 104
   },
   "objectives_of_choice": {
     "TOPSIS": [
@@ -49,7 +49,7 @@
       0.639,
       1.879
     ],
-    "LUR": [
+    "LexUR": [
       251.072,
       3477.759,
       0.0,
@@ -64,7 +64,7 @@
     "Knee": 0.4055,
     "SMAA": 0.0999,
     "MMR": 0.1029,
-    "LUR": 0.1029
+    "LexUR": 0.1029
   },
   "held_out_tail": {
     "TOPSIS": 0.3656,
@@ -72,7 +72,7 @@
     "Knee": 0.6232,
     "SMAA": 0.3656,
     "MMR": 0.2823,
-    "LUR": 0.2823
+    "LexUR": 0.2823
   },
   "certificate": [
     [
@@ -121,6 +121,56 @@
     ],
     [
       "max(all)",
+      0.0
+    ]
+  ],
+  "display_certificate": [
+    [
+      "peak stress",
+      0.402
+    ],
+    [
+      "non-renewable fraction",
+      0.4
+    ],
+    [
+      "max(ramping wear, peak stress)",
+      0.36
+    ],
+    [
+      "max(cost, emissions, non-renewable fraction)",
+      0.348
+    ],
+    [
+      "cost",
+      0.345
+    ],
+    [
+      "mean(cost, emissions, non-renewable fraction)",
+      0.332
+    ],
+    [
+      "mean(ramping wear, peak stress)",
+      0.306
+    ],
+    [
+      "emissions",
+      0.28
+    ],
+    [
+      "unreliability",
+      0.254
+    ],
+    [
+      "ramping wear",
+      0.252
+    ],
+    [
+      "grand mean",
+      0.191
+    ],
+    [
+      "grand maximum",
       0.0
     ]
   ],

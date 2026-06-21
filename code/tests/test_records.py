@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lur.records import (
+from lexur.records import (
     expected_benchmark_cells,
     load_validated_chunks,
     validate_benchmark_frame,

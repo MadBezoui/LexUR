@@ -7,21 +7,75 @@ marginal means. Let $\rho$ be a generic monotone risk functional over the scenar
 \begin{equation}
 \reg_q^\rho(x)=\frac{\rho_q(x)-\rho_q^\star}{\rho_q^{\mathrm w}-\rho_q^\star},
 \end{equation}
-assuming the active range is non-degenerate ($ \ge \varepsilon_q$). Using $\mathrm{CVaR}_\alpha$ penalises both expected disappointment and its sample uncertainty. Because $\mathrm{CVaR}$ is a monotone risk measure, exact Pareto compatibility is preserved.
+assuming the active range is non-degenerate ($ \ge \varepsilon_q$). Using $\mathrm{CVaR}_\alpha$ penalises upper-tail outcomes of the probe value; it does not directly measure epistemic sample uncertainty unless the sampling procedure is explicitly modelled that way. Because $\mathrm{CVaR}$ is a monotone risk measure, exact Pareto compatibility is preserved.
+
+To remove ambiguity about \emph{what} is randomised and \emph{where} the risk
+functional and anchors are applied, we fix the following conventions used
+throughout this section and in the experiments of \S\ref{sec:exp}. (i) The risk
+functional $\rho$ is applied to the \emph{probe value} $q(r(x,\omega))$---a scalar
+random variable per alternative and probe---not to the raw criteria and not to the
+already-normalised disappointments. (ii) The CVaR confidence level is
+$\alpha=0.95$ in the reported experiments (the released config also sweeps
+$\alpha\in\{0.5,0.8,0.95\}$). (iii) The normalisation anchors are computed from the
+\emph{same} risk functional on the \emph{same} scenario sample as plug-in
+estimates, i.e.\ $\rho_q^\star=\min_{x\in A}\hat\rho_q(x)$ and
+$\rho_q^{\mathrm w}=\max_{x\in A}\hat\rho_q(x)$ with $\hat\rho_q$ the sample-average
+(or sample-CVaR) over the drawn scenarios; they are not taken from a separate
+population estimate or fixed externally unless the analyst supplies such bounds.
+This keeps the disappointment ratios well defined on the same sample on which the
+recommendation is computed.
+
+\paragraph{Confidence-aware LexUR.}
+The variant evaluated in \S\ref{sec:exp} (Figure~\ref{fig:stoch}) is a specific,
+reproducible instance of the above and we define it explicitly to avoid ambiguity.
+Given $S$ i.i.d.\ observations per criterion with sample mean $\hat\mu_i(x)$ and
+sample standard deviation $\hat\sigma_i(x)$, and a one-sided confidence level
+$\gamma$ with normal quantile $z_\gamma$ ($z_{0.95}=1.6449$ in our experiments),
+\emph{confidence-aware LexUR} forms the upper-confidence objective (recall all
+criteria are minimised, so the conservative direction is upward)
+\begin{equation}
+\tilde f_i(x)=\hat\mu_i(x)+z_{\gamma}\,\frac{\hat\sigma_i(x)}{\sqrt{S}},\qquad
+\gamma=0.95,\ z_\gamma=1.6449,
+\label{eq:confaware}
+\end{equation}
+and then runs the \emph{deterministic} finite LexUR rule on $\tilde f$. The
+normalisation anchors $z_i^\star,z_i^{nad}$ and the probe anchors
+$q^\star,q^{\mathrm w}$ are computed from these same plug-in upper-confidence
+objectives over the candidate set (i.e.\ option~(iii) above), not from a separate
+population estimate; thus
+$r_i(x)=(\tilde f_i(x)-z_i^\star)/(z_i^{nad}-z_i^\star)$ with
+$z_i^\star=\min_{x\in A}\tilde f_i(x)$ and $z_i^{nad}=\max_{x\in A}\tilde f_i(x)$.
+With $z_\gamma=0$ this reduces to plug-in \emph{sample-average} LexUR; the term
+``confidence-aware'' refers precisely to the statistical margin
+$z_{\gamma}\hat\sigma_i/\sqrt{S}$ in Eq.~\eqref{eq:confaware}.
+
+We flag one important limitation. Unlike sample-average LexUR and the monotone
+risk functionals (e.g.\ CVaR) of Proposition~\ref{thm:stoch}, the
+mean-plus-standard-error variant of Eq.~\eqref{eq:confaware} does \emph{not}
+generally inherit scenario-wise Pareto compatibility, because the empirical
+standard-deviation term is not monotone under pointwise dominance. For instance,
+with one criterion and observations $x=(0,100)$, $y=(101,101)$, $x$ dominates $y$
+in every scenario, yet $x$ has far larger sample variance, so a sufficiently large
+$z_\gamma$ gives $\tilde f(x)>\tilde f(y)$ and the rule may prefer the dominated
+$y$. We therefore present confidence-aware LexUR as an exploratory conservative
+heuristic; Proposition~\ref{thm:stoch} (scenario-wise Pareto compatibility) is
+stated for sample-average and monotone-risk LexUR, and a practitioner who requires
+stochastic Pareto compatibility should use the CVaR (or another monotone risk)
+functional rather than the mean-plus-standard-error objective.
 
 \begin{proposition}[Scenario-wise Pareto compatibility]
 \label{thm:stoch}
-For finite $A$, finite $\Q$, and sample-average probe means $\hat{\mu}_q(x)=S^{-1}\sum_s q(r(x,\omega^{(s)}))$, if $x$ weakly dominates $y$ in every scenario and strictly dominates it in at least one criterion for at least one scenario, then the sample-average LUR rule does not prefer $y$ to $x$. If $\Q$ separates criteria and the dominance is strict on a separated coordinate, then $x$ is strictly preferred by the exact LUR order. We caution that this requires strict stochastic dominance across \emph{all} scenarios, which is a very strong assumption as real stochastic problems often exhibit crossing dominance (where an alternative dominates in one scenario but is dominated in another).
+For finite $A$, finite $\Q$, and sample-average probe means $\hat{\mu}_q(x)=S^{-1}\sum_s q(r(x,\omega^{(s)}))$, if $x$ weakly dominates $y$ in every scenario and strictly dominates it in at least one criterion for at least one scenario, then the sample-average LexUR rule does not prefer $y$ to $x$. If $\Q$ separates criteria and the dominance is strict on a separated coordinate, then $x$ is strictly preferred by the exact LexUR order. We caution that this requires strict stochastic dominance across \emph{all} scenarios, which is a very strong assumption as real stochastic problems often exhibit crossing dominance (where an alternative dominates in one scenario but is dominated in another).
 \end{proposition}
 \begin{proof}
-If $x$ weakly dominates $y$ under all scenarios and strictly dominates it in at least one criterion for at least one scenario, then $r(x, \omega^{(s)}) \le r(y, \omega^{(s)})$ for all $s$, with strict inequality on at least one coordinate for some scenario. For any monotone probe $q$, $q(r(x, \omega^{(s)})) \le q(r(y, \omega^{(s)}))$ for all scenarios. The functional $\rho_q(x) = \frac{1}{S}\sum_{s} q(r(x, \omega^{(s)}))$ preserves this weak inequality, meaning weak Pareto compatibility is preserved. If $\Q$ separates criteria and dominance is strict on a separated coordinate, then $\rho_q(x) < \rho_q(y)$ for that probe. Since the normalisation constants $\rho_q^\star$ and $\rho_q^{\mathrm w}$ are fixed across alternatives, the corresponding regret is strictly lower for $x$, giving $x \prec_{\mathrm{LUR}} y$ by the logic of Theorem~\ref{thm:pareto}.
+If $x$ weakly dominates $y$ under all scenarios and strictly dominates it in at least one criterion for at least one scenario, then $r(x, \omega^{(s)}) \le r(y, \omega^{(s)})$ for all $s$, with strict inequality on at least one coordinate for some scenario. For any monotone probe $q$, $q(r(x, \omega^{(s)})) \le q(r(y, \omega^{(s)}))$ for all scenarios. The functional $\rho_q(x) = \frac{1}{S}\sum_{s} q(r(x, \omega^{(s)}))$ preserves this weak inequality, meaning weak Pareto compatibility is preserved. If $\Q$ separates criteria and dominance is strict on a separated coordinate, then $\rho_q(x) < \rho_q(y)$ for that probe. Since the normalisation constants $\rho_q^\star$ and $\rho_q^{\mathrm w}$ are fixed across alternatives, the corresponding regret is strictly lower for $x$, giving $x \prec_{\mathrm{LexUR}} y$ by the logic of Theorem~\ref{thm:pareto}.
 \end{proof}
 
 \begin{proposition}[Sample-average consistency under a margin condition]
 \label{thm:stoch2}
-Let $A$ and $\Q$ be finite. For each $x\in A$ and $q\in\Q$, suppose $q(r(x,\omega))$ is i.i.d.\ across scenarios and has finite variance. Let $\mu_q(x)=\mathbb{E}[q(r(x,\omega))]$, and let $\hat{\mu}_q(x)$ be its sample average. Define population and sample disappointment vectors using their corresponding anchors. If the population tolerance-LUR winner satisfies the margin condition of Theorem~\ref{thm:stab}, then the sample-average LUR winner converges in probability to the population winner as $S\to\infty$.
+Let $A$ and $\Q$ be finite, and assume non-degenerate population probe ranges with a strictly positive range floor, $\rho_q^{\mathrm w}-\rho_q^\star\ge\beta>0$ for every $q\in\Q$ (so the disappointment ratios are bounded and stable). For each $x\in A$ and $q\in\Q$, suppose $q(r(x,\omega))$ is i.i.d.\ across scenarios with finite variance. Let $\mu_q(x)=\mathbb{E}[q(r(x,\omega))]$, and let $\hat{\mu}_q(x)$ be its sample average. Assume uniform convergence of the sample probe values to their population means. Define population and sample disappointment vectors using a clearly defined stochastic normalisation (e.g., sample-average anchors). If the population tolerance-LexUR winner satisfies the positive margin condition of Theorem~\ref{thm:stab}, then the sample-average LexUR winner converges in probability to the population winner as $S\to\infty$.
 \end{proposition}
 \begin{proof}
-Since $A$ and $\Q$ are finite, the weak law of large numbers gives uniform convergence in probability of $\hat{\mu}_q(x)$ to $\mu_q(x)$. Because the minima and maxima over finite sets are continuous operations, the estimated anchors $\hat{q}^\star$ and $\hat{q}^{\mathrm w}$ converge in probability to the population anchors. Therefore, the sample disappointment vectors converge uniformly in probability to the population disappointment vectors. Under the margin condition of Theorem~\ref{thm:stab}, there exists an $\eta > 0$ such that perturbations strictly within $\eta$ do not change the tolerance-LUR winner. Since the probability of the maximum estimation error exceeding $\eta$ vanishes as $S\to\infty$, the sample-average LUR winner converges in probability to the population winner.
+Since $A$ and $\Q$ are finite, the weak law of large numbers gives uniform convergence in probability of $\hat{\mu}_q(x)$ to $\mu_q(x)$. Because the minima and maxima over finite sets are continuous operations, the estimated anchors $\hat{q}^\star$ and $\hat{q}^{\mathrm w}$ converge in probability to the population anchors. Since the population range satisfies $\rho_q^{\mathrm w}-\rho_q^\star\ge\beta>0$, the denominator is bounded away from zero, so the disappointment ratio is a continuous function of the (converging) numerator and denominator; therefore the sample disappointment vectors converge uniformly in probability to the population disappointment vectors. Under the margin condition of Theorem~\ref{thm:stab}, there exists an $\eta > 0$ such that perturbations strictly within $\eta$ do not change the tolerance-LexUR winner. Since the probability of the maximum estimation error exceeding $\eta$ vanishes as $S\to\infty$, the sample-average LexUR winner converges in probability to the population winner.
 \end{proof}
 \S\ref{sec:exp} gives an empirical confirmation.

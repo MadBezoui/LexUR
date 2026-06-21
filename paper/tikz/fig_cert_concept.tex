@@ -5,17 +5,17 @@
 \def\bh{0.5} % bar height
 % horizontal bars, sorted descending, top = most binding
 \foreach \i/\v/\lab/\hot in {%
-   0/0.82/{$q_{\max}(f_5,f_6)$ — peak \& renewables}/1,
-   1/0.74/{$q_{f_6}$ — peak-shaving gap}/1,
-   2/0.55/{$q_{\mu}$ — grand mean (utilitarian)}/0,
-   3/0.41/{$q_{C_1,\max}$ — cost/emissions cluster}/0,
-   4/0.27/{$q_{f_2}$ — emissions}/0,
-   5/0.14/{$q_{f_1}$ — cost}/0}{
+   0/0.82/{$q_{\max}(r_2,r_4)$ — joint worst case}/1,
+   1/0.815/{$q_{r_4}$ — reliability}/1,
+   2/0.55/{$q_{\mu}$ — grand mean}/0,
+   3/0.41/{$q_{C_1,\max}$ — cluster maximum}/0,
+   4/0.27/{$q_{r_2}$ — criterion 2}/0,
+   5/0.14/{$q_{r_1}$ — criterion 1}/0}{
    \pgfmathsetmacro\yy{-\i*(\bh+0.18)}
    \ifnum\hot=1
-     \fill[lurcrimson] (0,\yy) rectangle ++(\v*6,\bh);
+     \fill[lexurcrimson] (0,\yy) rectangle ++(\v*6,\bh);
    \else
-     \fill[lurslate!55] (0,\yy) rectangle ++(\v*6,\bh);
+     \fill[lexurslate!55] (0,\yy) rectangle ++(\v*6,\bh);
    \fi
    \node[anchor=west, font=\scriptsize] at (\v*6+0.15,\yy+\bh/2) {\lab};
    \node[anchor=east, font=\scriptsize] at (-0.1,\yy+\bh/2) {\pgfmathprintnumber{\v}};
@@ -24,13 +24,14 @@
 \draw[->,line width=0.6pt] (0,-6*0.68-0.05) -- (6.2,-6*0.68-0.05)
    node[right,font=\scriptsize]{disappointment $\reg_{[k]}\in[0,1]$};
 % brace-like annotation for binding probes
-\node[lurcrimson, font=\scriptsize\bfseries, align=left] at (3.4,0.75)
-   {binding probes\\\scriptsize(where the choice is fragile)};
-\draw[lurcrimson,-{Stealth[length=1.8mm]}] (2.6,0.55) -- (2.4,0.05);
+\node[lexurcrimson, font=\scriptsize\bfseries, align=left] at (3.4,0.75)
+   {illustrative binding probes\\\scriptsize($\beta=0.01$ from the maximum)};
+\draw[lexurcrimson,-{Stealth[length=1.8mm]}] (2.6,0.55) -- (2.4,0.05);
 \end{tikzpicture}
-\caption{Anatomy of a regret certificate. The recommendation is reported with its
-probe disappointments sorted worst-first; the top, highlighted entries are the
-\emph{binding probes} that drive the worst-case regret and localise the fragility
-of the choice (illustrative labels follow the smart-grid case of \S\ref{sec:exp}).}
+\caption{Anatomy of an illustrative regret certificate. Probe disappointments are
+sorted worst-first while retaining their semantic labels. The highlighted probes
+lie within the presentation band $\beta=0.01$ of the maximum and are called
+binding; lower entries are secondary lexicographic constraints. The schematic
+values are not data from the smart-grid case.}
 \label{fig:certconcept}
 \end{figure}

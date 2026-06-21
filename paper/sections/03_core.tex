@@ -28,18 +28,15 @@ r_i(x)=\frac{f_i(x)-\ideal_i}{\nadir_i-\ideal_i},\qquad
 \ideal_i=\min_{x\in A}f_i(x),\;\; \nadir_i=\max_{x\in A}f_i(x),
 \label{eq:norm}
 \end{equation}
-which attains both endpoints on $A$. A criterion is flagged as numerically degenerate if the range $\nadir_i-\ideal_i$ approaches zero. Degenerate criteria are reported and excluded from non-singleton probe construction unless the analyst supplies external bounds.
+which attains both endpoints on $A$. A criterion is flagged as numerically degenerate if the range $\nadir_i-\ideal_i$ approaches zero. Degenerate criteria are reported and excluded from non-singleton probe construction unless the analyst supplies external bounds. If a criterion is degenerate over $A$, strict Pareto improvement on that criterion cannot occur inside $A$. If external bounds are supplied, singleton probes for degenerate criteria can remain. Excluding degenerate criteria does not weaken the strict Pareto compatibility for the remaining non-degenerate dimensions.
 
 For the finite case all extrema ($\ideal$,
 $\nadir$, $q^\star$, $q^{\mathrm w}$ below) are taken over the active candidate set $A$;
-for the continuous case (\S\ref{sec:direct}) they are taken over $\X$. We use the
-upper attainable value over $A$ in place of the true nadir over the efficient
-set; the two coincide when $A$ contains the criterion-wise worst efficient points,
-and otherwise the former is a conservative upper normalisation bound. The rule is invariant to
+We use the active-set maximum over $A$, not the true nadir. It is a valid upper endpoint for the evaluated candidate set, but not necessarily a conservative bound for the underlying feasible problem unless $A$ is known to contain the relevant nadir-attaining efficient points or external bounds are supplied. The rule is invariant to
 positive affine rescaling of the criteria when the bounds are transformed
 consistently; it is not invariant to arbitrary monotone transformations (e.g.\
 $f_i\mapsto\log f_i$), which change the distances that define regret---so such
-transformations are a modelling choice the analyst must make deliberately.
+transformations are a modelling choice the analyst must make deliberately. Because LexUR uses active-set normalisation, its recommendation is strongly set-dependent: adding a non-selected extreme candidate can change the normalisation and thus the recommendation. Consequently, LexUR is recommended only when the normalisation bounds are either fixed externally or reported through an interval/stability analysis.
 
 \subsection{Admissible probes}
 A \emph{probe} is a scalar function $q:[0,1]^m\to\R$ encoding a rational decision
@@ -48,7 +45,7 @@ question. The family $\Q$ is \emph{declared}: it is part of the specification.
 \begin{definition}[Admissible probe]
 \label{def:probe}
 A probe $q$ is \emph{admissible} if (i) it is non-decreasing in each $r_i$
-(monotonicity) and (ii) it can be rescaled so that $q(\mathbf 0)=0$, $q(\mathbf
+(monotonicity) and (ii) $q(\mathbf 1)>q(\mathbf 0)$, so it can be rescaled such that $q(\mathbf 0)=0$ and $q(\mathbf
 1)=1$ (normalisation).
 \end{definition}
 
@@ -65,12 +62,25 @@ non-negative weights or are maxima, hence are monotone.
 \label{def:sep}
 A probe family $\Q$ \emph{separates} criteria if for every $i$ there is a probe
 $q\in\Q$ strictly increasing in $r_i$. Including all $m$ singleton probes
-$q_i(r)=r_i$ is sufficient; LUR always does so.
+$q_i(r)=r_i$ is sufficient; LexUR always does so.
 \end{definition}
+
+\begin{remark}[Probe multiplicity is a modelling choice]
+\label{rem:multiplicity}
+The probe family is treated as a \emph{deduplicated labelled set}: each declared
+question appears once. Duplicating a probe is \emph{not} neutral. Because the
+leximax order sorts the full vector of probe-wise disappointments, a repeated
+probe contributes its disappointment more than once to the sorted vector and can
+therefore change lower-order lexicographic tie-breaking and the labelled
+certificate. Probe multiplicities thus act as implicit importance weights and
+must be interpreted as deliberate modelling choices, not as a harmless
+restatement of the same question. (The singleton probes are retained once each
+for separation, Definition~\ref{def:sep}.)
+\end{remark}
 
 \subsection{Disappointment and regret}
 For each probe $q\in\Q$ let $q^\star=\min_{x\in A}q(r(x))$ and $q^{\mathrm w}=\max_{x\in A}q(r(x))$
-(or a user-supplied worst-acceptable bound). Define the active range $R_q = q^{\mathrm w} - q^\star$. If $R_q < \varepsilon_q$ for a small numerical threshold, the probe is degenerate and is excluded from the primary decision vector. Otherwise, the \emph{normalised disappointment} of $x$ under $q$ is
+(or a user-supplied worst-acceptable bound, subject to $q^{\mathrm w}\ge\max_{x\in A}q(r(x))$ and $q^{\mathrm w}-q^\star\ge\varepsilon_q$). Define the active range $R_q = q^{\mathrm w} - q^\star$. If $R_q < \varepsilon_q$ for a small numerical threshold, the probe is degenerate and is excluded from the primary decision vector. Otherwise, the \emph{normalised disappointment} of $x$ under $q$ is
 \begin{equation}
 \reg_q(x)=\frac{q(r(x))-q^\star}{R_q}\in[0,1],
 \label{eq:disap}
@@ -82,27 +92,59 @@ We use the term \emph{disappointment} for the normalised shortfall of an alterna
 \subsection{The leximax order}
 Collect $\reg(x)=(\reg_{q_1}(x),\dots,\reg_{q_K}(x))$, $K=|\Q|$, and sort it in
 \emph{descending} order to obtain $\reg^{\downarrow}(x)=(\reg_{[1]}(x)\ge\dots\ge
-\reg_{[K]}(x))$. The \textbf{Leximax Universal-Regret order} is
+\reg_{[K]}(x))$. The \textbf{Leximax Universal-Regret order}, a lexicographic minimax regret rule, is
 \begin{equation}
-x\preceq_{\mathrm{LUR}}y \iff \reg^{\downarrow}(x)\lex \reg^{\downarrow}(y),
-\label{eq:lur}
+x\preceq_{\mathrm{LexUR}}y \iff \reg^{\downarrow}(x)\lex \reg^{\downarrow}(y),
+\label{eq:lexur}
 \end{equation}
 i.e.\ $x$ is preferred if its worst disappointment is smaller; on ties, its
-second worst; and so on. The \emph{LUR solution} is $x^{\mathrm{LUR}}\in
+second worst; and so on. We use the term \emph{lexicographic minimax regret}
+(equivalently \emph{leximax} of the sorted disappointments) consistently; this is
+exactly leximin applied to the negated disappointments, so the ``leximax'' and
+``leximin'' descriptions coincide and we adopt the minimax-regret reading
+throughout. The \emph{LexUR solution} is $x^{\mathrm{LexUR}}\in
 \argmin^{\mathrm{lex}}_{x}\reg^{\downarrow}(x)$, and its \emph{certificate} is the
-labelled, sorted vector $\reg^{\downarrow}(x^{\mathrm{LUR}})$ together with the
+labelled, sorted vector $\reg^{\downarrow}(x^{\mathrm{LexUR}})$ together with the
 probes attaining the largest entries. Figure~\ref{fig:leximax} illustrates the
 comparison on a two-alternative example.
 
 \input{tikz/fig_leximax}
 
-Exact LUR defines the mathematical complete preorder. In computation and practical reporting, a tolerance $\tau>0$ is used only to define a numerical indifference class: we report alternatives whose sorted disappointment vectors are not separated from the exact winner by more than $\tau$ at the first differing coordinate. The $\tau$-tolerance rule is not itself a transitive preorder, but rather a numerical reporting and stability device around the exact or margin-separated winner (Theorem~\ref{thm:stab}).
+Exact LexUR defines a complete preorder, and we write $W_0=\argmin^{\mathrm{lex}}_{x\in A}\reg^{\downarrow}(x)$ for its set of exact minimisers. In computation and practical reporting, a tolerance $\tau>0$ is used to absorb estimation noise. For sorted vectors $a,b\in[0,1]^K$, define $a\prec_\tau b$ if there exists $k=\min\{j: |a_j-b_j|>\tau\}$ and $a_k<b_k-\tau$. The $\tau$-tolerance set is then
+\[ W_\tau=\{x\in A:\nexists\, y\in A \text{ such that } \reg^{\downarrow}(y)\prec_\tau \reg^{\downarrow}(x)\}. \]
+We stress the precise status of these objects. $W_\tau$ is the set of $\tau$-\emph{undominated} alternatives under the relation $\prec_\tau$, which is irreflexive but \emph{not} transitive; hence $\prec_\tau$ is neither a preorder nor does it induce an equivalence relation, and $W_\tau$ is \emph{not} an equivalence class. We therefore avoid the terms ``tolerance class'' and ``indifference class'' for $W_\tau$. When a uniquely stable recommendation is wanted, the appropriate object is the numerical stability set around an exact winner $x^\star\in W_0$, namely $C_\tau(x^\star)=\{x\in A:\reg^{\downarrow}(x)\not\succ_\tau \reg^{\downarrow}(x^\star)\}$ (the alternatives not significantly worse than $x^\star$ under the declared tolerance), whose singleton-ness is guaranteed only under the margin condition of Theorem~\ref{thm:stab}. The $\tau$-tolerance rule is thus a numerical reporting and stability device around the exact or margin-separated winner, not a substitute preorder.
+
+\subsection{Interval bounds and the stability set}
+Because point estimates of normalisation bounds can cause frequent winner flips, true robustness requires evaluating the regrets over conservative interval bounds. We take $\mathcal B$ to be a genuinely \emph{bounded} uncertainty box: each lower bound ranges in an interval $z_i^{\star,b}\in[\underline z_i^{\star},\overline z_i^{\star}]$ and each upper bound in $z_i^{nad,b}\in[\underline z_i^{nad},\overline z_i^{nad}]$, with the containment and range conditions
+\[
+\overline z_i^{\star}\le \min_{x\in A} f_i(x),\qquad \underline z_i^{nad}\ge \max_{x\in A} f_i(x),\qquad z_i^{nad,b}-z_i^{\star,b}\ge \delta_i>0\quad\forall i,
+\]
+so that
+\[
+\mathcal{B} = \Big\{b=(z^{\star,b},z^{nad,b}) :\ z_i^{\star,b}\in[\underline z_i^{\star},\overline z_i^{\star}],\ \ z_i^{nad,b}\in[\underline z_i^{nad},\overline z_i^{nad}]\ \ \forall i\Big\}
+\]
+is a compact box. Boundedness guarantees that the suprema defining the worst-case envelope (Option C) are attained and finite. The containment conditions $\overline z_i^{\star}\le\min_A f_i$ and $\underline z_i^{nad}\ge\max_A f_i$ are required so that every normalised value
+\[ r_i^b(x)=\frac{f_i(x)-z_i^{\star,b}}{z_i^{nad,b}-z_i^{\star,b}} \]
+remains in $[0,1]$ for all $x\in A$, which is the domain on which the probes $q:[0,1]^m\to\R$ are defined; the positive-range floor $\delta_i$ keeps the map well defined. (If one wishes to admit bounds that do not contain the active range, the domain of every $q$ must be extended beyond $[0,1]^m$ explicitly.) For each bound scenario $b \in \mathcal{B}$ one then computes the disappointment $\reg_q^b(x)$, the sorted vector $\reg^{b,\downarrow}(x)$, and the $\tau$-undominated set $W_\tau(b)$ as defined above.
+
+The robust framework defines two fundamental stability sets:
+\begin{enumerate}
+    \item \textbf{Necessary interval winner (Option A):} The intersection across all bounds:
+    \[ S_{\text{necessary}}^\tau=\bigcap_{b\in\mathcal B} W_\tau(b). \]
+    \item \textbf{Possible interval winner (Option B):} The set of alternatives that win under some plausible bound:
+    \[ S_{\text{possible}}^\tau=\bigcup_{b\in\mathcal B} W_\tau(b). \]
+\end{enumerate}
+The necessary set is always a subset of the possible set. A unique robust recommendation exists if $W_\tau(b)=\{x^\star\}$ for all $b\in\mathcal B$. A uniform positive margin over $\mathcal B$ (Theorem~\ref{thm:stab} holding at every $b$) is a \emph{sufficient} certificate of this property, but it is \emph{not} necessary: the intersection $S_{\text{necessary}}^\tau=\bigcap_b W_\tau(b)$ can be a singleton even when some $W_\tau(b)$ contain extra alternatives and no uniform margin holds, and conversely a singleton necessary set does not by itself guarantee a unique recommendation across all bounds. When the necessary set is empty or the possible set contains several alternatives, the output should be reported as a stability set rather than a unique recommendation (and, per the remarks on $W_\tau$ above, not as an equivalence or indifference class).
+
+For a single-shot operational robust default (Option C), one can compute the worst-case robust certificate:
+\[ \overline \reg_q(x) = \sup_{b \in \mathcal{B}} \reg^b_q(x), \]
+and then select the recommendation by lexicographic minimisation of the sorted worst-case regrets $\overline \reg^{\downarrow}(x)$. Because the supremum is taken \emph{separately} for each probe $q$, $\overline\reg(x)$ is a componentwise conservative envelope: its coordinates may be attained under different bound scenarios and need not be jointly realised under any single $b\in\mathcal B$. This worst-case robust default is a \emph{separate}, conservative selection rule: its minimiser need \emph{not} belong to the possible-winner set $S_{\text{possible}}^\tau$, and it should therefore be reported alongside the necessary and possible interval-winner sets rather than interpreted as an element of them. This is the familiar robust-optimisation phenomenon that a minimax compromise can be optimal under no individual scenario. For example, with a single probe and two bound scenarios $b_1,b_2$ giving disappointments $(\reg^{b_1},\reg^{b_2})$ of $A{=}(0,1)$, $B{=}(1,0)$ and $C{=}(0.4,0.4)$, we have $S_{\text{possible}}^\tau=\{A,B\}$, yet $\overline\reg(A)=\overline\reg(B)=1>\overline\reg(C)=0.4$, so the robust default selects $C\notin S_{\text{possible}}^\tau$.
 
 \subsection{Foundational guarantees}
-\begin{theorem}[Existence and completeness of exact LUR]
+\begin{theorem}[Existence and completeness of exact LexUR]
 \label{thm:exist}
-For any finite $A$ and finite $\Q$, $x^{\mathrm{LUR}}$ exists and exact
-$\preceq_{\mathrm{LUR}}$ is a complete preorder on $A$.
+For any finite $A$ and finite $\Q$, $x^{\mathrm{LexUR}}$ exists and exact
+$\preceq_{\mathrm{LexUR}}$ is a complete preorder on $A$.
 \end{theorem}
 \begin{proof}
 For finite $A$ and finite $\Q$, each $\reg^{\downarrow}(x)\in[0,1]^K$ is a
@@ -115,40 +157,48 @@ lexicographic minimum exists.
 \label{thm:pareto}
 Let $x$ strictly Pareto-dominate $y$ and let every $q\in\Q$ be monotone
 non-decreasing in each $r_i$. Then $\reg_q(x)\le\reg_q(y)$ for all $q$
-(\emph{weak} compatibility), so $x\preceq_{\mathrm{LUR}}y$. If, in addition, $\Q$
+(\emph{weak} compatibility), so $x\preceq_{\mathrm{LexUR}}y$. If, in addition, $\Q$
 \emph{separates} criteria (Definition~\ref{def:sep})---in particular if $\Q$
 contains the singleton probes---then $\reg_q(x)<\reg_q(y)$ for some $q$ and
-$x\prec_{\mathrm{LUR}}y$.
+$x\prec_{\mathrm{LexUR}}y$.
 \end{theorem}
 \begin{proof}
 Let $x\prec_P y$, so $r_i(x)\le r_i(y)$ for all $i$ with strict inequality for
 some $j$. For any monotone non-decreasing probe $q$, $q(r(x))\le q(r(y))$; as
 $q^\star,q^{\mathrm w}$ are constants independent of the alternative,
-$\reg_q(x)\le\reg_q(y)$ for all $q$, giving $\reg^{\downarrow}(x)\le
-\reg^{\downarrow}(y)$ componentwise after sorting and hence
-$x\preceq_{\mathrm{LUR}}y$ (weak compatibility, monotonicity only). If $\Q$
-separates criteria there is a probe $q$ strictly increasing in $r_j$, for which
-$q(r(x))<q(r(y))$ and thus $\reg_q(x)<\reg_q(y)$; the multiset of disappointments
-of $x$ is then componentwise $\le$ that of $y$ with at least one strict drop, so
-the descending-sorted vectors satisfy $\reg^{\downarrow}(x)\lex\reg^{\downarrow}
-(y)$ strictly and $x\prec_{\mathrm{LUR}}y$. The counterexample in the main text
-shows the separation hypothesis cannot be dropped.
+$\reg_q(x)\le\reg_q(y)$ for every $q\in\Q$. We now invoke the monotonicity of
+order statistics: if $a_q\le b_q$ for every probe $q$, then the descending
+rearrangements satisfy $a^{\downarrow}_k\le b^{\downarrow}_k$ for all $k$ (the
+$k$-th largest of a componentwise-smaller vector cannot exceed the $k$-th largest
+of the larger one). Applying this to $a_q=\reg_q(x)$ and $b_q=\reg_q(y)$ gives
+$\reg^{\downarrow}_k(x)\le\reg^{\downarrow}_k(y)$ for all $k$, hence
+$x\preceq_{\mathrm{LexUR}}y$ (weak compatibility, monotonicity only). If $\Q$
+separates criteria there is a probe $q$ strictly increasing in $r_j$; provided
+this separating probe is non-degenerate over $A$ (active range $q^{\mathrm
+w}-q^\star\ge\varepsilon_q>0$, which holds automatically whenever $q$ strictly
+separates two alternatives of $A$), $q(r(x))<q(r(y))$ gives $\reg_q(x)<\reg_q(y)$.
+The disappointment vector of $x$ is then componentwise $\le$ that of $y$ with at
+least one strict drop, so by the same order-statistic monotonicity (now with one
+strict inequality) the descending-sorted vectors satisfy
+$\reg^{\downarrow}(x)\lex\reg^{\downarrow}(y)$ strictly and
+$x\prec_{\mathrm{LexUR}}y$. The counterexample in the main text shows the
+separation hypothesis cannot be dropped.
 \end{proof}
 
 The separation hypothesis is necessary: with only the probe $q(r)=r_2$, the
 dominator $r(x)=(0,1)$ and the dominated $r(y)=(0.1,1)$ have equal disappointment,
-so monotonicity alone does not give a strict preference. LUR always includes the
+so monotonicity alone does not give a strict preference. LexUR always includes the
 singletons, so it separates.
 
 \begin{corollary}[Dominated exclusion]
 \label{cor:dom}
-If $x$ is Pareto-dominated by a feasible $y$ and $\Q$ separates criteria, then
-$x$ is not LUR-optimal.
+Let $A$ be the active candidate set. If $x \in A$ is Pareto-dominated by some $y \in A$, and $\Q$ separates criteria, then
+$x$ is not LexUR-optimal over $A$.
 \end{corollary}
 \begin{proof}
-If $x$ is dominated by a feasible $y$ and $\Q$ separates criteria,
-Theorem~\ref{thm:pareto} gives $y\prec_{\mathrm{LUR}}x$, so $x$ is not a
-lexicographic minimiser. Without separation only $y\preceq_{\mathrm{LUR}}x$ holds
+If $x \in A$ is dominated by some $y \in A$ and $\Q$ separates criteria,
+Theorem~\ref{thm:pareto} gives $y\prec_{\mathrm{LexUR}}x$, so $x$ is not a
+lexicographic minimiser over $A$. Without separation only $y\preceq_{\mathrm{LexUR}}x$ holds
 and a dominated alternative may tie its dominator.
 \end{proof}
 
@@ -156,9 +206,9 @@ and a dominated alternative may tie its dominator.
 \label{thm:stab}
 Let $\hat\reg_q(x)$ estimate $\reg_q(x)$
 with $\eta=\max_{x,q}|\hat\reg_q(x)-\reg_q(x)|$. Suppose the exact winner
-$x^{\mathrm{LUR}}$ beats every rival $y$ at the first coordinate $k(y)$ at which
+$x^{\mathrm{LexUR}}$ beats every rival $y$ at the first coordinate $k(y)$ at which
 their sorted vectors differ by more than $\tau$, with margin
-$\reg_{[k(y)]}(y)-\reg_{[k(y)]}(x^{\mathrm{LUR}})\ge\Delta$, and that all earlier
+$\reg_{[k(y)]}(y)-\reg_{[k(y)]}(x^{\mathrm{LexUR}})\ge\Delta$, and that all earlier
 coordinates agree within $\tau-2\eta$. If $2\eta<\min\{\Delta-\tau,\ \tau\}$, the
 winner under $\hat\reg$ is unchanged.
 \end{theorem}
@@ -166,13 +216,13 @@ winner under $\hat\reg$ is unchanged.
 Write $\hat\reg_q(x)=\reg_q(x)+\xi_q(x)$, $|\xi_q(x)|\le\eta$; sorting is
 $1$-Lipschitz in $\|\cdot\|_\infty$, so each sorted coordinate moves by at most
 $\eta$. Fix a rival $y$ and the deciding coordinate $k=k(y)$ with true margin
-$\reg_{[k]}(y)-\reg_{[k]}(x^{\mathrm{LUR}})\ge\Delta$. Under perturbation this
+$\reg_{[k]}(y)-\reg_{[k]}(x^{\mathrm{LexUR}})\ge\Delta$. Under perturbation this
 margin is at least $\Delta-2\eta$; since $2\eta<\Delta-\tau$ it stays above
 $\tau$, so the $\tau$-tolerance rule still decides coordinate $k$ in favour of
-$x^{\mathrm{LUR}}$. For the earlier coordinates $j<k$, which agree within
+$x^{\mathrm{LexUR}}$. For the earlier coordinates $j<k$, which agree within
 $\tau-2\eta$ by hypothesis, the perturbed gaps stay within $\tau$ and are treated
 as ties, so the decision is not pre-empted before $k$. As $2\eta<\tau$ no spurious
-strict difference is created earlier. Hence $x^{\mathrm{LUR}}$ still beats every
+strict difference is created earlier. Hence $x^{\mathrm{LexUR}}$ still beats every
 rival and the winner is unchanged. (Exact comparison, $\tau=0$, is excluded
 precisely because the second condition $2\eta<\tau$ then fails.)
 \end{proof}
@@ -188,5 +238,5 @@ certificates may be very small. Without that margin the theorem gives no winner
 stability guarantee; the appropriate output is therefore a tolerance or
 stability set rather than a uniquely stable recommendation. For
 continuous $\X$, existence requires compactness of $\X$ and continuity of each
-$q\circ r$; uniqueness is not guaranteed and a small indifference class may arise.
+$q\circ r$; uniqueness is not guaranteed and a small set of tied exact minimisers may arise.
 

@@ -5,15 +5,15 @@ import pandas as pd
 
 # Add root directory to python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from lur import problems, methods
+from lexur import problems, methods
 
 def main():
     rng = np.random.default_rng(42)
     F = problems.sample_front("cars", 0, 0, rng)
     m = F.shape[1]
     
-    # Run LUR
-    idx, D, labels, probes = methods.lur(F, return_detail=True)
+    # Run LexUR
+    idx, D, labels, probes = methods.lexur(F, return_detail=True)
     
     # Calculate SMAA acceptability indices
     n_weights = 10000
@@ -32,9 +32,9 @@ def main():
         records.append({
             "Alternative": i,
             "SMAA_Acceptability": smaa_acc[i],
-            "LUR_Max_Disappointment": binding_disappointment,
-            "LUR_Binding_Probe": binding_probe_label,
-            "LUR_Winner": "YES" if i == idx else "NO"
+            "LexUR_Max_Disappointment": binding_disappointment,
+            "LexUR_Binding_Probe": binding_probe_label,
+            "LexUR_Winner": "YES" if i == idx else "NO"
         })
     df = pd.DataFrame(records)
     

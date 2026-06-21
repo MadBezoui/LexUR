@@ -1,0 +1,12 @@
+{
+  "git_commit": "b4f2bf5ca55c7618337be3697588bfef292736c2",
+  "git_dirty": true,
+  "params": {
+    "figure": "fig_nadir.pdf",
+    "sources": {
+      "results/tables/sensitivity_nadir.csv": "1115e1a78fd6946ffe9ed72ae06beb44d65670a38bb1b0fa24914309417482bb"
+    }
+  },
+  "params_sha256": "c47de277c660be2f725d6104d021d32fd4bcd2c0bc2e564ae698eb1954bf2ad0",
+  "run_id": null
+}

@@ -10,6 +10,7 @@ dependencies = [
   "numpy>=1.26,<2.0",
   "scipy>=1.11,<1.14",
   "pandas>=2.1,<2.3",
+  "pyarrow>=14,<20",
   "matplotlib>=3.8,<3.10",
   "PyYAML>=6.0,<7",
   "PuLP>=2.8,<3",
@@ -17,11 +18,12 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["lur*"]
+include = ["lexur*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
 filterwarnings = [
-  "ignore:.*deprecated.*:pyparsing.exceptions.PyparsingDeprecationWarning:matplotlib\\..*",
+  "ignore:.*deprecated.*:pyparsing.warnings.PyparsingDeprecationWarning:matplotlib\\..*",
+  "ignore:.*parseAll.*:pyparsing.warnings.PyparsingDeprecationWarning",
 ]

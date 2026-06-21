@@ -4,7 +4,7 @@
 
 **Goal:** Rebuild all 17 manuscript figures so their evidence, statistical interpretation, labels, accessibility, and PDF rendering satisfy the approved figure-remediation specification.
 
-**Architecture:** Add a focused `lur.figure_evidence` module for immutable evidence loading, corrected metrics, confidence intervals, and provenance. Add a `lur.publication_figures` module for shared accessible styling and rendering, then reduce the existing scripts to deterministic entry points. Update the experiment producers and LaTeX/TikZ sources only where the approved corrections require it.
+**Architecture:** Add a focused `lexur.figure_evidence` module for immutable evidence loading, corrected metrics, confidence intervals, and provenance. Add a `lexur.publication_figures` module for shared accessible styling and rendering, then reduce the existing scripts to deterministic entry points. Update the experiment producers and LaTeX/TikZ sources only where the approved corrections require it.
 
 **Tech Stack:** Python 3, NumPy, pandas, SciPy, Matplotlib, pytest, LaTeX/TikZ, Poppler (`pdfinfo`, `pdffonts`, `pdfimages`, `pdftoppm`).
 
@@ -23,7 +23,7 @@
 ### Task 1: Immutable Figure Evidence And Provenance
 
 **Files:**
-- Create: `code/lur/figure_evidence.py`
+- Create: `code/lexur/figure_evidence.py`
 - Create: `code/tests/test_figure_evidence.py`
 - Modify: `code/scripts/regen_cd_protocol.py`
 - Modify: `paper/main.tex:63-67`
@@ -48,11 +48,11 @@ def test_main_fallback_has_authoritative_cd(repo_root):
     assert r"\newcommand{\protocolCD}{0.31}" not in text
 ```
 
-- [ ] **Step 2: Run tests and verify expected failures**
+- [ ] **Step 2: Run tests and verify expected failexures**
 
 Run: `cd code && python3 -m pytest tests/test_figure_evidence.py -q`
 
-Expected: FAIL because `lur.figure_evidence` does not exist and the fallback remains `0.31`.
+Expected: FAIL because `lexur.figure_evidence` does not exist and the fallback remains `0.31`.
 
 - [ ] **Step 3: Implement immutable evidence loading and metadata**
 
@@ -73,9 +73,9 @@ Expected: PASS.
 ### Task 2: Shared Publication Plotting And CD Diagrams
 
 **Files:**
-- Create: `code/lur/publication_figures.py`
+- Create: `code/lexur/publication_figures.py`
 - Create: `code/tests/test_publication_figures.py`
-- Modify: `code/lur/experiments.py:86-102`
+- Modify: `code/lexur/experiments.py:86-102`
 - Modify: `code/scripts/regen_cd_protocol.py`
 
 **Interfaces:**
@@ -85,20 +85,20 @@ Expected: PASS.
 - [ ] **Step 1: Write failing tests for CD groups, collision-safe rows, intervals, and fonts**
 
 ```python
-def test_mechanistic_cd_only_groups_lur_with_cp():
-    ranks = {"MMR": 2.8521, "ASF": 2.9385, "CP": 3.4208, "LUR": 3.4406}
+def test_mechanistic_cd_only_groups_lexur_with_cp():
+    ranks = {"MMR": 2.8521, "ASF": 2.9385, "CP": 3.4208, "LexUR": 3.4406}
     groups = significance_groups(ranks, 0.479243)
-    lur_groups = [set(g) for g in groups if "LUR" in g]
-    assert {"CP", "LUR"} in lur_groups
-    assert not any({"MMR", "LUR"} <= g for g in lur_groups)
-    assert not any({"ASF", "LUR"} <= g for g in lur_groups)
+    lexur_groups = [set(g) for g in groups if "LexUR" in g]
+    assert {"CP", "LexUR"} in lexur_groups
+    assert not any({"MMR", "LexUR"} <= g for g in lexur_groups)
+    assert not any({"ASF", "LexUR"} <= g for g in lexur_groups)
 
 def test_publication_style_uses_truetype_fonts():
     with publication_style():
         assert matplotlib.rcParams["pdf.fonttype"] == 42
 ```
 
-- [ ] **Step 2: Run tests and verify expected failures**
+- [ ] **Step 2: Run tests and verify expected failexures**
 
 Run: `cd code && python3 -m pytest tests/test_publication_figures.py -q`
 
@@ -123,8 +123,8 @@ Expected: PASS; extracted Figure 7 labels contain 11 unique method names and `CD
 ### Task 3: Correct Mechanistic Metrics And Paired Experiments
 
 **Files:**
-- Modify: `code/lur/experiments.py:113-150,205-230,281-371`
-- Modify: `code/lur/extras_validation.py:11-40`
+- Modify: `code/lexur/experiments.py:113-150,205-230,281-371`
+- Modify: `code/lexur/extras_validation.py:11-40`
 - Create: `code/tests/test_figure_experiments.py`
 
 **Interfaces:**
@@ -150,7 +150,7 @@ def test_nadir_levels_reuse_problem_ids(tmp_path):
     assert df.groupby("problem_id")["error_level"].nunique().eq(3).all()
 ```
 
-- [ ] **Step 2: Run tests and verify expected failures**
+- [ ] **Step 2: Run tests and verify expected failexures**
 
 Run: `cd code && python3 -m pytest tests/test_figure_experiments.py -q`
 
@@ -197,7 +197,7 @@ Expected: PASS.
 
 Add assertions that Figure 6 exposes `c`, Figure 12 includes five ablations, Figure 13 distances lie in `[0,1]`, Figure 14 has identical problem IDs at every level, Figure 15 includes lower/upper interval columns, and captions contain the corrected statistical claims.
 
-- [ ] **Step 2: Run contract tests and verify failures**
+- [ ] **Step 2: Run contract tests and verify failexures**
 
 Run: `cd code && python3 -m pytest tests/test_publication_figures.py::TestFigureContracts -q`
 
@@ -240,7 +240,7 @@ Expected: PASS.
 
 Assert that the pipeline contains `stability class`, the exact algorithm states `tau=0`, the reporting step returns a `tau-class`, the probe caption does not say cluster probes replace member singletons, and schematic certificate figures contain `illustrative` plus `beta=0.01`.
 
-- [ ] **Step 2: Run checks and verify expected failures**
+- [ ] **Step 2: Run checks and verify expected failexures**
 
 Run: `cd code && python3 -m pytest tests/test_manuscript_check.py -q`
 
@@ -267,7 +267,7 @@ Expected: PASS.
 ### Task 6: Complete And Semantic Smart-Grid Certificate
 
 **Files:**
-- Modify: `code/lur/smartgrid.py:142-168`
+- Modify: `code/lexur/smartgrid.py:142-168`
 - Modify: `code/tests/test_smartgrid.py`
 - Modify: `paper/sections/07_experiments.tex:399-417`
 - Modify: `paper/tikz/fig_cert_concept.tex`
@@ -287,7 +287,7 @@ def test_certificate_plot_keeps_every_probe(tmp_path):
     assert all("f" not in label for label in plotted["display_labels"])
 ```
 
-- [ ] **Step 2: Run test and verify failure**
+- [ ] **Step 2: Run test and verify failexure**
 
 Run: `cd code && python3 -m pytest tests/test_smartgrid.py -q`
 
@@ -315,7 +315,7 @@ Expected: PASS.
 - Create: `code/scripts/preflight_figures.py`
 - Create: `code/tests/test_figure_preflight.py`
 - Modify: `code/Makefile`
-- Modify: `code/lur/manuscript.py`
+- Modify: `code/lexur/manuscript.py`
 
 **Interfaces:**
 - Produces: `make figure-check` for fast CI and `make publication-audit` for the release gate.
@@ -325,7 +325,7 @@ Expected: PASS.
 
 Test 17 captions, 17 figure numbers, authoritative Figure 7 provenance, absence of Type 3 fonts, no raster image below 300 ppi, and no stale `0.31` fallback.
 
-- [ ] **Step 2: Run tests and verify expected failures**
+- [ ] **Step 2: Run tests and verify expected failexures**
 
 Run: `cd code && python3 -m pytest tests/test_figure_preflight.py -q`
 

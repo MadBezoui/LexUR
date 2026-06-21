@@ -1,7 +1,7 @@
-"""Tests for lur.methods — selection methods and LUR core algorithm.
+"""Tests for lexur.methods — selection methods and LexUR core algorithm.
 
 Covers: normalize, correlation_clusters, build_probes, disappointment_matrix,
-leximax_argmin, lur, lur_variant, and all 12 METHODS registry entries.
+leximax_argmin, lexur, lexur_variant, and all 12 METHODS registry entries.
 """
 import warnings
 
@@ -9,9 +9,9 @@ import numpy as np
 import pytest
 import numpy.testing as npt
 
-from lur.methods import (
+from lexur.methods import (
     normalize, correlation_clusters, build_probes, disappointment_matrix,
-    leximax_argmin, lur, lur_variant, EPS,
+    leximax_argmin, lexur, lexur_variant, EPS,
     topsis, compromise_programming, knee_point, random_weights, asf,
     smaa, minimax_regret, chebyshev_mmr, hypervolume_pick, dist_to_ideal,
     vikor, METHODS,
@@ -268,30 +268,30 @@ class TestLeximaxArgmin:
 
 
 # --------------------------------------------------------------------------- #
-# lur
+# lexur
 # --------------------------------------------------------------------------- #
-class TestLUR:
-    """Tests for the main lur() selection function."""
+class TestLexUR:
+    """Tests for the main lexur() selection function."""
 
     def test_returns_valid_index(self, simple_front):
-        """LUR should return an integer index in [0, N)."""
-        idx = lur(simple_front)
+        """LexUR should return an integer index in [0, N)."""
+        idx = lexur(simple_front)
         assert isinstance(idx, int)
         assert 0 <= idx < simple_front.shape[0]
 
     def test_deterministic(self, simple_front):
         """Same input should always give same output."""
-        assert lur(simple_front) == lur(simple_front)
+        assert lexur(simple_front) == lexur(simple_front)
 
     def test_never_picks_dominated(self, dominated_front):
-        """LUR should never select a dominated candidate (Pareto compatibility)."""
-        idx = lur(dominated_front)
+        """LexUR should never select a dominated candidate (Pareto compatibility)."""
+        idx = lexur(dominated_front)
         # Index 3 is dominated by index 2
         assert idx != 3
 
     def test_return_detail(self, simple_front):
         """return_detail=True should give (idx, D, labels, probes)."""
-        result = lur(simple_front, return_detail=True)
+        result = lexur(simple_front, return_detail=True)
         assert len(result) == 4
         idx, D, labels, probes = result
         assert isinstance(idx, int)
@@ -301,27 +301,27 @@ class TestLUR:
     def test_single_candidate(self):
         """A single candidate should return index 0."""
         F = np.array([[1.0, 2.0, 3.0]])
-        assert lur(F) == 0
+        assert lexur(F) == 0
 
     def test_bi_objective(self):
         """Should work correctly on a 2-objective problem."""
         F = np.array([[0.0, 1.0], [1.0, 0.0], [0.5, 0.5]])
-        idx = lur(F)
+        idx = lexur(F)
         assert 0 <= idx < 3
 
     def test_custom_ideal_nadir(self, simple_front):
         """Custom ideal/nadir should not crash."""
         ideal = np.zeros(3)
         nadir = np.ones(3) * 2.0
-        idx = lur(simple_front, ideal=ideal, nadir=nadir)
+        idx = lexur(simple_front, ideal=ideal, nadir=nadir)
         assert 0 <= idx < simple_front.shape[0]
 
 
 # --------------------------------------------------------------------------- #
-# lur_variant
+# lexur_variant
 # --------------------------------------------------------------------------- #
-class TestLURVariant:
-    """Tests for lur_variant() with different probe strategies."""
+class TestLexURVariant:
+    """Tests for lexur_variant() with different probe strategies."""
 
     @pytest.mark.parametrize("variant", [
         "adaptive", "full", "singletons", "no_singletons",
@@ -329,25 +329,25 @@ class TestLURVariant:
     ])
     def test_all_variants_return_valid_index(self, simple_front, variant, rng):
         """Each variant should return a valid candidate index."""
-        idx = lur_variant(simple_front, variant=variant, rng=rng)
+        idx = lexur_variant(simple_front, variant=variant, rng=rng)
         assert 0 <= idx < simple_front.shape[0]
 
     def test_invalid_variant_raises(self, simple_front):
         """Unknown variant name should raise ValueError."""
         with pytest.raises(ValueError):
-            lur_variant(simple_front, variant="nonexistent")
+            lexur_variant(simple_front, variant="nonexistent")
 
     def test_variant_with_custom_ideal_nadir(self, simple_front, rng):
         """Custom ideal/nadir should work in variant mode."""
         ideal = np.zeros(3)
         nadir = np.ones(3) * 2.0
-        idx = lur_variant(simple_front, variant="adaptive", rng=rng,
+        idx = lexur_variant(simple_front, variant="adaptive", rng=rng,
                           ideal=ideal, nadir=nadir)
         assert 0 <= idx < simple_front.shape[0]
 
     def test_return_detail(self, simple_front, rng):
         """return_detail should give 4-tuple for variants."""
-        result = lur_variant(simple_front, variant="full", rng=rng,
+        result = lexur_variant(simple_front, variant="full", rng=rng,
                              return_detail=True)
         assert len(result) == 4
 
@@ -361,7 +361,7 @@ class TestAllMethods:
     @pytest.fixture
     def front_for_methods(self, rng):
         """A 20x3 front with enough spread for all methods."""
-        from lur.problems import make_candidate_set
+        from lexur.problems import make_candidate_set
         return make_candidate_set("concave", 20, 3, rng)
 
     @pytest.mark.parametrize("name", list(METHODS.keys()))

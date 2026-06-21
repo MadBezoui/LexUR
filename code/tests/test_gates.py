@@ -1,7 +1,7 @@
 import numpy as np
 
-from lur import gates, problems
-from lur import probe_validation
+from lexur import gates, problems
+from lexur import probe_validation
 from run_protocol import _bench_block, configure_output_root, stage_probes
 
 

@@ -12,7 +12,7 @@ smoke:
 
 manuscript-check:
 	$(PY) scripts/check_manuscript_numbers.py \
-		--paper ../paper --results ../results/protocol/current
+		--paper ../paper --results ../results/protocol
 
 ## Regenerate the original manuscript experiments + the full validation protocol
 reproduce_all: protocol

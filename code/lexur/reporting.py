@@ -22,7 +22,7 @@ def analyze_benchmark(frame: pd.DataFrame, cfg: dict) -> dict:
     losses = pivot.to_numpy(dtype=float)
     ranks = st.average_ranks(losses)
     friedman_stat, friedman_p = st.friedman(losses)
-    wilcoxon = st.wilcoxon_holm(losses, methods, control="LUR")
+    wilcoxon = st.wilcoxon_holm(losses, methods, control="LexUR")
 
     ni_cfg = cfg.get("noninferiority", {})
     noninferiority = {}
@@ -30,7 +30,7 @@ def analyze_benchmark(frame: pd.DataFrame, cfg: dict) -> dict:
         noninferiority[control] = noninferiority_cluster(
             frame,
             ctrl_name=control,
-            lur_name="LUR",
+            lexur_name="LexUR",
             ni_cfg=ni_cfg,
             seed=int(cfg.get("seed", 0)),
         )
@@ -53,7 +53,7 @@ def analyze_benchmark(frame: pd.DataFrame, cfg: dict) -> dict:
         "average_ranks": {
             name: float(rank) for name, rank in zip(methods, ranks)
         },
-        "wilcoxon_vs_LUR": {
+        "wilcoxon_vs_LexUR": {
             name: {"p_raw": raw, "p_holm": holm, "delta": delta}
             for name, (raw, holm, delta) in wilcoxon.items()
         },
@@ -101,11 +101,11 @@ def build_gate_report(artifacts: dict, cfg: dict, run_id: str) -> list[dict]:
             state,
             margin,
             result.get("mean_diff"),
-            f"mean LUR-control difference {result.get('mean_diff')}; CI {ci}",
+            f"mean LexUR-control difference {result.get('mean_diff')}; CI {ci}",
         ))
 
     practical = ["TOPSIS", "CP", "Knee", "RW", "SMAA"]
-    comparisons = analysis.get("wilcoxon_vs_LUR", {})
+    comparisons = analysis.get("wilcoxon_vs_LexUR", {})
     available = [name for name in practical if name in comparisons]
     if len(available) != len(practical):
         rows.append(_row(
